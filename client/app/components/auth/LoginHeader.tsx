@@ -7,8 +7,8 @@ interface LoginHeaderProps {
 }
 
 export const LoginHeader = ({
-    title = "Welcome Back",
-    subtitle = "Sign in to continue connecting with your friends."
+    title = "Chào mừng trở lại",
+    subtitle = "Đăng nhập để tiếp tục kết nối với bạn bè."
 }: LoginHeaderProps) => {
     return (
         <View style={styles.header}>

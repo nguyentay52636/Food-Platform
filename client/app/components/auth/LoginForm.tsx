@@ -23,18 +23,18 @@ export const LoginForm = ({
     isPasswordVisible,
     setIsPasswordVisible,
     onLogin,
-    buttonTitle = "Log In",
-    loadingTitle = "Signing In..."
+    buttonTitle = "Đăng nhập",
+    loadingTitle = "Đang đăng nhập..."
 }: LoginFormProps) => {
     return (
         <View style={styles.form}>
             <View style={styles.inputContainer}>
-                <Text style={styles.label}>Phone or Email</Text>
+                <Text style={styles.label}>Số điện thoại hoặc email</Text>
                 <View style={styles.inputWrapper}>
                     <Ionicons name="mail-outline" size={20} color="#666" style={styles.inputIcon} />
                     <TextInput
                         style={styles.input}
-                        placeholder="Enter your phone or email"
+                        placeholder="Nhập số điện thoại hoặc email"
                         placeholderTextColor="#999"
                         value={identifier}
                         onChangeText={setIdentifier}
@@ -45,12 +45,12 @@ export const LoginForm = ({
             </View>
 
             <View style={styles.inputContainer}>
-                <Text style={styles.label}>Password</Text>
+                <Text style={styles.label}>Mật khẩu</Text>
                 <View style={styles.inputWrapper}>
                     <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
                     <TextInput
                         style={styles.input}
-                        placeholder="Enter your password"
+                        placeholder="Nhập mật khẩu"
                         placeholderTextColor="#999"
                         value={password}
                         onChangeText={setPassword}
@@ -71,7 +71,7 @@ export const LoginForm = ({
             </View>
 
             <TouchableOpacity style={styles.forgotPassword}>
-                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
             </TouchableOpacity>
 
             <TouchableOpacity

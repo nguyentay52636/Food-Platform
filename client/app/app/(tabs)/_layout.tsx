@@ -14,30 +14,31 @@ type TabConfig = {
 
 const TABS: TabConfig[] = [
   {
-    name: 'home',
-    title: 'Home',
+    name: 'expore',
+    title: 'Khám phá',
     icon: 'house.fill',
   },
   {
     name: 'library',
-    title: 'Library',
+    title: 'Thư viện',
     icon: 'books.vertical.fill',
   },
   {
     name: 'voice',
-    title: 'Voice',
+    title: 'Tạo mới',
     icon: 'mic.fill',
   },
   {
     name: 'voucher',
-    title: 'Voucher',
+    title: 'Mã',
     icon: 'ticket.fill',
   },
   {
     name: 'settings',
-    title: 'Settings',
+    title: 'Cài đặt',
     icon: 'gearshape.fill',
   },
+
 ]
 
 export default function TabLayout() {
@@ -50,6 +51,27 @@ export default function TabLayout() {
         headerShown: false,
         tabBarActiveTintColor: tintColor,
         tabBarButton: HapticTab,
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '500',
+          marginTop: 4,
+        },
+        tabBarItemStyle: {
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingVertical: 8,
+        },
+        tabBarStyle: {
+          height: 88,
+          paddingBottom: 20,
+          paddingTop: 8,
+          borderTopWidth: 0.5,
+          borderTopColor: '#E1E1E1',
+        },
+        tabBarIconStyle: {
+          marginTop: 4,
+        },
       }}
     >
       {TABS.map((tab) => (
@@ -63,6 +85,10 @@ export default function TabLayout() {
                 name={tab.icon}
                 size={26}
                 color={color}
+                style={{
+                  width: 26,
+                  height: 26,
+                }}
               />
             ),
           }}
