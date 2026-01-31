@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import {
@@ -14,10 +15,13 @@ import { LoginFooter } from '@/components/auth/LoginFooter';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { LoginHeader } from '@/components/auth/LoginHeader';
 
-export default function Index() {
+export default function Login() {
+    const router = useRouter();
+
     const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
 
     return (
         <SafeAreaView style={styles.container}>
