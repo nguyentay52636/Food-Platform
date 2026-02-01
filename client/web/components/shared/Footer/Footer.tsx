@@ -28,7 +28,7 @@ export default function Footer() {
                                 {/* <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center">
                                     <ChefHat className="w-7 h-7 text-primary-foreground" />
                                 </div> */}
-                                <img src="/logochinh.png" alt="Logo" className="w-20 h-20 z-10" />
+                                <img src="/39.png" alt="Logo" className="w-30 h-20 z-10" />
                                 <div>
                                     <h3 className="font-bold text-lg">Sài Gòn ẩm thực</h3>
                                     <p className="text-sm text-muted-foreground">Khám phá ẩm thực Sài Gòn</p>

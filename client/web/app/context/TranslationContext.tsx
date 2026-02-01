@@ -1,9 +1,9 @@
 'use client'
 
 import React, { createContext, useContext } from 'react'
-import { useLanguageStore } from '@/stores/language-store'
-import en from '@/app/locales/en.json'
-import vi from '@/app/locales/vi.json'
+import { useLanguageStore } from '@/app/stores/language-store'
+import en from '@/lib/locales/en.json'
+import vi from '@/lib/locales/vi.json'
 
 const translations = { en, vi }
 

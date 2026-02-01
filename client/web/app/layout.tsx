@@ -2,8 +2,10 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { TranslationProvider } from "@/app/context/TranslationContext";
 import Header from "@/components/shared/Header/Header";
 import Footer from "@/components/shared/Footer/Footer";
+import { HeaderAuth } from "@/components/shared/Header/HeaderAuth/HeaderAuth";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,8 +26,10 @@ export default function RootLayout({
           attribute="class"
           defaultTheme="light"
           enableSystem>
-          <Header />
-          {children}
+          <TranslationProvider>
+            <HeaderAuth />
+            {children}
+          </TranslationProvider>
         </ThemeProvider>
         <Footer />
 

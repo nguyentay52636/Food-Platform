@@ -7,7 +7,7 @@ export function Logo() {
             className="flex items-center gap-3 hover:opacity-80 transition-opacity group mr-2"
         >
             <div className="">
-                <img src="/logochinh.png" alt="logo" className="w-23 h-20 z-10" />
+                <img src="/39.png" alt="logo" className="w-30 h-20 z-10" />
             </div>
             <div className="hidden sm:block">
                 <h1 className="text-lg font-bold leading-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
