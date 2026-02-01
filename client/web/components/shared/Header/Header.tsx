@@ -18,7 +18,7 @@ export default function Header() {
                             </div> */}
                             <img src="/logo.png" alt="logo" className="w-12 h-12 z-10" />
                             <div className="hidden sm:block">
-                                <h1 className="text-2xl font-bold leading-tight">Sài Gòn Culinary Hub</h1>
+                                <h1 className="text-2xl font-bold leading-tight">Sài Gòn ẩm thực</h1>
                                 <p className="text-xs text-muted-foreground">Khám phá ẩm thực</p>
                             </div>
                         </Link>
