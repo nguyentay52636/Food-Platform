@@ -1,9 +1,9 @@
-import Image from "next/image";
+import HomePages from "@/components/features/Home/HomePages";
 
-export default function Home() {
+export default function page() {
   return (
     <>
-
+      <HomePages />
     </>
   );
 }
