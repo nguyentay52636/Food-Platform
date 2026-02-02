@@ -1,0 +1,135 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+    },
+    mapContainer: {
+        flex: 1,
+    },
+    searchContainer: {
+        position: 'absolute',
+        top: 16,
+        left: 16,
+        right: 16,
+    },
+    searchInput: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        fontSize: 15,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    listContainer: {
+        position: 'absolute',
+        bottom: 12,
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+    },
+    modeToggle: {
+        flexDirection: 'row',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 24,
+        padding: 4,
+        marginBottom: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    modeButton: {
+        flex: 1,
+        borderRadius: 20,
+        paddingVertical: 6,
+        paddingHorizontal: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    modeButtonActive: {
+        backgroundColor: '#FFFFFF',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    modeButtonText: {
+        fontSize: 13,
+        color: '#666666',
+        fontWeight: '500',
+    },
+    modeButtonTextActive: {
+        color: '#111111',
+        fontWeight: '600',
+    },
+    placeSheet: {
+        width: '92%',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 20,
+        paddingVertical: 12,
+        paddingHorizontal: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        elevation: 3,
+    },
+    placeHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    placeIndex: {
+        fontSize: 16,
+        fontWeight: '700',
+        marginRight: 4,
+    },
+    placeName: {
+        flex: 1,
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    placeDistance: {
+        fontSize: 13,
+        color: '#666666',
+        marginLeft: 8,
+    },
+    menuListContent: {
+        paddingTop: 4,
+    },
+    menuCard: {
+        width: 140,
+        marginRight: 8,
+    },
+    menuImage: {
+        width: '100%',
+        height: 70,
+        borderRadius: 8,
+    },
+    menuTextContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 4,
+    },
+    menuName: {
+        fontSize: 13,
+        color: '#666666',
+        flex: 1,
+        marginRight: 4,
+    },
+    menuRating: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#E84A5F',
+    },
+});
+

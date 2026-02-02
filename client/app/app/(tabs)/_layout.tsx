@@ -84,6 +84,7 @@ export default function TabLayout() {
                 style={{
                   width: 26,
                   height: 26,
+                  padding: 6,
                 }}
               />
             ),
