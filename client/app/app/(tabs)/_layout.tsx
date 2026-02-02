@@ -11,7 +11,7 @@ type TabConfig = {
 
 const TABS: TabConfig[] = [
   {
-    name: 'expore',
+    name: 'index',
     title: 'Khám phá',
     icon: 'house.fill',
   },

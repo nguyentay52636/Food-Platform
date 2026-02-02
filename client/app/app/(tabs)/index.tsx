@@ -1,66 +1,10 @@
-import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
-import {
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    TouchableWithoutFeedback,
-    View
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import HomeScreen from '@/components/HomeScreen/HomeScreen'
+import React from 'react'
 
-import { LoginFooter } from '@/components/auth/LoginFooter';
-import { LoginForm } from '@/components/auth/LoginForm';
-import { LoginHeader } from '@/components/auth/LoginHeader';
-
-export default function Index() {
-    const [identifier, setIdentifier] = useState('');
-    const [password, setPassword] = useState('');
-    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-
+export default function expore() {
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar style="dark" />
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    style={styles.keyboardView}
-                >
-                    <View style={styles.contentContainer}>
-                        <LoginHeader />
-
-                        <LoginForm
-                            identifier={identifier}
-                            setIdentifier={setIdentifier}
-                            password={password}
-                            setPassword={setPassword}
-                            isPasswordVisible={isPasswordVisible}
-                            setIsPasswordVisible={setIsPasswordVisible}
-                            isLoading={false}
-                            onLogin={() => { }}
-                        />
-
-                        <LoginFooter />
-                    </View>
-                </KeyboardAvoidingView>
-            </TouchableWithoutFeedback>
-        </SafeAreaView>
-    );
+        <>
+            <HomeScreen />
+        </>
+    )
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F8F9FA',
-    },
-    keyboardView: {
-        flex: 1,
-    },
-    contentContainer: {
-        flex: 1,
-        paddingHorizontal: 24,
-        justifyContent: 'center',
-        paddingBottom: 40,
-    },
-});

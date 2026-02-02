@@ -1,50 +1,57 @@
-# Welcome to your Expo app 👋
+## Vĩnh Khánh Food Map 🍜
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Ứng dụng di động giúp khám phá đồ ăn – thức uống khu vực **Vĩnh Khánh, Quận 4**.  
+Người dùng có thể xem bản đồ các quán xung quanh, lọc theo tên, xem gợi ý món nổi bật và điều hướng sang màn chi tiết quán.
 
-## Get started
+### Tính năng chính
 
-1. Install dependencies
+- **Đăng nhập / Đăng ký**: Giao diện auth hiện đại, hỗ trợ nhập số điện thoại hoặc email.
+- **Bản đồ quán ăn**:
+  - Hiển thị **Google Map** làm nền chính (React Native Maps).
+  - Marker cho từng quán ăn / quán cà phê ở khu vực Vĩnh Khánh.
+  - Hiển thị **bottom sheet** với thông tin quán, khoảng cách, danh sách món nổi bật kèm điểm số.
+- **Tìm kiếm**:
+  - Thanh search tiếng Việt: *"Tìm quán ăn, cà phê..."*.
+  - Lọc realtime theo tên quán trên bản đồ và trong bottom sheet.
+- **Thanh tab (bottom tabs)**:
+  - Các tab: Khám phá, Thư viện, Tạo mới, Mã, Cài đặt.
+  - Icon SF Symbols (iOS) + Material Icons (Android/web), màu sắc được tối ưu để khi bấm **không bị mất màu**.
+
+### Công nghệ sử dụng
+
+- **React Native + Expo**
+- **Expo Router** (file-based routing, nested routes `(auth)`, `(tabs)`)
+- **React Native Maps** (Google Map)
+- **Expo Location** (chuẩn bị cho tính năng định vị người dùng)
+- **TypeScript**, ESLint
+
+### Cấu trúc chính
+
+- `app/(auth)/*`: màn hình đăng nhập, đăng ký.
+- `app/(tabs)/*`: layout bottom tabs và các màn chính.
+- `components/HomeScreen/*`:
+  - `HomeScreen.tsx`: logic màn hình bản đồ.
+  - `HomeScreen.styles.ts`: style tách riêng.
+  - `data.ts`, `types.ts`: mock data & type cho quán ăn/món ăn.
+  - `components/`: `SearchBar`, `ModeToggle`, `PlaceSheet` cho UI map.
+
+### Cách chạy dự án
+
+1. Cài đặt dependency:
 
    ```bash
    npm install
    ```
 
-2. Start the app
+2. Chạy app:
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+3. Mở trên:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- Expo Go (QR code)
+- iOS Simulator
+- Android Emulator
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.

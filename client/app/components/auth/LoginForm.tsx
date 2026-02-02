@@ -89,6 +89,18 @@ export const LoginForm = ({
 const styles = StyleSheet.create({
     form: {
         marginBottom: 30,
+        backgroundColor: '#FFF7F0', // nền cam nhạt, hợp với chủ đề ẩm thực
+        borderRadius: 24,
+        paddingHorizontal: 20,
+        paddingVertical: 24,
+        shadowColor: '#FF7A00',
+        shadowOffset: {
+            width: 0,
+            height: 6,
+        },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        elevation: 6,
     },
     inputContainer: {
         marginBottom: 20,
@@ -135,17 +147,17 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     forgotPasswordText: {
-        color: '#007AFF',
+        color: '#FF7A00',
         fontSize: 14,
         fontWeight: '600',
     },
     loginButton: {
-        backgroundColor: '#007AFF',
+        backgroundColor: '#FF7A00',
         height: 56,
         borderRadius: 16,
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: '#007AFF',
+        shadowColor: '#FF7A00',
         shadowOffset: {
             width: 0,
             height: 4,

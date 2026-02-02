@@ -27,8 +27,6 @@ export default function HomeScreen() {
     }, [search]);
 
     const handlePressPlace = (place: Place) => {
-        // TODO: Khi có PlaceDetailScreen, thay '/(tabs)' bằng đường dẫn chi tiết, ví dụ '/place/[id]'
-        router.push('/(tabs)');
     };
 
     return (
