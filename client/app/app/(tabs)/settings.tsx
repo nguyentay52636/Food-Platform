@@ -1,7 +1,10 @@
 import React from 'react'
+import { Text, View } from 'react-native'
 
 export default function settings() {
     return (
-        <div>setting</div>
+        <View>
+            <Text>Settings</Text>
+        </View>
     )
 }

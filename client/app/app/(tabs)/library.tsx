@@ -1,7 +1,10 @@
 import React from 'react'
+import { Text, View } from 'react-native'
 
 export default function library() {
     return (
-        <div>library</div>
+        <View>
+            <Text>Library</Text>
+        </View>
     )
 }

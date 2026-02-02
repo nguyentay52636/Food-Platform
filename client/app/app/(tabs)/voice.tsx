@@ -1,7 +1,10 @@
 import React from 'react'
+import { Text, View } from 'react-native'
 
 export default function voice() {
     return (
-        <div>voice</div>
+        <View>
+            <Text>Voice</Text>
+        </View>
     )
 }

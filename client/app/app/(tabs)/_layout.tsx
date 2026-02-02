@@ -1,10 +1,7 @@
 import { Tabs } from 'expo-router'
 import React from 'react'
 
-import { HapticTab } from '@/components/haptic-tab'
 import { IconSymbol } from '@/components/ui/icon-symbol'
-import { Colors } from '@/constants/theme'
-import { useColorScheme } from '@/hooks/use-color-scheme'
 
 type TabConfig = {
   name: string
@@ -42,15 +39,14 @@ const TABS: TabConfig[] = [
 ]
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme()
-  const tintColor = Colors[colorScheme ?? 'light'].tint
+
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: tintColor,
-        tabBarButton: HapticTab,
+        tabBarActiveTintColor: 'none',
+        tabBarInactiveTintColor: 'none',
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '500',
@@ -80,11 +76,11 @@ export default function TabLayout() {
           name={tab.name}
           options={{
             title: tab.title,
-            tabBarIcon: ({ color }) => (
+            tabBarIcon: ({ focused }) => (
               <IconSymbol
                 name={tab.icon}
                 size={26}
-                color={color}
+                color={focused ? '#FF7A00' : '#9CA3AF'}
                 style={{
                   width: 26,
                   height: 26,
