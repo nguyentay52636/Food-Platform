@@ -10,10 +10,10 @@ interface MapsHeaderProps {
 
 export default function MapsHeader({ restaurantCount }: MapsHeaderProps) {
     return (
-        <header className="border-gray-200 z-10 bg-primary/10">
+        <header className="border-gray-200 z-10 bg-primary/10 flex justify-end">
             <div className="container mx-auto px-4 py-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                <div className="flex items-center flex-end justify-end">
+                    {/* <div className="flex items-center gap-3">
                         <Button asChild variant="ghost" size="icon" className=" cursor-pointer hover:bg-primary/10">
                             <Link href="/">
                                 <ArrowLeft className="h-5 w-5" />
@@ -28,7 +28,7 @@ export default function MapsHeader({ restaurantCount }: MapsHeaderProps) {
                                 <p className="text-xs text-muted-foreground">{restaurantCount} nhà hàng gần bạn</p>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                     <Button size="sm" className="bg-primary hover:bg-primary/90 shadow-md cursor-pointer">
                         <NavigationIcon className="h-4 w-4 mr-2" />
                         Vị trí của tôi

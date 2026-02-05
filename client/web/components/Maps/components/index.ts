@@ -1,2 +1,5 @@
 export {default as MapsHeader} from './MapsHeader'
 export {default as MapsView} from './MapsView'
+export {default as RestaurantDetail} from './RestaurantDetail'
+export {default as RestaurantList} from './RestaurantList'
+export {default as SearchFilters} from './SearchFilters'
