@@ -56,6 +56,7 @@ export default function Maps() {
                             onClose={() => setSelectedRestaurant(null)}
                             onFavoriteToggle={() => toggleFavorite(selected.id)}
                         />
+
                     )}
                 </div>
             </div>

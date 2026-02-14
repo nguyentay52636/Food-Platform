@@ -56,12 +56,12 @@ export default function RestaurantCard({
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
-                            {restaurant.isLive && (
+                            {/* {restaurant.isLive && (
                                 <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs animate-pulse shadow-lg">
                                     <Video className="h-3 w-3 mr-1" />
                                     LIVE
                                 </Badge>
-                            )}
+                            )} */}
                             <Button
                                 size="icon"
                                 variant="ghost"
