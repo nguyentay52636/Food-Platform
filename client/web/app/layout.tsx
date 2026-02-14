@@ -6,6 +6,7 @@ import { TranslationProvider } from "@/app/context/TranslationContext";
 import Header from "@/components/shared/Header/Header";
 import Footer from "@/components/shared/Footer/Footer";
 import { HeaderAuth } from "@/components/shared/Header/HeaderAuth/HeaderAuth";
+import ClientLayout from "./ClientLayout";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,11 +28,11 @@ export default function RootLayout({
           defaultTheme="light"
           enableSystem>
           <TranslationProvider>
-            <HeaderAuth />
-            {children}
+            <ClientLayout>
+              {children}
+            </ClientLayout>
           </TranslationProvider>
         </ThemeProvider>
-        <Footer />
 
       </body>
     </html>
