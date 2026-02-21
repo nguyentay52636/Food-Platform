@@ -3,9 +3,6 @@ import "./globals.css";
 
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { TranslationProvider } from "@/app/context/TranslationContext";
-import Header from "@/components/shared/Header/Header";
-import Footer from "@/components/shared/Footer/Footer";
-import { HeaderAuth } from "@/components/shared/Header/HeaderAuth/HeaderAuth";
 import ClientLayout from "./ClientLayout";
 
 const inter = Inter({

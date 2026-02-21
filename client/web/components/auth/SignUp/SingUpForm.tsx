@@ -8,6 +8,7 @@ import {
     FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import Link from "next/link"
 
 export function SignupForm({
     className,
@@ -22,8 +23,8 @@ export function SignupForm({
                         Điền thông tin dưới đây để tạo tài khoản của bạn
                     </p>
                 </div>
-                <Field className="mb-6">
-                    <FieldLabel htmlFor="name" className="text-lg mb-2">Họ và tên</FieldLabel>
+                <Field className="mb-2">
+                    <FieldLabel htmlFor="name" className="text-lg">Họ và tên</FieldLabel>
                     <Input
                         id="name"
                         type="text"
@@ -32,8 +33,8 @@ export function SignupForm({
                         required
                     />
                 </Field>
-                <Field className="mb-6">
-                    <FieldLabel htmlFor="email" className="text-lg mb-2">Email</FieldLabel>
+                <Field className="mb-2">
+                    <FieldLabel htmlFor="email" className="text-lg">Email</FieldLabel>
                     <Input
                         id="email"
                         type="email"
@@ -46,7 +47,7 @@ export function SignupForm({
                     </FieldDescription>
                 </Field>
                 <Field className="mb-6">
-                    <FieldLabel htmlFor="password" className="text-lg mb-2">Mật khẩu</FieldLabel>
+                    <FieldLabel htmlFor="password" className="text-lg">Mật khẩu</FieldLabel>
                     <Input
                         id="password"
                         type="password"
@@ -58,7 +59,7 @@ export function SignupForm({
                     </FieldDescription>
                 </Field>
                 <Field className="mb-6">
-                    <FieldLabel htmlFor="confirm-password" className="text-lg mb-2">Xác nhận mật khẩu</FieldLabel>
+                    <FieldLabel htmlFor="confirm-password" className="text-lg">Xác nhận mật khẩu</FieldLabel>
                     <Input
                         id="confirm-password"
                         type="password"
@@ -70,7 +71,7 @@ export function SignupForm({
                     </FieldDescription>
                 </Field>
                 <Field className="mb-6">
-                    <Button type="submit" className="w-full h-12 text-lg font-semibold">
+                    <Button type="submit" className="w-full h-12 text-lg font-semibold cursor-pointer">
                         Tạo tài khoản
                     </Button>
                 </Field>
@@ -87,9 +88,9 @@ export function SignupForm({
                     </Button>
                     <FieldDescription className="text-center text-base mt-4">
                         Đã có tài khoản?{" "}
-                        <a href="#" className="underline underline-offset-4">
+                        <Link href="/auth/login" className="underline underline-offset-4">
                             Đăng nhập
-                        </a>
+                        </Link>
                     </FieldDescription>
                 </Field>
             </FieldGroup>

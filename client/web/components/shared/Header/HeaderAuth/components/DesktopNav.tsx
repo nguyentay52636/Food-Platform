@@ -10,12 +10,9 @@ import { useTranslation } from "@/app/context/TranslationContext"
 
 const translationMap: Record<string, string> = {
     "Trang chủ": "home",
-    "Về chúng tôi": "about",
     "Khám phá": "explore",
-    "Nhận diện món": "foodRecognition",
     "Bản đồ": "map",
     "Livestream": "livestream",
-    "AR Preview": "arPreview",
     "Sự kiện": "events",
 }
 

@@ -13,10 +13,10 @@ export default function LoginPage() {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/70" />
 
                 <div className="relative z-10 text-center px-10">
-                    <h2 className="text-4xl font-bold text-white mb-4 leadiaaaaaaaΩΩΩΩzzzng-snug drop-shadow-lg">
+                    <h2 className="text-6xl! font-bold text-white mb-4  drop-shadow-lg">
                         Khám Phá Hương Vị <span className="text-[#FFB347]">Sài Gòn</span>
                     </h2>
-                    <p className="text-gray-200 text-lg max-w-md mx-auto leading-relaxed">
+                    <p className="text-gray-200  text-xl! max-w-md mx-auto leading-relaxed">
                         Trải nghiệm tinh hoa ẩm thực từ những góc phố bình dị đến hương vị đẳng cấp —
                         nơi văn hóa và con người hòa quyện trong từng món ăn.
                     </p>

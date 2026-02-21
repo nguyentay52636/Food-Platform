@@ -8,6 +8,7 @@ import {
     FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import Link from "next/link"
 
 export default function LoginForm({
     className,
@@ -44,12 +45,12 @@ export default function LoginForm({
                         required
                     />
                 </Field>
-                <a
-                    href="#"
+                <Link
+                    href="/auth/forgot-password"
                     className="ml-auto text-sm underline-offset-4 hover:underline"
                 >
                     Quên mật khẩu?
-                </a>
+                </Link>
                 <Field className="mb-6">
                     <Button type="submit" className="w-full h-12 text-lg font-semibold cursor-pointer">
                         Đăng nhập
@@ -68,9 +69,9 @@ export default function LoginForm({
                     </Button>
                     <FieldDescription className="text-center text-base mt-4">
                         Chưa có tài khoản?{" "}
-                        <a href="#" className="underline underline-offset-4">
+                        <Link href="/auth/signup" className="underline underline-offset-4">
                             Đăng ký ngay
-                        </a>
+                        </Link>
                     </FieldDescription>
                 </Field>
             </FieldGroup>
