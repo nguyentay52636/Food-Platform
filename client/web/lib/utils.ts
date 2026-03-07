@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-import type { Tour, POI, TourPOI } from "@/app/apis/type"
+import type { Tour, POI, TourPOI } from "@/lib/types"
 
 export const SUB_CATEGORY_LABELS: Record<string, string> = {
   wc: "Restroom",

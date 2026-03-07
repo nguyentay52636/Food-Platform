@@ -19,8 +19,8 @@ import {
   ChevronRight,
 } from "lucide-react"
 import { toast } from "sonner"
-import type { Tour, POI, CreateTourPayload } from "@/app/apis/type"
-import { fetchTours, fetchPOIs, createTour, updateTour, deleteTour } from "@/app/apis/test"
+import type { Tour, POI, CreateTourPayload } from "@/lib/types"
+import { fetchTours, fetchPOIs, createTour, updateTour, deleteTour } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -72,7 +72,7 @@ export default function Tours() {
       setTours(toursData)
       setAllPois(poisData)
     } catch {
-      toast.error("Failed to load data")
+      toast.error("Tải dữ liệu thất bại")
     } finally {
       setIsLoading(false)
     }
@@ -123,23 +123,23 @@ export default function Tours() {
         pois: tour.pois,
         status: "draft",
       })
-      toast.success(`Duplicated "${tour.name}"`)
+      toast.success(`Đã nhân bản "${tour.name}"`)
       await loadData()
     } catch {
-      toast.error("Failed to duplicate tour")
+      toast.error("Nhân bản tour thất bại")
     }
   }
 
   async function handleFormSubmit(data: CreateTourPayload) {
     if (editingTour) {
       const updated = await updateTour(editingTour.id, data)
-      toast.success(`"${data.name}" updated successfully`)
+      toast.success(`"${data.name}" đã được cập nhật`)
       if (viewingTour?.id === editingTour.id) {
         setViewingTour(updated)
       }
     } else {
       await createTour(data)
-      toast.success(`"${data.name}" created successfully`)
+      toast.success(`"${data.name}" đã được tạo`)
     }
     await loadData()
   }
@@ -148,7 +148,7 @@ export default function Tours() {
     if (!deleteTarget) return
     try {
       await deleteTour(deleteTarget.id)
-      toast.success(`"${deleteTarget.name}" deleted`)
+      toast.success(`"${deleteTarget.name}" đã được xóa`)
       if (viewingTour?.id === deleteTarget.id) setViewingTour(null)
       await loadData()
     } catch {
@@ -187,49 +187,40 @@ export default function Tours() {
         <div className="shrink-0 border-b border-border px-5 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-lg font-semibold text-foreground">Tour Management</h1>
+              <h1 className="text-lg font-semibold text-foreground">Quản lý tour</h1>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                Create and manage tour itineraries
+                Tạo và quản lý lịch trình tour
               </p>
             </div>
             <Button size="sm" onClick={handleCreate} className="gap-1.5">
-              <Plus className="h-4 w-4" /> New Tour
+              <Plus className="h-4 w-4" /> Tour mới
             </Button>
           </div>
 
           {/* Stats bar */}
           {!isLoading && (
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <button
+            <div className="mt-4 flex flex-wrap items-center gap-2 cursor-pointer">
+              <Button
                 onClick={() => setFilterStatus("all")}
-                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${filterStatus === "all"
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}
+
               >
                 <Route className="h-3.5 w-3.5" />
-                All ({stats.total})
-              </button>
-              <button
+                Tất cả ({stats.total})
+              </Button>
+              <Button
                 onClick={() => setFilterStatus("published")}
-                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${filterStatus === "published"
-                  ? "bg-success/10 text-success"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}
+
               >
                 <CheckCircle2 className="h-3.5 w-3.5" />
-                Published ({stats.published})
-              </button>
-              <button
+                Đã xuất bản ({stats.published})
+              </Button>
+              <Button
                 onClick={() => setFilterStatus("draft")}
-                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${filterStatus === "draft"
-                  ? "bg-warning/10 text-warning"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}
+
               >
                 <FileText className="h-3.5 w-3.5" />
-                Draft ({stats.draft})
-              </button>
+                Bản nháp ({stats.draft})
+              </Button>
             </div>
           )}
         </div>
@@ -240,33 +231,27 @@ export default function Tours() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search by name or description..."
+                placeholder="Tìm theo tên hoặc mô tả..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
               />
             </div>
             <div className="flex items-center rounded-md border border-border">
-              <button
+              <Button
                 onClick={() => setViewMode("grid")}
-                className={`flex items-center justify-center rounded-l-md p-2 transition-colors ${viewMode === "grid"
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-                  }`}
+                className="mx-3 cursor-pointer"
                 aria-label="Grid view"
               >
                 <LayoutGrid className="h-4 w-4" />
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => setViewMode("list")}
-                className={`flex items-center justify-center rounded-r-md p-2 transition-colors ${viewMode === "list"
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-                  }`}
+                className="cursor-pointer"
                 aria-label="List view"
               >
                 <LayoutList className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -277,7 +262,7 @@ export default function Tours() {
             <div className="flex items-center justify-center py-16">
               <div className="flex flex-col items-center gap-3">
                 <Spinner className="h-6 w-6 text-primary" />
-                <p className="text-xs text-muted-foreground">Loading tours...</p>
+                <p className="text-xs text-muted-foreground">Đang tải danh sách tour...</p>
               </div>
             </div>
           ) : filteredTours.length === 0 ? (
@@ -354,20 +339,19 @@ export default function Tours() {
       <AlertDialog open={!!deleteTarget} onOpenChange={(o: boolean) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Tour</AlertDialogTitle>
+            <AlertDialogTitle>Xóa tour</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{deleteTarget?.name}&quot;? This action cannot
-              be undone. This tour has {deleteTarget?.pois.length ?? 0} POI stops that will be
-              unlinked.
+              Bạn có chắc chắn muốn xóa &quot;{deleteTarget?.name}&quot;? Hành động này không thể
+              hoàn tác. Tour này có {deleteTarget?.pois.length ?? 0} điểm dừng POI sẽ bị gỡ liên kết.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              Xóa
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -436,10 +420,10 @@ function TourGridCard({
                   variant={tour.status === "published" ? "default" : "secondary"}
                   className="text-[10px] px-1.5 py-0"
                 >
-                  {tour.status === "published" ? "Published" : "Draft"}
+                  {tour.status === "published" ? "Đã xuất bản" : "Bản nháp"}
                 </Badge>
                 <span className="text-[10px] text-muted-foreground">
-                  Updated {getRelativeTime(tour.updatedAt)}
+                  Cập nhật {getRelativeTime(tour.updatedAt)}
                 </span>
               </div>
             </div>
@@ -457,17 +441,17 @@ function TourGridCard({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
               <DropdownMenuItem onClick={onClick}>
-                <Eye className="mr-2 h-3.5 w-3.5" /> View Details
+                <Eye className="mr-2 h-3.5 w-3.5" /> Xem chi tiết
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onEdit}>
-                <Pencil className="mr-2 h-3.5 w-3.5" /> Edit Tour
+                <Pencil className="mr-2 h-3.5 w-3.5" /> Chỉnh sửa tour
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onDuplicate}>
-                <Copy className="mr-2 h-3.5 w-3.5" /> Duplicate
+                <Copy className="mr-2 h-3.5 w-3.5" /> Nhân bản
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onDelete} className="text-destructive focus:text-destructive">
-                <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
+                <Trash2 className="mr-2 h-3.5 w-3.5" /> Xóa
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -508,7 +492,7 @@ function TourGridCard({
             <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
               <MapPin className="h-3 w-3" />
               <span>
-                {majorPois.length} major, {minorPois.length} minor
+                {majorPois.length} điểm chính, {minorPois.length} điểm phụ
               </span>
             </div>
             <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
@@ -525,7 +509,7 @@ function TourGridCard({
               onClick()
             }}
           >
-            Details <ChevronRight className="h-3 w-3" />
+            Chi tiết <ChevronRight className="h-3 w-3" />
           </Button>
         </div>
       </CardContent>
@@ -587,7 +571,7 @@ function TourListRow({
         <div className="mt-0.5 flex items-center gap-3 text-[11px] text-muted-foreground">
           <span className="flex items-center gap-1">
             <MapPin className="h-3 w-3" />
-            {tour.pois.length} stop{tour.pois.length !== 1 ? "s" : ""}
+            {tour.pois.length} điểm dừng
           </span>
           <span className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
@@ -606,7 +590,7 @@ function TourListRow({
             e.stopPropagation()
             onEdit()
           }}
-          aria-label={`Edit ${tour.name}`}
+          aria-label={`Chỉnh sửa ${tour.name}`}
         >
           <Pencil className="h-3.5 w-3.5" />
         </Button>

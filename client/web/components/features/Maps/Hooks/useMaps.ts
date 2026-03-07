@@ -3,7 +3,7 @@
 import "leaflet/dist/leaflet.css"
 
 import { useEffect, useMemo, useState } from "react"
-import { IRestaurant } from "@/app/apis/type"
+import { IRestaurant } from "@/lib/types"
 
 type LeafletComponents = {
   MapContainer: any

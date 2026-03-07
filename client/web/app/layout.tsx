@@ -1,7 +1,7 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { TranslationProvider } from "@/app/context/TranslationContext";
 import ClientLayout from "./ClientLayout";
 

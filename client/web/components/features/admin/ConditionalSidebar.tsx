@@ -1,7 +1,7 @@
 "use client"
 
 import { usePathname } from "next/navigation"
-import { SiderBarAdmin } from "./components/SiderBar/SiderBarAdmin"
+import { SidebarAdmin } from "./components/Sidebar/SidebarAdmin"
 
 export default function ConditionalSidebar() {
     const pathname = usePathname()
@@ -10,6 +10,6 @@ export default function ConditionalSidebar() {
         return null
     }
 
-    return <SiderBarAdmin />
+    return <SidebarAdmin />
 }
 

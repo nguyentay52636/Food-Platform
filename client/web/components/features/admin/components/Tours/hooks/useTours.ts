@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect, useMemo } from "react"
 import { toast } from "sonner"
-import type { Tour, POI, CreateTourPayload } from "@/app/apis/type"        
-import { fetchTours, fetchPOIs, createTour, updateTour, deleteTour } from "@/app/apis/test"
+import type { Tour, POI, CreateTourPayload } from "@/lib/types"
+import { fetchTours, fetchPOIs, createTour, updateTour, deleteTour } from "@/lib/api"
 
 export type ViewMode = "grid" | "list"
 export type FilterStatus = "all" | "draft" | "published"

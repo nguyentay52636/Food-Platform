@@ -1,6 +1,6 @@
 "use client"
 
-import { SiderBarAdmin } from "@/components/features/admin/components/SiderBar/SiderBarAdmin"
+import { SidebarAdmin } from "@/components/features/admin/components/Sidebar/SidebarAdmin"
 
 export default function AdminLayout({
   children,
@@ -9,7 +9,7 @@ export default function AdminLayout({
 }) {
   return (
     <div className="flex h-screen w-full overflow-hidden">
-      <SiderBarAdmin />
+      <SidebarAdmin />
       <main className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
         {children}
       </main>

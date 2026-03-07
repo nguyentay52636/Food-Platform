@@ -1,11 +1,15 @@
- export interface IRestaurant {
-    id: number
-    name: string
-    lat: number
-    lng: number
-    isLive: boolean
-}
+/**
+ * Shared domain types.
+ * Single source of truth for API and app.
+ */
 
+export interface IRestaurant {
+  id: number
+  name: string
+  lat: number
+  lng: number
+  isLive: boolean
+}
 
 // POI Types
 export type POICategory = "major" | "minor"

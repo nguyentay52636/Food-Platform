@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { GripVertical, Plus, X, MapPin, Route, AlertCircle } from "lucide-react"
-import type { Tour, POI, TourPOI, CreateTourPayload } from "@/app/apis/type"
+import type { Tour, POI, TourPOI, CreateTourPayload } from "@/lib/types"
 import { SUB_CATEGORY_LABELS } from "@/lib/utils"
 import {
     Dialog,

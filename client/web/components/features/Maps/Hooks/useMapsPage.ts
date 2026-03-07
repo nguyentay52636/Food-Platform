@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useCallback } from "react"
 import { categories as baseCategories, restaurants as baseRestaurants } from "../data"
-import { IRestaurant } from "@/app/apis/type"
+import { IRestaurant } from "@/lib/types"
 
 export function useMapsPage() {
   const [selectedRestaurant, setSelectedRestaurant] = useState<number | null>(

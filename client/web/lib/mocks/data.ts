@@ -1,4 +1,4 @@
-import type { POI, Tour, AdminUser } from "@/app/apis/type"
+import type { POI, Tour, AdminUser } from "@/lib/types"
 
 export const MOCK_ADMIN: AdminUser = {
   id: "admin-1",

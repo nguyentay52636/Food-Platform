@@ -1,7 +1,7 @@
 "use client"
 
 import { ChefHat } from "lucide-react"
-import { IRestaurant } from "@/app/apis/type"
+import { IRestaurant } from "@/lib/types"
 import { useMaps } from "../Hooks/useMaps"
 
 interface MapsViewProps {

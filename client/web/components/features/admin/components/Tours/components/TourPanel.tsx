@@ -13,7 +13,7 @@ import {
     Navigation,
     Tag,
 } from "lucide-react"
-import type { Tour, POI } from "@/app/apis/type"
+import type { Tour, POI } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"

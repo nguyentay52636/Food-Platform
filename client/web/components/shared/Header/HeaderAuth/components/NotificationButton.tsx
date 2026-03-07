@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Bell } from "lucide-react"
-import { ModeToggle } from "@/components/ModeToggle"
+import { ModeToggle } from "@/components/shared/ModeToggle"
 import { useTranslation } from "@/app/context/TranslationContext"
 
 export function NotificationButton() {
