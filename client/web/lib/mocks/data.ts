@@ -3,15 +3,15 @@ import type { POI, Tour, AdminUser } from "@/lib/types"
 export const MOCK_ADMIN: AdminUser = {
   id: "admin-1",
   email: "admin@tourmanager.com",
-  name: "Admin User",
+  name: "Quản trị viên",
   role: "admin",
 }
 
 export const MOCK_POIS: POI[] = [
   {
     id: "poi-1",
-    name: "Dragon Bridge",
-    description: "Iconic fire-breathing dragon bridge spanning the Han River, a symbol of Da Nang's modern transformation.",
+    name: "Cầu Rồng",
+    description: "Cầu Rồng bắc qua sông Hàn, biểu tượng của Đà Nẵng. Cuối tuần có biểu diễn phun lửa và phun nước.",
     category: "major",
     latitude: 16.0611,
     longitude: 108.2278,
@@ -20,8 +20,8 @@ export const MOCK_POIS: POI[] = [
   },
   {
     id: "poi-2",
-    name: "Marble Mountains",
-    description: "A cluster of five marble and limestone hills featuring caves, tunnels, and Buddhist sanctuaries.",
+    name: "Ngũ Hành Sơn",
+    description: "Cụm năm ngọn núi đá vôi với hang động, chùa chiền và cảnh quan thiên nhiên. Một trong những thắng cảnh nổi tiếng Đà Nẵng.",
     category: "major",
     latitude: 16.0034,
     longitude: 108.2634,
@@ -30,8 +30,8 @@ export const MOCK_POIS: POI[] = [
   },
   {
     id: "poi-3",
-    name: "My Khe Beach",
-    description: "World-famous beach known for its white sand and turquoise waters, ideal for surfing and swimming.",
+    name: "Bãi biển Mỹ Khê",
+    description: "Bãi biển nổi tiếng với cát trắng, nước trong xanh, lý tưởng cho tắm biển và lướt sóng.",
     category: "major",
     latitude: 16.0544,
     longitude: 108.2478,
@@ -40,8 +40,8 @@ export const MOCK_POIS: POI[] = [
   },
   {
     id: "poi-4",
-    name: "Ticket Booth A",
-    description: "Main ticket counter at the entrance of the Marble Mountains site.",
+    name: "Quầy vé Ngũ Hành Sơn",
+    description: "Quầy bán vé chính tại cổng vào khu du lịch Ngũ Hành Sơn.",
     category: "minor",
     subCategory: "ticket",
     latitude: 16.0038,
@@ -51,8 +51,8 @@ export const MOCK_POIS: POI[] = [
   },
   {
     id: "poi-5",
-    name: "Beach Parking Lot",
-    description: "Public parking lot adjacent to My Khe Beach, accommodates up to 200 vehicles.",
+    name: "Bãi đỗ xe Mỹ Khê",
+    description: "Bãi giữ xe công cộng gần bãi biển Mỹ Khê, sức chứa khoảng 200 xe.",
     category: "minor",
     subCategory: "parking",
     latitude: 16.055,
@@ -62,8 +62,8 @@ export const MOCK_POIS: POI[] = [
   },
   {
     id: "poi-6",
-    name: "Restroom - Dragon Bridge",
-    description: "Public restroom facilities near the west end of Dragon Bridge.",
+    name: "Nhà vệ sinh công cộng - Cầu Rồng",
+    description: "Nhà vệ sinh công cộng gần đầu cầu phía tây Cầu Rồng.",
     category: "minor",
     subCategory: "wc",
     latitude: 16.0615,
@@ -73,8 +73,8 @@ export const MOCK_POIS: POI[] = [
   },
   {
     id: "poi-7",
-    name: "Han River Dock",
-    description: "Boat dock offering river cruises along the Han River with sunset viewing.",
+    name: "Bến du thuyền sông Hàn",
+    description: "Bến thuyền du ngoạn sông Hàn, có tour ngắm hoàng hôn trên sông.",
     category: "minor",
     subCategory: "dock",
     latitude: 16.0605,
@@ -87,8 +87,8 @@ export const MOCK_POIS: POI[] = [
 export const MOCK_TOURS: Tour[] = [
   {
     id: "tour-1",
-    name: "Da Nang Highlights",
-    description: "A full-day tour covering the most iconic landmarks and natural wonders of Da Nang. Starting from the Dragon Bridge, continuing to the Marble Mountains, and ending at My Khe Beach for a relaxing sunset.",
+    name: "Điểm đến nổi bật Đà Nẵng",
+    description: "Tour một ngày khám phá các địa danh và cảnh quan thiên nhiên tiêu biểu của Đà Nẵng: Cầu Rồng, Ngũ Hành Sơn và kết thúc tại bãi biển Mỹ Khê ngắm hoàng hôn.",
     pois: [
       { poiId: "poi-1", order: 1 },
       { poiId: "poi-6", order: 2 },
@@ -103,8 +103,8 @@ export const MOCK_TOURS: Tour[] = [
   },
   {
     id: "tour-2",
-    name: "River & Bridge Walk",
-    description: "A scenic evening tour focusing on the Han River area, Dragon Bridge, and nearby dock. Perfect for couples and photography enthusiasts looking for stunning sunset views.",
+    name: "Dạo bộ sông Hàn và Cầu Rồng",
+    description: "Tour chiều tối dọc khu vực sông Hàn, Cầu Rồng và bến du thuyền. Phù hợp cho cặp đôi và nhiếp ảnh gia săn hoàng hôn.",
     pois: [
       { poiId: "poi-1", order: 1 },
       { poiId: "poi-6", order: 2 },
@@ -116,8 +116,8 @@ export const MOCK_TOURS: Tour[] = [
   },
   {
     id: "tour-3",
-    name: "Marble Mountains Explorer",
-    description: "A half-day focused exploration of the Marble Mountains, including all caves, pagodas, and viewpoints. Includes ticket booth stop and parking guidance.",
+    name: "Khám phá Ngũ Hành Sơn",
+    description: "Tour nửa ngày tập trung khám phá Ngũ Hành Sơn: hang động, chùa và các điểm ngắm cảnh. Có dừng quầy vé và hướng dẫn bãi đỗ xe.",
     pois: [
       { poiId: "poi-5", order: 1 },
       { poiId: "poi-4", order: 2 },
@@ -129,8 +129,8 @@ export const MOCK_TOURS: Tour[] = [
   },
   {
     id: "tour-4",
-    name: "Beach & Leisure Day",
-    description: "A relaxed full-day itinerary focused on beach activities, water sports, and seaside dining at My Khe Beach area.",
+    name: "Một ngày biển Mỹ Khê",
+    description: "Lịch trình thoải mái cả ngày với hoạt động tắm biển, thể thao dưới nước và ẩm thực ven biển tại khu vực Mỹ Khê.",
     pois: [
       { poiId: "poi-5", order: 1 },
       { poiId: "poi-3", order: 2 },
