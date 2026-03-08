@@ -1,16 +1,3 @@
-/**
- * Shared domain types.
- * Single source of truth for API and app.
- */
-
-export interface IRestaurant {
-  id: number
-  name: string
-  lat: number
-  lng: number
-  isLive: boolean
-}
-
 // POI Types
 export type POICategory = "major" | "minor"
 export type MinorSubCategory = "wc" | "ticket" | "parking" | "dock"
@@ -24,6 +11,9 @@ export interface POI {
   latitude: number
   longitude: number
   imageUrl?: string
+  address?: string
+  rating?: number
+  reviewCount?: number
   createdAt: string
   updatedAt: string
 }
@@ -36,6 +26,7 @@ export interface CreatePOIPayload {
   latitude: number
   longitude: number
   imageUrl?: string
+  address?: string
 }
 
 export type UpdatePOIPayload = Partial<CreatePOIPayload>

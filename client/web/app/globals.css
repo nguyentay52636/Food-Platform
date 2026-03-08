@@ -1,5 +1,52 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "leaflet/dist/leaflet.css";
+
+/* Custom Leaflet Map Styles */
+.leaflet-container {
+  font-family: inherit;
+  z-index: 0;
+}
+
+.leaflet-popup-content-wrapper {
+  padding: 0;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.leaflet-popup-content {
+  margin: 0;
+}
+
+.leaflet-popup-tip {
+  background: white;
+  border: none;
+}
+
+.custom-marker {
+  background: transparent;
+  border: none;
+}
+
+.leaflet-control-zoom {
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+}
+
+.leaflet-control-zoom a {
+  background-color: white;
+  color: #333;
+  border: none;
+}
+
+.leaflet-control-zoom a:hover {
+  background-color: #f4f4f4;
+}
+
+.leaflet-bar a.leaflet-disabled {
+  background-color: #f9f9f9;
+  color: #ccc;
+}
 
 @custom-variant dark (&:is(.dark *));
 
@@ -41,9 +88,6 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
 }
 
 :root {
@@ -88,7 +132,7 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
+  --primary: oklch(0.55 0.15 160);
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
@@ -122,5 +166,19 @@
 
   body {
     @apply bg-background text-foreground;
+    transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+  }
+}
+
+/* Smooth theme transition for common elements */
+*::selection {
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
   }
 }

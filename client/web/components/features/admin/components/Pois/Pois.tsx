@@ -17,6 +17,7 @@ import { PoisMap } from "./components/PoisMap"
 import { POIMapInfoOverlay } from "./components/PoisMapsInfoOverlay"
 import { POIFormDialog } from "./components/Dialog/PoisFormDialog"
 import { PoisDeleteDialog } from "./components/Dialog/PoisDeleteDialog"
+import { PoisCardStrip } from "./components/PoisCardStrip"
 
 
 export default function Pois() {
@@ -159,28 +160,40 @@ export default function Pois() {
                 </div>
             </div>
 
-            {/* Right Panel: Map */}
-            <div className="relative min-h-[300px] flex-1">
-                <PoisMap
-                    pois={pois}
-                    selectedPoi={selectedPoi}
-                    onMapClick={handleMapClick}
-                    onMarkerClick={handleMarkerClick}
-                    pickerMode={pickerState.isActive}
-                    pickerLat={pickerState.lat}
-                    pickerLng={pickerState.lng}
-                    className="h-full w-full"
-                />
-
-                {/* Selected POI Info Overlay */}
-                {selectedPoi && !pickerState.isActive && (
-                    <POIMapInfoOverlay
-                        poi={selectedPoi}
-                        onEdit={() => handleEditClick(selectedPoi)}
-                        onDelete={() => openDeleteDialog(selectedPoi)}
-                        onClose={handleOverlayClose}
+            {/* Right Panel: Map + Nearby Locations */}
+            <div className="flex min-h-0 flex-1 flex-col">
+                {/* Map (upper) */}
+                <div className="relative min-h-[280px] flex-1">
+                    <PoisMap
+                        pois={pois}
+                        selectedPoi={selectedPoi}
+                        onMapClick={handleMapClick}
+                        onMarkerClick={handleMarkerClick}
+                        pickerMode={pickerState.isActive}
+                        pickerLat={pickerState.lat}
+                        pickerLng={pickerState.lng}
+                        className="h-full w-full"
                     />
-                )}
+
+                    {/* Selected POI Info Overlay */}
+                    {selectedPoi && !pickerState.isActive && (
+                        <POIMapInfoOverlay
+                            poi={selectedPoi}
+                            onEdit={() => handleEditClick(selectedPoi)}
+                            onDelete={() => openDeleteDialog(selectedPoi)}
+                            onClose={handleOverlayClose}
+                        />
+                    )}
+                </div>
+
+                {/* Nearby Locations strip (lower) */}
+                <div className="shrink-0 border-t border-border">
+                    <PoisCardStrip
+                        pois={pois}
+                        selectedPoi={selectedPoi}
+                        onSelect={selectPoi}
+                    />
+                </div>
             </div>
 
             {/* Dialogs */}

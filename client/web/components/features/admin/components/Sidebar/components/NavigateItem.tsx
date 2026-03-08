@@ -20,7 +20,7 @@ export const NavigateItem = ({
       onClick={() => isMobile && setIsMobileOpen(false)}
       className={`
         flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative
-        ${item.current ? "bg-sidebar-primary text-sidebar-primary-foreground border-l-4 border-sidebar-primary" : "text-sidebar-foreground hover:text-black hover:bg-gray-300"}
+        ${item.current ? "bg-primary text-primary-foreground border-l-4 border-primary" : "text-sidebar-foreground hover:text-black hover:bg-gray-300"}
         ${isCollapsed && !isMobile ? "justify-center px-2" : ""}
       `}
     >
@@ -37,7 +37,7 @@ export const NavigateItem = ({
       )}
       {item.current && (!isCollapsed || isMobile) && (
         <div className="absolute right-2">
-          <ChevronRight className="h-4 w-4 text-sidebar-primary" />
+          <ChevronRight className="h-4 w-4 text-primary" />
         </div>
       )}
     </Link>
