@@ -160,7 +160,6 @@ export default function Pois() {
                 </div>
             </div>
 
-            {/* Right Panel: Map + Nearby Locations */}
             <div className="flex min-h-0 flex-1 flex-col">
                 {/* Map (upper) */}
                 <div className="relative min-h-[280px] flex-1">

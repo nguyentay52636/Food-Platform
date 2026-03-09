@@ -1,6 +1,7 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { MD3DarkTheme, MD3LightTheme, PaperProvider } from 'react-native-paper'
 import 'react-native-reanimated'
 
@@ -15,26 +16,28 @@ function AppLayout() {
   const isDark = theme === 'dark'
 
   return (
-    <PaperProvider theme={isDark ? MD3DarkTheme : MD3LightTheme}>
-      <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="(auth)/login"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="(auth)/signup"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="chat/[id]"
-            options={{ headerShown: true }}
-          />
-        </Stack>
-        <StatusBar style={isDark ? 'light' : 'dark'} />
-      </ThemeProvider>
-    </PaperProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <PaperProvider theme={isDark ? MD3DarkTheme : MD3LightTheme}>
+        <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="(auth)/login"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="(auth)/signup"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="chat/[id]"
+              options={{ headerShown: true }}
+            />
+          </Stack>
+          <StatusBar style={isDark ? 'light' : 'dark'} />
+        </ThemeProvider>
+      </PaperProvider>
+    </GestureHandlerRootView>
   )
 }
 

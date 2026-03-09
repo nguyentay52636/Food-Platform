@@ -16,6 +16,11 @@ const TABS: TabConfig[] = [
     icon: 'house.fill',
   },
   {
+    name: 'pois',
+    title: 'Locations',
+    icon: 'map.fill',
+  },
+  {
     name: 'library',
     title: 'Thư viện',
     icon: 'books.vertical.fill',
