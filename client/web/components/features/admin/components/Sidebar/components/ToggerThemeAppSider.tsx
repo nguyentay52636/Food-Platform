@@ -1,18 +1,21 @@
-import { Moon, Sun } from "lucide-react"
-import { TooltipContent, TooltipTrigger, Tooltip, TooltipProvider } from "@/components/ui/tooltip"
-import { Button } from "@/components/ui/button"
-import { useTheme } from "next-themes"
+import { Moon } from 'lucide-react'
+import { TooltipContent } from '@/components/ui/tooltip'
+import { TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip } from '@/components/ui/tooltip'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
+import React from 'react'
+import { Sun } from 'lucide-react'
+import { useTheme } from 'next-themes'
 
-export default function ToggerThemeAppSider({
-  isCollapsed,
-  isMobile,
-}: {
-  isCollapsed: boolean
-  isMobile: boolean
-}) {
+export default function ToggerThemeAppSider({ isCollapsed, isMobile }: { isCollapsed: any, isMobile: any }) {
   const { theme, setTheme } = useTheme()
+
   const isDarkMode = theme === "dark"
-  const toggleTheme = () => setTheme(isDarkMode ? "light" : "dark")
+
+  const toggleTheme = () => {
+    setTheme(isDarkMode ? "light" : "dark")
+  }
 
   return (
     <div className="flex items-center">
@@ -20,7 +23,12 @@ export default function ToggerThemeAppSider({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={toggleTheme} className="w-full h-10 theme-toggle-animation">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="w-full h-10 theme-toggle-animation"
+              >
                 {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </Button>
             </TooltipTrigger>
@@ -41,4 +49,4 @@ export default function ToggerThemeAppSider({
       )}
     </div>
   )
-}
+}   

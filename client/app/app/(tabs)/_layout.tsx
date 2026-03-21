@@ -17,7 +17,7 @@ const TABS: TabConfig[] = [
   },
   {
     name: 'pois',
-    title: 'Locations',
+    title: 'Địa điểm',
     icon: 'map.fill',
   },
   {

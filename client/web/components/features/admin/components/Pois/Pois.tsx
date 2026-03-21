@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { POI, CreatePOIPayload } from "@/lib/types"
 import {
     usePOIs,
@@ -19,6 +19,7 @@ import { POIFormDialog } from "./components/Dialog/PoisFormDialog"
 import { PoisDeleteDialog } from "./components/Dialog/PoisDeleteDialog"
 import { PoisCardStrip } from "./components/PoisCardStrip"
 
+type NarrationLanguage = "vi-VN" | "en-US" | "zh-CN"
 
 export default function Pois() {
     const {
@@ -51,6 +52,22 @@ export default function Pois() {
 
     // CRUD actions
     const { handleCreate, handleUpdate, handleDelete } = usePOIActions(loadPOIs, clearSelection)
+    const [narrationLanguage, setNarrationLanguage] = useState<NarrationLanguage>("vi-VN")
+    const [isSpeaking, setIsSpeaking] = useState(false)
+    const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
+
+    const narrationText = useMemo(() => {
+        if (!selectedPoi) return ""
+        const addressText = selectedPoi.address ? `Địa chỉ: ${selectedPoi.address}.` : ""
+        switch (narrationLanguage) {
+            case "en-US":
+                return `${selectedPoi.name}. ${selectedPoi.description}. Category: ${selectedPoi.category}. ${selectedPoi.address ? `Address: ${selectedPoi.address}.` : ""}`
+            case "zh-CN":
+                return `${selectedPoi.name}。${selectedPoi.description}。分类：${selectedPoi.category}。${selectedPoi.address ? `地址：${selectedPoi.address}。` : ""}`
+            default:
+                return `${selectedPoi.name}. ${selectedPoi.description}. Danh mục: ${selectedPoi.category}. ${addressText}`
+        }
+    }, [selectedPoi, narrationLanguage])
 
     // ─── Event Handlers ─────────────────────────────────────────────────────────
 
@@ -126,6 +143,49 @@ export default function Pois() {
         clearSelection()
     }, [clearSelection])
 
+    const stopNarration = useCallback(() => {
+        if (typeof window === "undefined" || !window.speechSynthesis) return
+        window.speechSynthesis.cancel()
+        currentUtteranceRef.current = null
+        setIsSpeaking(false)
+    }, [])
+
+    const speakNarration = useCallback(() => {
+        if (!selectedPoi || !narrationText || typeof window === "undefined" || !window.speechSynthesis) {
+            return
+        }
+
+        window.speechSynthesis.cancel()
+        const utterance = new SpeechSynthesisUtterance(narrationText)
+        utterance.lang = narrationLanguage
+        utterance.rate = 1
+        utterance.pitch = 1
+        utterance.onstart = () => setIsSpeaking(true)
+        utterance.onend = () => {
+            setIsSpeaking(false)
+            currentUtteranceRef.current = null
+        }
+        utterance.onerror = () => {
+            setIsSpeaking(false)
+            currentUtteranceRef.current = null
+        }
+
+        currentUtteranceRef.current = utterance
+        window.speechSynthesis.speak(utterance)
+    }, [selectedPoi, narrationText, narrationLanguage])
+
+    useEffect(() => {
+        if (!selectedPoi) {
+            stopNarration()
+            return
+        }
+        speakNarration()
+    }, [selectedPoi, narrationLanguage, speakNarration, stopNarration])
+
+    useEffect(() => {
+        return () => stopNarration()
+    }, [stopNarration])
+
     // ─── Render ─────────────────────────────────────────────────────────────────
 
     return (
@@ -194,6 +254,46 @@ export default function Pois() {
                     />
                 </div>
             </div>
+
+            {selectedPoi && (
+                <div className="fixed bottom-4 right-4 z-[70] w-[360px] rounded-xl border border-border bg-background/95 p-4 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/85">
+                    <p className="text-sm font-semibold">Audio thuyết minh</p>
+                    <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{selectedPoi.name}</p>
+
+                    <div className="mt-3 flex items-center gap-2">
+                        <label className="text-xs text-muted-foreground">Ngôn ngữ:</label>
+                        <select
+                            value={narrationLanguage}
+                            onChange={(e) => setNarrationLanguage(e.target.value as NarrationLanguage)}
+                            className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                        >
+                            <option value="vi-VN">Tiếng Việt</option>
+                            <option value="en-US">English</option>
+                            <option value="zh-CN">中文</option>
+                        </select>
+                    </div>
+
+                    <div className="mt-3 flex gap-2">
+                        <button
+                            type="button"
+                            onClick={speakNarration}
+                            className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+                        >
+                            Phát audio
+                        </button>
+                        <button
+                            type="button"
+                            onClick={stopNarration}
+                            className="rounded-md border border-input px-3 py-1.5 text-xs font-medium hover:bg-accent"
+                        >
+                            Dừng
+                        </button>
+                        <span className="self-center text-xs text-muted-foreground">
+                            {isSpeaking ? "Đang phát..." : "Sẵn sàng"}
+                        </span>
+                    </div>
+                </div>
+            )}
 
             {/* Dialogs */}
             <POIFormDialog

@@ -7,51 +7,67 @@ import { Menu, X, Home } from "lucide-react"
 import { HeaderAppSider, SearchBarAppSider, NavigateItem, ToggerThemeAppSider, UserProfileAppSider } from "./components"
 import Link from "next/link"
 import { navigation, type NavItem } from "./router"
+import { cn } from "@/lib/utils"
+
+const MOBILE_BREAKPOINT = 768
 
 export function SidebarAdmin() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false)
+  const [, setIsProfileDialogOpen] = useState(false)
   const pathname = usePathname()
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-      if (window.innerWidth < 768) {
+    const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
+    const apply = () => {
+      const mobile = mq.matches
+      setIsMobile(mobile)
+      if (mobile) {
         setIsCollapsed(true)
       }
     }
-    checkMobile()
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
+    apply()
+    mq.addEventListener("change", apply)
+    return () => mq.removeEventListener("change", apply)
   }, [])
 
   return (
     <>
-      {isMobile && isMobileOpen && (
-        <div className="fixed inset-0 bg-white bg-opacity-50 z-40 md:hidden" onClick={() => setIsMobileOpen(false)} />
-      )}
-
-      {isMobile && (
-        <Button
-          onClick={() => setIsMobileOpen(!isMobileOpen)}
-          className="fixed top-4 left-4 z-50 bg-background text-foreground hover:bg-accent shadow-lg border"
-          size="icon"
-        >
-          {isMobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-        </Button>
-      )}
-
+      {/* Overlay: chỉ mobile, luôn gắn class md:hidden — không phụ thuộc isMobile sau effect */}
       <div
-        className={`
-          ${isMobile ? "fixed" : "relative"} 
-          ${isMobile && !isMobileOpen ? "-translate-x-full" : "translate-x-0"}
-          ${isCollapsed && !isMobile ? "w-16" : "w-64"}
-          h-screen bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-300 z-50 theme-transition
-        `}
+        role="presentation"
+        className={cn(
+          "fixed inset-0 z-40 bg-background/60 backdrop-blur-sm transition-opacity md:hidden",
+          isMobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        )}
+        onClick={() => setIsMobileOpen(false)}
+      />
+
+      {/* Nút mở menu: luôn render, ẩn từ md+ bằng CSS — tránh lúc đầu không có nút */}
+      <Button
+        type="button"
+        aria-label={isMobileOpen ? "Đóng menu" : "Mở menu"}
+        onClick={() => setIsMobileOpen((open) => !open)}
+        className="fixed top-4 left-4 z-[60] size-10 bg-background text-foreground shadow-md border md:hidden"
+        size="icon"
       >
-        <HeaderAppSider isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} isMobile={isMobile} />
+        {isMobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+      </Button>
+
+      <aside
+        className={cn(
+          "flex h-screen shrink-0 flex-col border-r border-sidebar-border bg-sidebar theme-transition",
+          "transition-transform duration-300 ease-out",
+          isCollapsed && !isMobile ? "w-16" : "w-64",
+          /* Mobile: drawer */
+          "max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50 max-md:shadow-xl",
+          isMobileOpen ? "max-md:translate-x-0" : "max-md:-translate-x-full",
+          /* Desktop: luôn trong layout, luôn hiển thị (không phụ thuộc isMobile / hydration) */
+          "md:relative md:translate-x-0"
+        )}
+      >
+        <HeaderAppSider isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
         {(!isCollapsed || isMobile) && (
           <div className="px-4 py-2">
             <Link
@@ -72,10 +88,11 @@ export function SidebarAdmin() {
         </nav>
 
         <div className="p-4 border-t border-sidebar-border space-y-2">
-          <ToggerThemeAppSider isCollapsed={isCollapsed} isMobile={isMobile} />
           <UserProfileAppSider isCollapsed={isCollapsed} isMobile={isMobile} setIsProfileDialogOpen={setIsProfileDialogOpen} />
+          <ToggerThemeAppSider isCollapsed={isCollapsed} isMobile={isMobile} />
+
         </div>
-      </div>
+      </aside>
     </>
   )
 }

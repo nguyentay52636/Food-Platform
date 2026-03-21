@@ -1,10 +1,11 @@
-import React from "react"
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native"
-import { useTheme } from "react-native-paper"
-import type { POICategory, MinorSubCategory } from "@/src/types/poi"
 import { SUB_CATEGORY_LABELS } from "@/src/lib/poi-utils"
+import type { MinorSubCategory, POICategory } from "@/src/types/poi"
+import React from "react"
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { useTheme } from "react-native-paper"
 
 const MINOR_OPTIONS: MinorSubCategory[] = ["wc", "ticket", "parking", "dock"]
+const CHIP_GAP = 8
 
 type Props = {
   category: POICategory
@@ -87,6 +88,8 @@ export function POICategoryPicker({
                       subCategory === opt
                         ? theme.colors.primaryContainer
                         : theme.colors.surfaceVariant,
+                    marginRight: CHIP_GAP,
+                    marginBottom: CHIP_GAP,
                   },
                 ]}
                 onPress={() => onSubCategoryChange(opt)}
@@ -142,7 +145,6 @@ const styles = StyleSheet.create({
   subGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
   },
   subChip: {
     paddingHorizontal: 14,
