@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Navigation, QrCode, Search, Settings } from "lucide-react"
+import { UtensilsCrossed, QrCode, Search, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/lib/context/language-context"
 import { SUPPORTED_LANGUAGES } from "@/lib/client-types"
@@ -20,10 +20,10 @@ export function ClientHeader({ showSearch = true, onSearchClick }: ClientHeaderP
     return (
         <header className="sticky top-0 z-50 flex items-center justify-between bg-background/95 backdrop-blur-sm px-4 py-3 border-b border-border">
             <Link href="/" className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
-                    <Navigation className="h-5 w-5 text-primary-foreground" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500">
+                    <UtensilsCrossed className="h-5 w-5 text-white" />
                 </div>
-                <div className="hidden sm:block">
+                <div>
                     <h1 className="text-sm font-bold tracking-tight">{t.home.title}</h1>
                     <p className="text-[10px] text-muted-foreground">{t.home.subtitle}</p>
                 </div>
