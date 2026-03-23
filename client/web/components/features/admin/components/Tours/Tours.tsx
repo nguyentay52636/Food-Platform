@@ -17,6 +17,10 @@ import {
   CheckCircle2,
   FileText,
   ChevronRight,
+  Wallet,
+  CreditCard,
+  Lock,
+  Unlock,
 } from "lucide-react"
 import { toast } from "sonner"
 import type { Tour, POI, CreateTourPayload } from "@/lib/types"
@@ -50,6 +54,12 @@ import { TourDetailEmptyState, TourEmptyState } from "@/components/features/admi
 
 type ViewMode = "grid" | "list"
 type FilterStatus = "all" | "draft" | "published"
+type TourPackageId = "monthly" | "quarterly"
+
+const TOUR_PACKAGES: Record<TourPackageId, { name: string; price: number; days: number }> = {
+  monthly: { name: "Gói tháng", price: 199000, days: 30 },
+  quarterly: { name: "Gói quý", price: 499000, days: 90 },
+}
 
 export default function Tours() {
   const [tours, setTours] = useState<Tour[]>([])
@@ -58,6 +68,11 @@ export default function Tours() {
   const [search, setSearch] = useState("")
   const [viewMode, setViewMode] = useState<ViewMode>("grid")
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all")
+  const [walletBalance, setWalletBalance] = useState(0)
+  const [depositInput, setDepositInput] = useState("100000")
+  const [selectedPackage, setSelectedPackage] = useState<TourPackageId>("monthly")
+  const [packageExpiry, setPackageExpiry] = useState<string | null>(null)
+  const [paywallTarget, setPaywallTarget] = useState<Tour | null>(null)
 
   // Dialog state
   const [formOpen, setFormOpen] = useState(false)
@@ -82,6 +97,33 @@ export default function Tours() {
     loadData()
   }, [loadData])
 
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const savedBalance = window.localStorage.getItem("tour_wallet_balance_vnd")
+    const savedExpiry = window.localStorage.getItem("tour_package_expiry")
+    if (savedBalance) setWalletBalance(Number(savedBalance) || 0)
+    if (savedExpiry) setPackageExpiry(savedExpiry)
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    window.localStorage.setItem("tour_wallet_balance_vnd", String(walletBalance))
+  }, [walletBalance])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    if (packageExpiry) {
+      window.localStorage.setItem("tour_package_expiry", packageExpiry)
+    } else {
+      window.localStorage.removeItem("tour_package_expiry")
+    }
+  }, [packageExpiry])
+
+  const hasValidPackage = useMemo(() => {
+    if (!packageExpiry) return false
+    return new Date(packageExpiry).getTime() > Date.now()
+  }, [packageExpiry])
+
   const filteredTours = useMemo(() => {
     return tours.filter((t) => {
       const matchesSearch =
@@ -103,6 +145,58 @@ export default function Tours() {
 
   function getPoiName(poiId: string) {
     return allPois.find((p) => p.id === poiId)?.name ?? "Unknown"
+  }
+
+  function formatVnd(amount: number) {
+    return amount.toLocaleString("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      maximumFractionDigits: 0,
+    })
+  }
+
+  function handleDeposit() {
+    const amount = Number(depositInput)
+    if (!Number.isFinite(amount) || amount < 10000) {
+      toast.error("Số tiền nạp tối thiểu là 10.000 VND")
+      return
+    }
+    setWalletBalance((prev) => prev + amount)
+    toast.success(`Đã nạp ${formatVnd(amount)} vào ví`)
+  }
+
+  function purchaseSelectedPackage() {
+    const pkg = TOUR_PACKAGES[selectedPackage]
+    if (walletBalance < pkg.price) {
+      toast.error("Số dư không đủ. Vui lòng nạp tiền để mua gói.")
+      return false
+    }
+    const expiry = new Date(Date.now() + pkg.days * 24 * 60 * 60 * 1000).toISOString()
+    setWalletBalance((prev) => prev - pkg.price)
+    setPackageExpiry(expiry)
+    toast.success(`Mua ${pkg.name} thành công. Hạn dùng đến ${new Date(expiry).toLocaleDateString("vi-VN")}.`)
+    return true
+  }
+
+  function handlePurchasePackage() {
+    purchaseSelectedPackage()
+  }
+
+  function handleViewTour(tour: Tour) {
+    if (!hasValidPackage) {
+      setPaywallTarget(tour)
+      return
+    }
+    setViewingTour(tour)
+  }
+
+  function handleUnlockAndOpenTour() {
+    if (!paywallTarget) return
+    const target = paywallTarget
+    const ok = purchaseSelectedPackage()
+    if (!ok) return
+    setPaywallTarget(null)
+    setViewingTour(target)
   }
 
   function handleCreate() {
@@ -189,13 +283,72 @@ export default function Tours() {
             <div>
               <h1 className="text-lg font-semibold text-foreground">Quản lý tour</h1>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                Tạo và quản lý lịch trình tour
+                Danh sách tour ẩm thực - chọn tour để sử dụng
               </p>
             </div>
             <Button size="sm" onClick={handleCreate} className="gap-1.5">
               <Plus className="h-4 w-4" /> Tour mới
             </Button>
           </div>
+
+          <Card className="mt-4">
+            <CardContent className="grid gap-3 p-3">
+              <div className="flex items-center justify-between text-xs">
+                <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                  <Wallet className="h-3.5 w-3.5" /> Số dư ví
+                </span>
+                <span className="font-semibold">{formatVnd(walletBalance)}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                  <CreditCard className="h-3.5 w-3.5" /> Trạng thái gói
+                </span>
+                <Badge variant={hasValidPackage ? "default" : "secondary"} className="gap-1">
+                  {hasValidPackage ? <Unlock className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                  {hasValidPackage ? "Đã kích hoạt" : "Chưa kích hoạt"}
+                </Badge>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  type="number"
+                  min={10000}
+                  step={10000}
+                  value={depositInput}
+                  onChange={(e) => setDepositInput(e.target.value)}
+                  placeholder="Nạp tiền"
+                  className="h-8 w-[130px]"
+                />
+                <Button type="button" size="sm" variant="outline" onClick={handleDeposit}>
+                  Nạp tiền
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={selectedPackage === "monthly" ? "default" : "outline"}
+                  onClick={() => setSelectedPackage("monthly")}
+                >
+                  Gói tháng
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={selectedPackage === "quarterly" ? "default" : "outline"}
+                  onClick={() => setSelectedPackage("quarterly")}
+                >
+                  Gói quý
+                </Button>
+                <Button type="button" size="sm" onClick={handlePurchasePackage}>
+                  Mua gói ({formatVnd(TOUR_PACKAGES[selectedPackage].price)})
+                </Button>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Khi chọn một tour, hệ thống yêu cầu mua gói dịch vụ để sử dụng.
+                {hasValidPackage && packageExpiry
+                  ? ` Gói hiện tại hết hạn ngày ${new Date(packageExpiry).toLocaleDateString("vi-VN")}.`
+                  : ""}
+              </p>
+            </CardContent>
+          </Card>
 
           {/* Stats bar */}
           {!isLoading && (
@@ -278,7 +431,7 @@ export default function Tours() {
                   getPoiName={getPoiName}
                   formatDate={formatDate}
                   getRelativeTime={getRelativeTime}
-                  onClick={() => setViewingTour(tour)}
+                  onClick={() => handleViewTour(tour)}
                   onEdit={() => handleEdit(tour)}
                   onDuplicate={() => handleDuplicate(tour)}
                   onDelete={() => setDeleteTarget(tour)}
@@ -295,7 +448,7 @@ export default function Tours() {
                   getPoiName={getPoiName}
                   getRelativeTime={getRelativeTime}
                   isLast={idx === filteredTours.length - 1}
-                  onClick={() => setViewingTour(tour)}
+                  onClick={() => handleViewTour(tour)}
                   onEdit={() => handleEdit(tour)}
                   onDuplicate={() => handleDuplicate(tour)}
                   onDelete={() => setDeleteTarget(tour)}
@@ -352,6 +505,27 @@ export default function Tours() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Paywall dialog */}
+      <AlertDialog open={!!paywallTarget} onOpenChange={(o: boolean) => !o && setPaywallTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mua gói để mở tour</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn đang chọn tour &quot;{paywallTarget?.name}&quot;. Để sử dụng tour này, bạn cần mua gói dịch vụ.
+              Gói hiện chọn: <strong>{TOUR_PACKAGES[selectedPackage].name}</strong> (
+              {formatVnd(TOUR_PACKAGES[selectedPackage].price)}). Số dư hiện tại:{" "}
+              <strong>{formatVnd(walletBalance)}</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Để sau</AlertDialogCancel>
+            <AlertDialogAction onClick={handleUnlockAndOpenTour}>
+              Thanh toán và mở tour
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
