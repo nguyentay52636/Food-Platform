@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import React, { useState, useCallback } from "react"
 import { MapPin, List, ChevronUp, Headphones } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -17,6 +17,7 @@ import { useAudio } from "@/lib/context/audio-context"
 import { CLIENT_MOCK_POIS } from "@/lib/client-mock-data"
 import type { ClientPOI } from "@/lib/client-types"
 import Image from "next/image"
+import { useVisitorSession } from "@/lib/context/visitor-session"
 
 export default function ExplorePage() {
     const { language, t } = useLanguage()
@@ -26,7 +27,13 @@ export default function ExplorePage() {
     const [previewOpen, setPreviewOpen] = useState(false)
     const [filter, setFilter] = useState<"all" | "major" | "minor">("all")
     const [sheetOpen, setSheetOpen] = useState(false)
+    // Track page view on mount
+    const visitor = useVisitorSession()
 
+
+    React.useEffect(() => {
+        visitor.trackPageView("home", { filter: "all" })
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
     const pois = CLIENT_MOCK_POIS.filter((poi) => {
         if (filter === "all") return true
         return poi.category === filter
