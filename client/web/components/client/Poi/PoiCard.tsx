@@ -97,20 +97,20 @@ export function POICard({ poi, language, distance, compact = false, onLocate, t 
 
     // Full card for horizontal strip
     return (
-        <Card className="overflow-hidden w-64 shrink-0">
+        <Card className="overflow-hidden w-[300px] shrink-0 border-0 shadow-lg ring-1 ring-border/50 group bg-card hover:shadow-xl transition-all duration-300">
             {/* Click area for locate */}
             <div
                 className={onLocate ? "cursor-pointer" : ""}
                 onClick={() => onLocate?.(poi)}
             >
-                <div className="relative h-32 w-full bg-muted">
+                <div className="relative h-44 w-full bg-muted overflow-hidden">
                     {image ? (
                         <Image
                             src={image}
                             alt={name}
                             fill
-                            className="object-cover"
-                            sizes="256px"
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            sizes="300px"
                         />
                     ) : (
                         <div className="flex h-full w-full items-center justify-center">
@@ -143,13 +143,13 @@ export function POICard({ poi, language, distance, compact = false, onLocate, t 
                     )}
                 </div>
 
-                <div className="p-3">
-                    <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-semibold text-sm line-clamp-1">{name}</h3>
+                <div className="p-4">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                        <h3 className="font-bold text-base line-clamp-1">{name}</h3>
                         {poi.rating && (
-                            <div className="flex items-center gap-0.5 shrink-0">
-                                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                                <span className="text-xs font-medium">{poi.rating}</span>
+                            <div className="flex items-center gap-1 shrink-0 bg-amber-500/10 px-1.5 py-0.5 rounded text-amber-600 dark:text-amber-400">
+                                <Star className="h-3.5 w-3.5 fill-current" />
+                                <span className="text-xs font-bold">{poi.rating}</span>
                             </div>
                         )}
                     </div>
@@ -168,10 +168,10 @@ export function POICard({ poi, language, distance, compact = false, onLocate, t 
             </div>
 
             {/* Action buttons */}
-            <div className="flex gap-2 px-3 pb-3">
+            <div className="flex gap-2.5 px-4 pb-4 mt-1">
                 {onLocate && (
                     <Button
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         className="flex-1 h-8 text-xs"
                         onClick={(e) => {

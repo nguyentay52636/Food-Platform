@@ -1,10 +1,11 @@
+"use client"
+import Setting from '@/components/client/Settting/Setting'
 import React from 'react'
-import Tours from '@/components/client/Tours/Tours'
 
 export default function page() {
     return (
         <>
-            <Tours />
+            <Setting />
         </>
     )
 }

@@ -176,32 +176,43 @@ export default function ExplorePage() {
                     <SheetTrigger asChild>
                         <Button
                             variant="secondary"
-                            className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full shadow-lg px-4 h-10"
+                            className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full shadow-2xl px-5 h-12 bg-background/95 backdrop-blur-md border border-border/50 text-foreground font-semibold hover:bg-background/80 transition-all font-medium"
                             onClick={() => !selectedPoi && setSheetOpen(true)}
                             style={{ display: selectedPoi ? "none" : "flex" }}
                         >
-                            <ChevronUp className="h-4 w-4 mr-2" />
+                            <ChevronUp className="h-5 w-5 mr-1 text-primary" />
                             <List className="h-4 w-4 mr-2" />
                             {t.home.nearbyLocations}
                         </Button>
                     </SheetTrigger>
 
-                    <SheetContent side="bottom" className="h-[70vh] rounded-t-xl">
-                        <SheetHeader className="pb-4">
-                            <SheetTitle>{t.home.nearbyLocations} ({pois.length})</SheetTitle>
+                    <SheetContent side="bottom" className="h-auto max-h-[85vh] rounded-t-[2rem] px-0 pb-10 border-0 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] bg-background/98 backdrop-blur-xl">
+                        <SheetHeader className="pb-2 pt-2 px-6">
+                            <div className="mx-auto w-12 h-1.5 rounded-full bg-muted-foreground/20 mb-5" />
+                            <SheetTitle className="text-2xl font-bold flex items-center justify-between">
+                                {t.home.nearbyLocations}
+                                <Badge variant="secondary" className="bg-primary/10 text-primary text-sm px-3 py-1 rounded-full">
+                                    {pois.length}
+                                </Badge>
+                            </SheetTitle>
                         </SheetHeader>
 
-                        <div className="space-y-3 overflow-y-auto h-[calc(100%-60px)] pb-4">
+                        {/* Horizontal Swipeable List ("Lướt qua lại") */}
+                        <div className="flex gap-4 overflow-x-auto pb-6 pt-4 px-6 snap-x snap-mandatory scrollbar-hide">
                             {pois.map((poi) => (
-                                <POICard
-                                    key={poi.id}
-                                    poi={poi}
-                                    language={language}
-                                    compact
-                                    distance={Math.random() * 5}
-                                    onLocate={handleLocate}
-                                    t={t}
-                                />
+                                <div key={poi.id} className="snap-center shrink-0 transition-transform duration-300 hover:scale-[1.02]">
+                                    <POICard
+                                        poi={poi}
+                                        language={language}
+                                        compact={false}
+                                        distance={Math.random() * 5}
+                                        onLocate={(p) => {
+                                            setSheetOpen(false)
+                                            handleLocate(p)
+                                        }}
+                                        t={t}
+                                    />
+                                </div>
                             ))}
                         </div>
                     </SheetContent>

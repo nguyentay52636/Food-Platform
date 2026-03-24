@@ -15,7 +15,7 @@ export default function ClientLayout({
     return (
         <>
             {/* <DynamicLang /> */}
-            {!isAuthPage && !isAdminPage && <HeaderAuth />}
+            {!isAuthPage && !isAdminPage}
             {children}
             {!isAuthPage && !isAdminPage}
         </>
