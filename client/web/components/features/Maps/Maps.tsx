@@ -1,8 +1,9 @@
 "use client"
-
+import React from 'react'
 import MapsHeader from "./components/MapsHeader"
 import { SearchFilters, RestaurantList, MapsView, RestaurantDetail } from "./components"
 import { useMapsPage } from "./Hooks/useMapsPage"
+import useGeolocation from "@/hooks/useGeolocation"
 
 export default function Maps() {
     const {
@@ -18,6 +19,8 @@ export default function Maps() {
         toggleFavorite,
         selected,
     } = useMapsPage()
+
+    const { position: userPosition } = useGeolocation()
 
     return (
         <>
@@ -47,6 +50,7 @@ export default function Maps() {
                         restaurants={filteredRestaurants}
                         selectedRestaurant={selectedRestaurant}
                         onRestaurantClick={setSelectedRestaurant}
+                        userPosition={userPosition}
                     />
 
                     {selected && (
@@ -56,10 +60,10 @@ export default function Maps() {
                             onClose={() => setSelectedRestaurant(null)}
                             onFavoriteToggle={() => toggleFavorite(selected.id)}
                         />
-
                     )}
                 </div>
             </div>
         </>
     )
 }
+

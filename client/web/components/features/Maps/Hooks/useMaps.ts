@@ -67,6 +67,48 @@ const createCustomIcon = (L: any, isSelected: boolean, isLive: boolean) => {
   })
 }
 
+const createUserLocationIcon = (L: any) => {
+  return L.divIcon({
+    className: "user-location-marker",
+    html: `
+      <div style="
+        position: relative;
+        width: 24px;
+        height: 24px;
+      ">
+        <div style="
+          position: absolute;
+          width: 24px;
+          height: 24px;
+          background: rgba(59, 130, 246, 0.2);
+          border-radius: 50%;
+          animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        "></div>
+        <div style="
+          position: relative;
+          width: 16px;
+          height: 16px;
+          background: #3b82f6;
+          border: 3px solid white;
+          border-radius: 50%;
+          box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+          margin: 4px;
+        "></div>
+        <style>
+          @keyframes ping {
+            75%, 100% {
+              transform: scale(3);
+              opacity: 0;
+            }
+          }
+        </style>
+      </div>
+    `,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+  })
+}
+
 export function useMaps(restaurants: IRestaurant[], selectedRestaurant: number | null) {
   const [isClient, setIsClient] = useState(false)
   const [leafletComponents, setLeafletComponents] = useState<LeafletComponents | null>(null)
@@ -111,6 +153,11 @@ export function useMaps(restaurants: IRestaurant[], selectedRestaurant: number |
     return icons
   }, [leafletComponents, restaurants])
 
+  const userLocationIcon = useMemo(() => {
+    if (!leafletComponents) return null
+    return createUserLocationIcon(leafletComponents.L)
+  }, [leafletComponents])
+
   const getMarkerIcon = (restaurant: IRestaurant) => {
     if (!leafletComponents) return undefined
     const iconVariant = selectedRestaurant === restaurant.id ? "selected" : "default"
@@ -129,6 +176,8 @@ export function useMaps(restaurants: IRestaurant[], selectedRestaurant: number |
     leafletComponents,
     center,
     getMarkerIcon,
+    userLocationIcon,
   }
 }
+
 

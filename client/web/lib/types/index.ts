@@ -73,3 +73,20 @@ export interface AuthResponse {
   user: AdminUser
   token: string
 }
+
+// Restaurant Types for Maps
+export interface IRestaurant {
+  id: number
+  name: string
+  cuisine: string
+  rating: number
+  reviews: number
+  address: string
+  phone: string
+  hours: string
+  priceRange: string
+  lat: number
+  lng: number
+  isLive: boolean
+  image: string
+}

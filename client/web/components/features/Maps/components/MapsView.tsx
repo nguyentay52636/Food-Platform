@@ -1,17 +1,24 @@
 "use client"
 
-import { ChefHat } from "lucide-react"
+import { ChefHat, Navigation } from "lucide-react"
 import { IRestaurant } from "@/lib/types"
 import { useMaps } from "../Hooks/useMaps"
+import { GeoPosition } from "@/hooks/useGeolocation"
 
 interface MapsViewProps {
     restaurants: IRestaurant[]
     selectedRestaurant: number | null
     onRestaurantClick: (id: number) => void
+    userPosition?: GeoPosition | null
 }
 
-export default function MapsView({ restaurants, selectedRestaurant, onRestaurantClick }: MapsViewProps) {
-    const { isReady, leafletComponents, center, getMarkerIcon } = useMaps(restaurants, selectedRestaurant)
+export default function MapsView({ 
+    restaurants, 
+    selectedRestaurant, 
+    onRestaurantClick,
+    userPosition 
+}: MapsViewProps) {
+    const { isReady, leafletComponents, center, getMarkerIcon, userLocationIcon } = useMaps(restaurants, selectedRestaurant)
 
     if (!isReady || !leafletComponents) {
         return (
@@ -47,6 +54,24 @@ export default function MapsView({ restaurants, selectedRestaurant, onRestaurant
 
                 {/* Zoom Controls */}
                 <ZoomControl position="bottomright" />
+
+                {/* User Location Marker */}
+                {userPosition && userLocationIcon && (
+                    <Marker 
+                        position={[userPosition.lat, userPosition.lng]} 
+                        icon={userLocationIcon}
+                        zIndexOffset={1000}
+                    >
+                        <Popup className="custom-popup">
+                            <div className="p-2 flex items-center gap-2">
+                                <div className="p-1.5 rounded-full bg-blue-100">
+                                    <Navigation className="h-4 w-4 text-blue-600" />
+                                </div>
+                                <span className="font-bold">Vị trí của bạn</span>
+                            </div>
+                        </Popup>
+                    </Marker>
+                )}
 
                 {restaurants.map((restaurant: IRestaurant) => {
                     const icon = getMarkerIcon(restaurant)
@@ -91,4 +116,5 @@ export default function MapsView({ restaurants, selectedRestaurant, onRestaurant
         </div>
     )
 }
+
 

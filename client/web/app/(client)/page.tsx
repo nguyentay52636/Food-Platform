@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useCallback } from "react"
-import { MapPin, List, ChevronUp, Headphones } from "lucide-react"
+import { MapPin, List, ChevronUp, Headphones, Navigation } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +18,7 @@ import { CLIENT_MOCK_POIS } from "@/lib/client-mock-data"
 import type { ClientPOI } from "@/lib/client-types"
 import Image from "next/image"
 import { useVisitorSession } from "@/lib/context/visitor-session"
+import useGeolocation from "@/hooks/useGeolocation"
 
 export default function ExplorePage() {
     const { language, t } = useLanguage()
@@ -27,13 +28,15 @@ export default function ExplorePage() {
     const [previewOpen, setPreviewOpen] = useState(false)
     const [filter, setFilter] = useState<"all" | "major" | "minor">("all")
     const [sheetOpen, setSheetOpen] = useState(false)
-    // Track page view on mount
+    
+    // Track page view and geolocation
     const visitor = useVisitorSession()
-
+    const { position: userLocation } = useGeolocation()
 
     React.useEffect(() => {
         visitor.trackPageView("home", { filter: "all" })
     }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
     const pois = CLIENT_MOCK_POIS.filter((poi) => {
         if (filter === "all") return true
         return poi.category === filter
@@ -81,6 +84,7 @@ export default function ExplorePage() {
                     onMarkerClick={handleMarkerClick}
                     language={language}
                     className="h-full"
+                    userLocation={userLocation}
                 />
 
                 {/* Filter chips - floating */}
@@ -100,10 +104,26 @@ export default function ExplorePage() {
                     </div>
                 </div>
 
+                {/* GPS Status / Locate Me Button */}
+                <div className="absolute top-14 right-3 pointer-events-auto">
+                    <Button
+                        variant="secondary"
+                        size="icon"
+                        className={`rounded-full shadow-lg h-10 w-10 transition-colors ${userLocation ? 'text-primary' : 'text-muted-foreground'}`}
+                        disabled={!userLocation}
+                        onClick={() => {
+                            // Logic to center map on user could go here via a ref or context
+                        }}
+                    >
+                        <Navigation className={`h-5 w-5 ${userLocation ? 'fill-primary animate-pulse' : ''}`} />
+                    </Button>
+                </div>
+
                 {/* Selected POI Quick View (on map) */}
                 {selectedPoi && !previewOpen && (
                     <div className="absolute bottom-4 left-4 right-4 animate-in slide-in-from-bottom-4 duration-300">
                         <Card className="overflow-hidden shadow-xl">
+                            {/* ... Content remains the same ... */}
                             <div className="flex">
                                 <div className="relative h-28 w-28 shrink-0 bg-muted">
                                     {selectedPoi.images[0] ? (
@@ -204,7 +224,7 @@ export default function ExplorePage() {
                             </SheetTitle>
                         </SheetHeader>
 
-                        {/* Horizontal Swipeable List ("Lướt qua lại") */}
+                        {/* Horizontal Swipeable List */}
                         <div className="flex gap-4 overflow-x-auto pb-6 pt-4 px-6 snap-x snap-mandatory scrollbar-hide">
                             {pois.map((poi) => (
                                 <div key={poi.id} className="snap-center shrink-0 transition-transform duration-300 hover:scale-[1.02]">
@@ -226,7 +246,7 @@ export default function ExplorePage() {
                 </Sheet>
             </div>
 
-            {/* Nearby Locations Strip (when no selection) */}
+            {/* Nearby Locations Strip */}
             {!selectedPoi && (
                 <div className="bg-card border-t border-border p-4 pb-16">
                     <div className="flex items-center justify-between mb-3">
@@ -259,7 +279,7 @@ export default function ExplorePage() {
             {/* Bottom Navigation */}
             <BottomNav />
 
-            {/* Mini Player (when audio playing but not viewing that POI) */}
+            {/* Mini Player */}
             {audio.currentPOI && audio.currentPOI.id !== selectedPoi?.id && (
                 <MiniPlayer className="bottom-14" />
             )}
@@ -275,3 +295,4 @@ export default function ExplorePage() {
         </div>
     )
 }
+
