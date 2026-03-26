@@ -10,6 +10,7 @@ export class Review {
   poiId: Types.ObjectId;
 
   @Prop({
+    type: String,
     enum: ['user', 'anonymous'],
     default: 'anonymous',
   })
@@ -21,17 +22,18 @@ export class Review {
   @Prop({ default: 'Khách du lịch', trim: true })
   authorName: string; // Tên hiển thị (bất kể anonymous hay có tài khoản)
 
-  @Prop({ default: null, index: true })
+  @Prop({ type: String, default: null, index: true })
   sessionId: string | null; // Visitor session ID (nếu là anonymous)
 
   // --- Review Content ---
   @Prop({ required: true, min: 1, max: 5 })
   rating: number; // 1–5 sao
 
-  @Prop({ default: null, maxlength: 2000 })
+  @Prop({ type: String, default: null, maxlength: 2000 })
   comment: string | null;
 
   @Prop({
+    type: String,
     enum: ['vi', 'en', 'zh', 'ja'],
     default: 'vi',
   })
@@ -41,19 +43,20 @@ export class Review {
   images: string[];
 
   @Prop({
+    type: String,
     enum: ['pending', 'approved', 'rejected'],
     default: 'approved', // auto-approve, dùng 'pending' nếu cần kiểm duyệt
     index: true,
   })
   status: string;
 
-  @Prop({ default: null })
+  @Prop({ type: String, default: null })
   rejectionReason: string | null; // Lý do từ chối (nếu status = rejected)
 
   @Prop({ type: Types.ObjectId, ref: 'User', default: null })
   moderatedBy: Types.ObjectId | null; // Admin/Staff đã duyệt/từ chối
 
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   moderatedAt: Date | null;
 
   // createdAt, updatedAt — auto by timestamps: true

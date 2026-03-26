@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Route, Search, MapPin, Clock } from "lucide-react"
@@ -14,6 +14,7 @@ import { useLanguage } from "@/lib/context/language-context"
 import { useAudio } from "@/lib/context/audio-context"
 import { CLIENT_MOCK_TOURS, CLIENT_MOCK_POIS } from "@/lib/client-mock-data"
 import { LanguageCode } from "@/lib/client-types"
+import { useVisitorSession } from "@/lib/context/visitor-session"
 
 const LABELS: Record<LanguageCode, {
     title: string;
@@ -76,7 +77,12 @@ export default function Tours() {
     const audio = useAudio()
     const [searchQuery, setSearchQuery] = useState("")
     const labels = LABELS[language]
+    const visitor = useVisitorSession()
 
+
+    React.useEffect(() => {
+        visitor.trackPageView("home", { filter: "all" })
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps   
     const filteredTours = CLIENT_MOCK_TOURS.filter((tour) => {
         const name = tour.name[language] || tour.name.en
         return name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -139,7 +145,7 @@ export default function Tours() {
                                         </div>
                                     )}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-                                    
+
                                     <div className="absolute top-4 left-4">
                                         <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-lg backdrop-blur-md font-semibold px-3 py-1">
                                             ★ {labels.featured}
@@ -153,7 +159,7 @@ export default function Tours() {
                                         <p className="text-white/90 text-sm line-clamp-2 drop-shadow mb-4 font-medium">
                                             {featuredDesc}
                                         </p>
-                                        
+
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-3 md:gap-4 text-xs sm:text-sm font-medium text-white">
                                                 <div className="flex items-center gap-1.5 bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">

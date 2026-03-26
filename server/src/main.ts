@@ -12,7 +12,10 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('swagger', app, document);
+  SwaggerModule.setup('swagger', app, document, {
+    customCssUrl: 'https://unpkg.com/swagger-ui-themes@3.0.0/themes/3.x/theme-material.css',
+    customSiteTitle: 'Food Platform API ',
+  });
 
   await app.listen(process.env.PORT ?? 3000);
 }

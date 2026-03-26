@@ -1,7 +1,15 @@
 import { Module } from '@nestjs/common';
-import { ServiceModule } from './service/service.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Tour, TourSchema } from './schema/tour.schema';
+import { TourService } from './tour.service';
+import { TourController } from './tour.controller';
 
 @Module({
-  imports: [ServiceModule]
+  imports: [
+    MongooseModule.forFeature([{ name: Tour.name, schema: TourSchema }]),
+  ],
+  controllers: [TourController],
+  providers: [TourService],
+  exports: [TourService],
 })
 export class TourModule {}
