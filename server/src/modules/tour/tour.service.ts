@@ -13,8 +13,9 @@ import { UpdateTourDto } from './dto/update-tour.dto';
 export class TourService {
   constructor(
     @InjectModel(Tour.name) private readonly tourModel: Model<TourDocument>,
-  ) { }
+  ) {}
 
+  // ─── CREATE ────────────────────────────────────────────────────────────────
 
   async create(dto: CreateTourDto): Promise<TourDocument> {
     const existing = await this.tourModel.findOne({ slug: dto.slug }).exec();
@@ -25,6 +26,7 @@ export class TourService {
     return tour.save();
   }
 
+  // ─── READ ALL ──────────────────────────────────────────────────────────────
 
   async findAll(status?: string): Promise<TourDocument[]> {
     const filter = status ? { status } : {};
@@ -34,6 +36,7 @@ export class TourService {
       .exec();
   }
 
+  // ─── READ ONE BY ID ────────────────────────────────────────────────────────
 
   async findById(id: string): Promise<TourDocument> {
     if (!Types.ObjectId.isValid(id)) {
@@ -44,6 +47,7 @@ export class TourService {
     return tour;
   }
 
+  // ─── READ ONE BY SLUG ──────────────────────────────────────────────────────
 
   async findBySlug(slug: string): Promise<TourDocument> {
     const tour = await this.tourModel.findOne({ slug }).exec();
@@ -51,12 +55,14 @@ export class TourService {
     return tour;
   }
 
+  // ─── UPDATE ────────────────────────────────────────────────────────────────
 
   async update(id: string, dto: UpdateTourDto): Promise<TourDocument> {
     if (!Types.ObjectId.isValid(id)) {
       throw new NotFoundException(`Tour ID "${id}" không hợp lệ.`);
     }
 
+    // Nếu đổi slug, kiểm tra trùng
     if (dto.slug) {
       const conflict = await this.tourModel
         .findOne({ slug: dto.slug, _id: { $ne: id } })
