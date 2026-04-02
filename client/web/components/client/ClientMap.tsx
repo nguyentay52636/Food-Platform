@@ -11,6 +11,7 @@ interface ClientMapProps {
     language: LanguageCode
     className?: string
     userLocation?: { lat: number; lng: number } | null
+    locateSignal?: number
 }
 
 export function ClientMap({
@@ -20,6 +21,7 @@ export function ClientMap({
     language,
     className = "",
     userLocation,
+    locateSignal,
 }: ClientMapProps) {
     const uniqueId = useId()
     const containerRef = useRef<HTMLDivElement>(null)
@@ -28,6 +30,7 @@ export function ClientMap({
     const userMarkerRef = useRef<L.Marker | null>(null)
     const [isReady, setIsReady] = useState(false)
     const initializedRef = useRef(false)
+    const lastCenteredPoiIdRef = useRef<number | null>(null)
 
     // Initialize map
     useEffect(() => {
@@ -55,7 +58,8 @@ export function ClientMap({
                 zoomControl: false,
             })
 
-            L.control.zoom({ position: "bottomright" }).addTo(map)
+            // Put +/- away from the bottom fixed navbar.
+            L.control.zoom({ position: "topright" }).addTo(map)
 
             L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
                 attribution: "&copy; OpenStreetMap",
@@ -158,9 +162,13 @@ export function ClientMap({
 
             // Center on selected POI
             if (selectedPoi) {
-                map.setView([selectedPoi.latitude, selectedPoi.longitude], 15, {
-                    animate: true,
-                })
+                // Avoid fighting with locate-to-user: only auto-center when POI actually changes.
+                if (lastCenteredPoiIdRef.current !== selectedPoi.id) {
+                    map.setView([selectedPoi.latitude, selectedPoi.longitude], 15, {
+                        animate: true,
+                    })
+                    lastCenteredPoiIdRef.current = selectedPoi.id
+                }
             }
         })
     }, [isReady, pois, selectedPoi, onMarkerClick, language])
@@ -201,6 +209,18 @@ export function ClientMap({
             }
         })
     }, [isReady, userLocation])
+
+    // Externally request: move map to current user position.
+    useEffect(() => {
+        if (!isReady) return
+        if (!mapInstanceRef.current) return
+        if (!userLocation) return
+        if (!locateSignal) return
+
+        mapInstanceRef.current.setView([userLocation.lat, userLocation.lng], 15, {
+            animate: true,
+        })
+    }, [isReady, locateSignal, userLocation])
 
     return (
         <div

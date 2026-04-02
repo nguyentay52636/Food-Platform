@@ -25,8 +25,21 @@ export function POICard({ poi, language, distance, compact = false, onLocate, t 
 
     // Compact card with locate and view buttons
     if (compact) {
+        const isClickable = !!onLocate
         return (
-            <Card className="overflow-hidden">
+            <Card
+                className={`overflow-hidden ${isClickable ? "cursor-pointer" : ""}`}
+                onClick={isClickable ? () => onLocate?.(poi) : undefined}
+                role={isClickable ? "button" : undefined}
+                tabIndex={isClickable ? 0 : -1}
+                onKeyDown={(e) => {
+                    if (!isClickable) return
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault()
+                        onLocate?.(poi)
+                    }
+                }}
+            >
                 <div className="flex items-center gap-3 p-3">
                     {/* Thumbnail */}
                     <div className="relative h-16 w-16 shrink-0 rounded-lg overflow-hidden bg-muted">
@@ -84,7 +97,13 @@ export function POICard({ poi, language, distance, compact = false, onLocate, t 
                             className="h-8 px-2 text-xs"
                             asChild
                         >
-                            <Link href={`/poi/${poi.id}`}>
+                            <Link
+                                href={`/poi/${poi.id}`}
+                                onClick={(e) => {
+                                    // Prevent parent Card click (locate) when opening detail page.
+                                    e.stopPropagation()
+                                }}
+                            >
                                 <Eye className="h-3.5 w-3.5 mr-1" />
                                 {t?.poi.viewDetail || "View"}
                             </Link>
