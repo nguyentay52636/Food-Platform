@@ -1,4 +1,4 @@
-// create-review.dto.ts
+// review.dto.ts
 import {
   IsString,
   IsEnum,
@@ -8,14 +8,14 @@ import {
   Max,
   MaxLength,
   IsArray,
+  IsEmail,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateReviewDto {
   @ApiProperty({ example: '64abc123def456789012345' })
   @IsString()
-  poiId: string;
-
+  PoiId: string;
   @ApiProperty({ example: 4, minimum: 1, maximum: 5 })
   @IsNumber()
   @Min(1)
@@ -26,18 +26,28 @@ export class CreateReviewDto {
   @IsOptional()
   @IsString()
   @MaxLength(2000)
-  comment?: string;
-
-  @ApiPropertyOptional({ enum: ['vi', 'en', 'zh', 'ja'], default: 'vi' })
-  @IsOptional()
-  @IsEnum(['vi', 'en', 'zh', 'ja'])
-  language?: string;
+  content: string; // NoiDung
 
   @ApiPropertyOptional({ example: 'Nguyễn Văn A' })
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  authorName?: string;
+  username?: string;
+
+  @ApiPropertyOptional({ example: 'user@example.com' })
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @ApiPropertyOptional({ example: 'device-id-xxxx' })
+  @IsOptional()
+  @IsString()
+  devideId?: string;
+
+  @ApiPropertyOptional({ enum: ['vi', 'en', 'zh', 'ja'], default: 'vi' })
+  @IsOptional()
+  @IsEnum(['vi', 'en', 'zh', 'ja'])
+  language?: string;
 
   @ApiPropertyOptional({ example: 'session-uuid-here' })
   @IsOptional()

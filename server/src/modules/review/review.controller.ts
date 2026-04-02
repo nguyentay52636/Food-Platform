@@ -21,9 +21,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 @ApiTags('Reviews')
 @Controller('reviews')
 export class ReviewController {
-  constructor(private readonly reviewService: ReviewService) {}
+  constructor(private readonly reviewService: ReviewService) { }
 
-  // ── Public: Tạo review (anonymous hoặc có token) ───────────────────
   @Post()
   @ApiOperation({ summary: 'Tạo review cho một POI' })
   create(@Body() dto: CreateReviewDto, @Request() req: { user?: { id: string } }) {
@@ -31,7 +30,7 @@ export class ReviewController {
     return this.reviewService.create(dto, userId);
   }
 
-  // ── Public: Lấy reviews của một POI ───────────────────────────────
+
   @Get('poi/:poiId')
   @ApiOperation({ summary: 'Lấy danh sách review của một POI' })
   @ApiQuery({ name: 'page', required: false, example: 1 })
@@ -44,7 +43,6 @@ export class ReviewController {
     return this.reviewService.findByPOI(poiId, +page, +limit);
   }
 
-  // ── Admin: Lấy tất cả reviews ──────────────────────────────────────
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -60,7 +58,6 @@ export class ReviewController {
     return this.reviewService.findAll(+page, +limit, status);
   }
 
-  // ── Admin: Kiểm duyệt review ───────────────────────────────────────
   @Patch(':id/status')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -73,7 +70,6 @@ export class ReviewController {
     return this.reviewService.updateStatus(id, dto, req.user.id);
   }
 
-  // ── Admin: Xóa review ─────────────────────────────────────────────
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

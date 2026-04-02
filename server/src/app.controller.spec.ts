@@ -1,22 +1,23 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { Controller, Get, Res } from '@nestjs/common';
+import { Response } from 'express';
 
-describe('AppController', () => {
-  let appController: AppController;
-
-  beforeEach(async () => {
-    const app: TestingModule = await Test.createTestingModule({
-      controllers: [AppController],
-      providers: [AppService],
-    }).compile();
-
-    appController = app.get<AppController>(AppController);
-  });
-
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
-    });
-  });
-});
+@Controller()
+export class AppController {
+  @Get()
+  getHome(@Res() res: Response) {
+    res.send(`
+      <html>
+        <head>
+          <title>Home</title>
+        </head>
+        <body style="display:flex;justify-content:center;align-items:center;height:100vh;">
+          <a href="/swagger">
+            <button style="padding:10px 20px;font-size:18px;cursor:pointer;">
+              Go to Swagger 🚀
+            </button>
+          </a>
+        </body>
+      </html>
+    `);
+  }
+}

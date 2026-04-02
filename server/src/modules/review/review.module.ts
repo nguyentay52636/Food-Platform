@@ -13,6 +13,6 @@ import { Review, ReviewSchema } from './schema/review.schema';
   ],
   controllers: [ReviewController],
   providers: [ReviewService],
-  exports: [ReviewService], // Export để POI service dùng getRatingSummary
+  exports: [ReviewService],
 })
-export class ReviewModule {}
+export class ReviewModule { }

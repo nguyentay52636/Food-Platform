@@ -18,16 +18,18 @@ export class ReviewService {
     userId?: string,
   ): Promise<ReviewDocument> {
     const review = await this.reviewModel.create({
-      poiId: new Types.ObjectId(dto.poiId),
+      PoiId: new Types.ObjectId(dto.PoiId),
       rating: dto.rating,
-      comment: dto.comment ?? null,
-      language: dto.language ?? 'vi',
-      authorName: dto.authorName ?? 'Khách du lịch',
-      sessionId: dto.sessionId ?? null,
-      images: dto.images ?? [],
+      content: dto.content,
+      language: dto.language || 'vi',
+      username: dto.username || 'Khách du lịch',
+      email: dto.email || null,
+      devideId: dto.devideId || null,
+      sessionId: dto.sessionId || null,
+      images: dto.images || [],
       authorType: userId ? 'user' : 'anonymous',
       userId: userId ? new Types.ObjectId(userId) : null,
-      status: 'approved', // Đổi thành 'pending' nếu cần kiểm duyệt
+      status: 'approved',
     });
 
     return review;
@@ -40,7 +42,7 @@ export class ReviewService {
     limit = 10,
   ): Promise<{ data: ReviewDocument[]; total: number; avgRating: number }> {
     const filter = {
-      poiId: new Types.ObjectId(poiId),
+      PoiId: new Types.ObjectId(poiId),
       status: 'approved',
     };
 
@@ -75,7 +77,7 @@ export class ReviewService {
     const [data, total] = await Promise.all([
       this.reviewModel
         .find(filter)
-        .populate('poiId', 'translations')
+        .populate('PoiId', 'translations')
         .populate('userId', 'username email')
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
@@ -122,7 +124,7 @@ export class ReviewService {
     const result = await this.reviewModel.aggregate([
       {
         $match: {
-          poiId: new Types.ObjectId(poiId),
+          PoiId: new Types.ObjectId(poiId),
           status: 'approved',
         },
       },
