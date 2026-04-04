@@ -21,6 +21,15 @@ export class POILanguage {
 
   @Prop({ type: String, default: null })
   MoTa: string;
+
+  @Prop([
+    {
+      MaAudio: Number,
+      AudioUrl: String,
+      ThoiLuong: Number,
+    },
+  ])
+  Audios: any[];
 }
 
 export const POINgonNguSchema = SchemaFactory.createForClass(POILanguage);

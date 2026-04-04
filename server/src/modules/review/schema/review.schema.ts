@@ -4,34 +4,37 @@ import { Document, Types } from 'mongoose';
 
 export type ReviewDocument = Review & Document;
 
-@Schema({ timestamps: true, collection: 'reviews' })
+@Schema({ timestamps: true, collection: 'Tbl_Review' })
 export class Review {
-  @Prop({ type: String, unique: true, sparse: true })
-  reviewId: string; // MaReview
+  @Prop({ type: Number, unique: true, sparse: true })
+  MaReview: number;
 
   @Prop({ type: Types.ObjectId, ref: 'POI', required: true, index: true })
-  PoiId: Types.ObjectId; // MaPoi
+  MaPOI: Types.ObjectId;
+
+  @Prop({ type: String, required: true, index: true })
+  MaSession: string;
 
   @Prop({ type: String, default: null })
-  devideId: string | null; // DeviceId
+  DeviceId: string | null;
 
   @Prop({ type: String, default: null })
-  ipAddress: string | null;
+  IpAddress: string | null;
 
   @Prop({ type: String, default: 'Khách du lịch', trim: true })
-  username: string; // username / MaKH
+  TenNguoiDung: string;
 
   @Prop({ type: String, default: null, trim: true })
-  email: string | null;
+  Email: string | null;
 
   @Prop({ required: true, min: 1, max: 5 })
-  rating: number;
+  SoSao: number;
 
   @Prop({ type: String, required: true, maxlength: 2000 })
-  content: string; // content / NoiDung
+  NoiDung: string;
 
   @Prop({ type: Date, default: Date.now })
-  time: Date; // time / ThoiGian
+  ThoiGian: Date;
 
   @Prop({ type: Boolean, default: false })
   isDeleted: boolean;
@@ -39,52 +42,13 @@ export class Review {
   @Prop({ type: Boolean, default: false })
   isFlagged: boolean;
 
-  // --- Extended fields for App Logic ---
-  @Prop({
-    type: String,
-    enum: ['user', 'anonymous'],
-    default: 'anonymous',
-  })
-  authorType: string;
-
+  // --- Extended fields for App Logic (Optional, but kept for compatibility) ---
   @Prop({ type: Types.ObjectId, ref: 'User', default: null })
   userId: Types.ObjectId | null;
-
-  @Prop({ type: String, default: null, index: true })
-  sessionId: string | null;
-
-  @Prop({ type: [String], default: [] })
-  images: string[];
-
-  @Prop({
-    type: String,
-    enum: ['vi', 'en', 'zh', 'ja'],
-    default: 'vi',
-  })
-  language: string;
-
-  @Prop({
-    type: String,
-    enum: ['pending', 'approved', 'rejected'],
-    default: 'approved',
-    index: true,
-  })
-  status: string;
-
-  @Prop({ type: String, default: null })
-  rejectionReason: string | null;
-
-  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
-  moderatedBy: Types.ObjectId | null;
-
-  @Prop({ type: Date, default: null })
-  moderatedAt: Date | null;
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);
 
-ReviewSchema.index({ PoiId: 1, status: 1 });
-ReviewSchema.index({ PoiId: 1, rating: -1 });
-ReviewSchema.index({ userId: 1 });
-ReviewSchema.index({ createdAt: -1 });
-ReviewSchema.index({ time: -1 });
+ReviewSchema.index({ MaPOI: 1, MaSession: 1 }, { unique: true });
+ReviewSchema.index({ ThoiGian: -1 });
+

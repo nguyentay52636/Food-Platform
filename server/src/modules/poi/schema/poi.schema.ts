@@ -4,93 +4,42 @@ import { Document } from 'mongoose';
 
 export type POIDocument = POI & Document;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, collection: 'Tbl_POI' })
 export class POI {
-    @Prop({ unique: true })
-    slug: string;
+  @Prop({ type: Number, unique: true, sparse: true })
+  MaPOI: number;
 
-    @Prop({ enum: ['major', 'minor'], required: true })
-    category: string;
+  @Prop({ required: true })
+  TenPOI: string;
 
-    @Prop({ enum: ['wc', 'ticket', 'parking', 'dock'] })
-    subCategory?: string;
+  @Prop({ required: true })
+  LoaiPOI: string;
 
-    // Location
-    @Prop({ required: true })
-    latitude: number;
+  @Prop({ required: true, type: Number })
+  Latitude: number;
 
-    @Prop({ required: true })
-    longitude: number;
+  @Prop({ required: true, type: Number })
+  Longitude: number;
 
-    @Prop()
-    address?: string;
+  @Prop({ type: Number, default: 0 })
+  RangeTrigger: number;
 
-    // Media
-    @Prop([String])
-    images: string[];
+  @Prop()
+  Thumbnail: string;
 
-    @Prop()
-    thumbnailUrl?: string;
+  @Prop({ type: Date, default: Date.now })
+  NgayTao: Date;
 
-    // Business
-    @Prop()
-    phone?: string;
+  // Track who created this POI
+  @Prop()
+  createdBy?: string;
 
-    @Prop()
-    website?: string;
-
-    @Prop({ enum: ['$', '$$', '$$$', '$$$$'] })
-    priceRange?: string;
-
-    @Prop({ type: Object })
-    openingHours?: Record<string, string>;
-
-    // Rating
-    @Prop({ default: 0 })
-    rating: number;
-
-    @Prop({ default: 0 })
-    reviewCount: number;
-
-    // Status
-    @Prop({ enum: ['draft', 'published', 'archived'], default: 'draft' })
-    status: string;
-
-    @Prop({ default: false })
-    isFeatured: boolean;
-
-    @Prop({ default: 0 })
-    displayOrder: number;
-
-    // Relations
-    @Prop()
-    createdBy?: string;
-
-    @Prop([
-        {
-            languageCode: { type: String, enum: ['vi', 'en', 'zh', 'ja'] },
-            name: String,
-            description: String,
-            shortDescription: String,
-        },
-    ])
-    translations: any[];
-
-    // 🔥 Embed audios
-    @Prop([
-        {
-            languageCode: String,
-            audioUrl: String,
-            durationSeconds: Number,
-            format: String,
-            status: {
-                type: String,
-                enum: ['active', 'processing', 'error'],
-                default: 'active',
-            },
-        },
-    ])
-    audios: any[];
+  // For Many-to-Many relationship with Category in Mongo
+  @Prop({ type: [Number], default: [] })
+  MaCategory: number[];
 }
 
 export const POISchema = SchemaFactory.createForClass(POI);
+
+POISchema.index({ Latitude: 1, Longitude: 1 });
+POISchema.index({ TenPOI: 'text' });

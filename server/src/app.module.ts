@@ -9,6 +9,7 @@ import { VisitorModule } from './modules/visitor/visitor.module';
 import { ReviewModule } from './modules/review/review.module';
 import { TourModule } from './modules/tour/tour.module';
 import { LanguageModule } from './modules/language/language.module';
+import { PoiModule } from './modules/poi/poi.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { LanguageModule } from './modules/language/language.module';
     ReviewModule,
     TourModule,
     LanguageModule,
+    PoiModule,
   ],
   controllers: [AppController],
   providers: [AppService],
