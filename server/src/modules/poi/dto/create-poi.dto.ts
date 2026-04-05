@@ -1,75 +1,53 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsEnum, IsOptional, IsNumber, Min, Max, IsArray, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsString, IsNotEmpty, IsNumber, IsOptional, IsArray, IsDateString } from 'class-validator';
 
-export class CreatePoiTranslationDto {
-    @ApiProperty()
+export class CreatePoiDto {
+    @ApiProperty({ description: 'Name of the POI' })
     @IsString()
     @IsNotEmpty()
-    language: string;
+    tenPOI: string;
 
-    @ApiProperty()
+    @ApiProperty({ description: 'Type of the POI' })
     @IsString()
     @IsNotEmpty()
-    name: string;
+    loaiPOI: string;
 
-    @ApiProperty()
+    @ApiProperty({ description: 'Language ID of the POI' })
     @IsString()
     @IsNotEmpty()
-    description: string;
+    NgonNguPOI: string;
 
-    @ApiPropertyOptional()
+    @ApiProperty({ description: 'Latitude coordinate' })
+    @IsNumber()
+    latitude: number;
+
+    @ApiProperty({ description: 'Longitude coordinate' })
+    @IsNumber()
+    longitude: number;
+
+    @ApiPropertyOptional({ description: 'Range trigger for notifications/actions' })
+    @IsNumber()
+    @IsOptional()
+    rangeTrigger?: number;
+
+    @ApiPropertyOptional({ description: 'URL to the thumbnail image' })
+    @IsString()
+    @IsOptional()
+    thumbnail?: string;
+
+    @ApiPropertyOptional({ description: 'Creation date' })
+    @IsDateString()
+    @IsOptional()
+    ngayTao?: Date;
+
+    @ApiPropertyOptional({ type: [String], description: 'List of image URLs' })
+    @IsArray()
+    @IsString({ each: true })
+    @IsOptional()
+    images?: string[];
+
+    @ApiPropertyOptional({ description: 'Physical address of the POI' })
     @IsString()
     @IsOptional()
     address?: string;
-
-    @ApiPropertyOptional()
-    @IsString()
-    @IsOptional()
-    openingHours?: string;
-}
-
-export class CreatePoiDto {
-    @ApiProperty()
-    @IsString()
-    @IsNotEmpty()
-    slug: string;
-
-    @ApiProperty()
-    @IsString()
-    @IsNotEmpty()
-    type: string;
-
-    @ApiProperty()
-    @IsNumber()
-    @Min(0)
-    @Max(100)
-    priceLevel: number;
-
-    @ApiProperty()
-    @IsString()
-    @IsNotEmpty()
-    category: string;
-
-    @ApiProperty()
-    @IsString()
-    @IsNotEmpty()
-    location: string;
-
-    @ApiProperty()
-    @IsNumber()
-    @Min(0)
-    @Max(24)
-    durationHours: number;
-
-    @ApiProperty()
-    @IsString()
-    @IsNotEmpty()
-    qrCode: string;
-
-    @ApiProperty({ type: [CreatePoiTranslationDto] })
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => CreatePoiTranslationDto)
-    translations: CreatePoiTranslationDto[];
 }

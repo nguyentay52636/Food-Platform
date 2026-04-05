@@ -1,13 +1,12 @@
-// review.dto.ts
+// src/modules/review/dto/review.dto.ts
 import {
   IsString,
-  IsEnum,
+  IsBoolean,
   IsOptional,
   IsNumber,
   Min,
   Max,
   MaxLength,
-  IsArray,
   IsEmail,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -15,24 +14,29 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export class CreateReviewDto {
   @ApiProperty({ example: '64abc123def456789012345' })
   @IsString()
-  PoiId: string;
+  maPOI: string;
+
+  @ApiProperty({ example: 'session-uuid-here' })
+  @IsString()
+  maSession: string;
+
   @ApiProperty({ example: 4, minimum: 1, maximum: 5 })
   @IsNumber()
   @Min(1)
   @Max(5)
-  rating: number;
+  soSao: number;
 
   @ApiPropertyOptional({ example: 'Nơi rất đẹp, âm thanh hướng dẫn rõ ràng!' })
   @IsOptional()
   @IsString()
-  @MaxLength(2000)
-  content: string; // NoiDung
+  @MaxLength(1000)
+  noiDung?: string;
 
   @ApiPropertyOptional({ example: 'Nguyễn Văn A' })
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  username?: string;
+  tenNguoiDung?: string;
 
   @ApiPropertyOptional({ example: 'user@example.com' })
   @IsOptional()
@@ -42,32 +46,22 @@ export class CreateReviewDto {
   @ApiPropertyOptional({ example: 'device-id-xxxx' })
   @IsOptional()
   @IsString()
-  devideId?: string;
+  deviceId?: string;
 
-  @ApiPropertyOptional({ enum: ['vi', 'en', 'zh', 'ja'], default: 'vi' })
-  @IsOptional()
-  @IsEnum(['vi', 'en', 'zh', 'ja'])
-  language?: string;
-
-  @ApiPropertyOptional({ example: 'session-uuid-here' })
+  @ApiPropertyOptional({ example: '127.0.0.1' })
   @IsOptional()
   @IsString()
-  sessionId?: string;
-
-  @ApiPropertyOptional({ type: [String], example: ['https://...jpg'] })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  images?: string[];
+  ipAddress?: string;
 }
 
 export class UpdateReviewStatusDto {
-  @ApiProperty({ enum: ['pending', 'approved', 'rejected'] })
-  @IsEnum(['pending', 'approved', 'rejected'])
-  status: string;
-
-  @ApiPropertyOptional({ example: 'Ngôn từ không phù hợp' })
+  @ApiProperty({ description: 'Flagged status' })
+  @IsBoolean()
   @IsOptional()
-  @IsString()
-  rejectionReason?: string;
+  isFlagged?: boolean;
+
+  @ApiProperty({ description: 'Deleted status' })
+  @IsBoolean()
+  @IsOptional()
+  isDeleted?: boolean;
 }

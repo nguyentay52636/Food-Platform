@@ -1,45 +1,46 @@
-// poi.schema.ts
+// src/schemas/poi.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
-export type POIDocument = POI & Document;
+export type PoiDocument = Poi & Document;
 
-@Schema({ timestamps: true, collection: 'Tbl_POI' })
-export class POI {
-  @Prop({ type: Number, unique: true, sparse: true })
-  MaPOI: number;
+@Schema({ timestamps: true })
+export class Poi {
+    @Prop({ required: true, unique: true, trim: true })
+    tenPOI: string;
 
-  @Prop({ required: true })
-  TenPOI: string;
+    @Prop({ required: true })
+    loaiPOI: string;
 
-  @Prop({ required: true })
-  LoaiPOI: string;
+    @Prop({
+        type: Types.ObjectId,
+        ref: 'Language',
+        required: true
+    })
+    NgonNguPOI: Types.ObjectId;
 
-  @Prop({ required: true, type: Number })
-  Latitude: number;
+    @Prop({ required: true })
+    latitude: number;
 
-  @Prop({ required: true, type: Number })
-  Longitude: number;
+    @Prop({ required: true })
+    longitude: number;
 
-  @Prop({ type: Number, default: 0 })
-  RangeTrigger: number;
+    @Prop()
+    rangeTrigger?: number;
 
-  @Prop()
-  Thumbnail: string;
+    @Prop()
+    thumbnail?: string;
 
-  @Prop({ type: Date, default: Date.now })
-  NgayTao: Date;
+    @Prop()
+    ngayTao?: Date;
+    @Prop([String])
+    images?: string[];
 
-  // Track who created this POI
-  @Prop()
-  createdBy?: string;
-
-  // For Many-to-Many relationship with Category in Mongo
-  @Prop({ type: [Number], default: [] })
-  MaCategory: number[];
+    @Prop()
+    address?: string;
 }
 
-export const POISchema = SchemaFactory.createForClass(POI);
+export const PoiSchema = SchemaFactory.createForClass(Poi);
 
-POISchema.index({ Latitude: 1, Longitude: 1 });
-POISchema.index({ TenPOI: 'text' });
+PoiSchema.index({ latitude: 1, longitude: 1 });
+PoiSchema.index({ loaiPOI: 1 });

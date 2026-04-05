@@ -1,4 +1,4 @@
-// review.controller.ts
+// src/modules/review/review.controller.ts
 import {
   Body,
   Controller,
@@ -25,11 +25,11 @@ export class ReviewController {
 
   @Post()
   @ApiOperation({ summary: 'Tạo review cho một POI' })
-  create(@Body() dto: CreateReviewDto, @Request() req: { user?: { id: string } }) {
-    const userId = req.user?.id;
-    return this.reviewService.create(dto, userId);
+  create(@Body() dto: CreateReviewDto, @Request() req: any) {
+    // Lấy IP từ request nếu có thể
+    const ipAddress = req.ip || req.headers['x-forwarded-for'];
+    return this.reviewService.create(dto, ipAddress);
   }
-
 
   @Get('poi/:poiId')
   @ApiOperation({ summary: 'Lấy danh sách review của một POI' })
@@ -46,35 +46,36 @@ export class ReviewController {
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: '[Admin] Lấy tất cả reviews với filter status' })
+  @ApiOperation({ summary: '[Admin] Lấy tất cả reviews' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
-  @ApiQuery({ name: 'status', required: false, enum: ['pending', 'approved', 'rejected'] })
+  @ApiQuery({ name: 'isFlagged', required: false, type: Boolean })
   findAll(
     @Query('page') page = 1,
     @Query('limit') limit = 20,
-    @Query('status') status?: string,
+    @Query('isFlagged') isFlagged?: string,
   ) {
-    return this.reviewService.findAll(+page, +limit, status);
+    const query: any = {};
+    if (isFlagged !== undefined) query.isFlagged = isFlagged === 'true';
+    return this.reviewService.findAll(+page, +limit, query);
   }
 
   @Patch(':id/status')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: '[Admin] Phê duyệt hoặc từ chối review' })
+  @ApiOperation({ summary: '[Admin] Cập nhật trạng thái review (flagged/deleted)' })
   updateStatus(
     @Param('id') id: string,
     @Body() dto: UpdateReviewStatusDto,
-    @Request() req: { user: { id: string } },
   ) {
-    return this.reviewService.updateStatus(id, dto, req.user.id);
+    return this.reviewService.updateStatus(id, dto);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: '[Admin] Xóa review' })
+  @ApiOperation({ summary: '[Admin] Xóa mềm review' })
   remove(@Param('id') id: string) {
     return this.reviewService.remove(id);
   }

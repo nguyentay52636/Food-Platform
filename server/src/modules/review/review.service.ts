@@ -1,4 +1,4 @@
-// review.service.ts
+// src/modules/review/review.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -15,21 +15,20 @@ export class ReviewService {
   // ── Create review ───────────────────────────────────────────────────
   async create(
     dto: CreateReviewDto,
-    userId?: string,
+    ipAddress?: string,
   ): Promise<ReviewDocument> {
     const review = await this.reviewModel.create({
-      PoiId: new Types.ObjectId(dto.PoiId),
-      rating: dto.rating,
-      content: dto.content,
-      language: dto.language || 'vi',
-      username: dto.username || 'Khách du lịch',
-      email: dto.email || null,
-      devideId: dto.devideId || null,
-      sessionId: dto.sessionId || null,
-      images: dto.images || [],
-      authorType: userId ? 'user' : 'anonymous',
-      userId: userId ? new Types.ObjectId(userId) : null,
-      status: 'approved',
+      maPOI: new Types.ObjectId(dto.maPOI),
+      maSession: dto.maSession,
+      deviceId: dto.deviceId,
+      ipAddress: ipAddress || dto.ipAddress,
+      tenNguoiDung: dto.tenNguoiDung || 'Khách du lịch',
+      email: dto.email,
+      soSao: dto.soSao,
+      noiDung: dto.noiDung,
+      thoiGian: new Date(),
+      isDeleted: false,
+      isFlagged: false,
     });
 
     return review;
@@ -42,8 +41,8 @@ export class ReviewService {
     limit = 10,
   ): Promise<{ data: ReviewDocument[]; total: number; avgRating: number }> {
     const filter = {
-      PoiId: new Types.ObjectId(poiId),
-      status: 'approved',
+      maPOI: new Types.ObjectId(poiId),
+      isDeleted: false,
     };
 
     const [data, total, ratingAgg] = await Promise.all([
@@ -56,7 +55,7 @@ export class ReviewService {
       this.reviewModel.countDocuments(filter),
       this.reviewModel.aggregate([
         { $match: filter },
-        { $group: { _id: null, avg: { $avg: '$rating' } } },
+        { $group: { _id: null, avg: { $avg: '$soSao' } } },
       ]),
     ]);
 
@@ -71,14 +70,13 @@ export class ReviewService {
   async findAll(
     page = 1,
     limit = 20,
-    status?: string,
+    query?: any,
   ): Promise<{ data: ReviewDocument[]; total: number }> {
-    const filter = status ? { status } : {};
+    const filter = { isDeleted: false, ...query };
     const [data, total] = await Promise.all([
       this.reviewModel
         .find(filter)
-        .populate('PoiId', 'translations')
-        .populate('userId', 'username email')
+        .populate('maPOI', 'tenPOI loaiPOI')
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit),
@@ -92,18 +90,14 @@ export class ReviewService {
   async updateStatus(
     id: string,
     dto: UpdateReviewStatusDto,
-    moderatorId: string,
   ): Promise<ReviewDocument> {
+    const updateData: any = {};
+    if (dto.isFlagged !== undefined) updateData.isFlagged = dto.isFlagged;
+    if (dto.isDeleted !== undefined) updateData.isDeleted = dto.isDeleted;
+
     const review = await this.reviewModel.findByIdAndUpdate(
       id,
-      {
-        $set: {
-          status: dto.status,
-          rejectionReason: dto.rejectionReason ?? null,
-          moderatedBy: new Types.ObjectId(moderatorId),
-          moderatedAt: new Date(),
-        },
-      },
+      { $set: updateData },
       { new: true },
     );
 
@@ -111,9 +105,11 @@ export class ReviewService {
     return review;
   }
 
-  // ── Delete review (Admin) ───────────────────────────────────────────
+  // ── Delete review (Soft delete) ────────────────────────────────────
   async remove(id: string): Promise<void> {
-    const result = await this.reviewModel.findByIdAndDelete(id);
+    const result = await this.reviewModel.findByIdAndUpdate(id, {
+      $set: { isDeleted: true },
+    });
     if (!result) throw new NotFoundException('Review không tìm thấy');
   }
 
@@ -124,14 +120,14 @@ export class ReviewService {
     const result = await this.reviewModel.aggregate([
       {
         $match: {
-          PoiId: new Types.ObjectId(poiId),
-          status: 'approved',
+          maPOI: new Types.ObjectId(poiId),
+          isDeleted: false,
         },
       },
       {
         $group: {
           _id: null,
-          avgRating: { $avg: '$rating' },
+          avgRating: { $avg: '$soSao' },
           reviewCount: { $sum: 1 },
         },
       },

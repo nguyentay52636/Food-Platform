@@ -1,16 +1,20 @@
-// language.module.ts
+// src/modules/language/language.module.ts
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { LanguageController } from './language.controller';
+import { LanguageService } from './language.service';
 import { Language, LanguageSchema } from './schema/language.schema';
-import { POILanguage, POINgonNguSchema } from './schema/poi-language.schema';
+import { PoiTranslation, PoiTranslationSchema } from './schema/poi-translation.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Language.name, schema: LanguageSchema },
-      { name: POILanguage.name, schema: POINgonNguSchema },
+      { name: PoiTranslation.name, schema: PoiTranslationSchema }
     ]),
   ],
-  exports: [MongooseModule],
+  controllers: [LanguageController],
+  providers: [LanguageService],
+  exports: [LanguageService, MongooseModule]
 })
 export class LanguageModule { }

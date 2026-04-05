@@ -1,65 +1,53 @@
-// poi.controller.ts
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { PoiService } from './poi.service';
-import { CreatePoiDto, UpdatePoiDto } from './dto/poi.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CreatePoiDto } from './dto/create-poi.dto';
+import { UpdatePoiDto } from './dto/update-poi.dto';
+import { ResponsePoiDto } from './dto/response-poi.dto';
 
-@ApiTags('POI Management')
+@ApiTags('poi')
 @Controller('poi')
 export class PoiController {
-  constructor(private readonly poiService: PoiService) {}
+  constructor(private readonly poiService: PoiService) { }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Tạo POI mới kèm các bản dịch ngôn ngữ' })
-  create(@Body() createPoiDto: CreatePoiDto) {
+  @ApiOperation({ summary: 'Create a new POI' })
+  @ApiResponse({ status: 201, description: 'POI successfully created', type: ResponsePoiDto })
+  async create(@Body() createPoiDto: CreatePoiDto) {
     return this.poiService.create(createPoiDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Lấy danh sách POI với thông tin dịch ngôn ngữ (TieuDe, MoTa)' })
-  @ApiQuery({ name: 'page', required: false, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, example: 10 })
-  @ApiQuery({ name: 'lang', required: false, example: 'vi', description: 'Mã ngôn ngữ để lấy thông tin dịch thuật' })
-  findAll(
-    @Query('page') page = 1,
-    @Query('limit') limit = 10,
-    @Query('lang') lang = 'vi',
-  ) {
-    return this.poiService.findAll(+page, +limit, lang);
+  @ApiOperation({ summary: 'Get all POIs' })
+  @ApiResponse({ status: 200, description: 'Returns all POIs', type: [ResponsePoiDto] })
+  async findAll() {
+    return this.poiService.findAll();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Lấy chi tiết POI và tất cả các bản dịch ngôn ngữ hiện có' })
-  findOne(@Param('id') id: string) {
+  @ApiOperation({ summary: 'Get a POI by ID' })
+  @ApiParam({ name: 'id', description: 'POI unique ID' })
+  @ApiResponse({ status: 200, type: ResponsePoiDto })
+  @ApiResponse({ status: 404, description: 'POI not found' })
+  async findOne(@Param('id') id: string) {
     return this.poiService.findOne(id);
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Cập nhật POI và các bản dịch ngôn ngữ kèm theo' })
-  update(@Param('id') id: string, @Body() updatePoiDto: UpdatePoiDto) {
+  @ApiOperation({ summary: 'Update a POI' })
+  @ApiParam({ name: 'id', description: 'POI unique ID' })
+  @ApiResponse({ status: 200, type: ResponsePoiDto })
+  @ApiResponse({ status: 404, description: 'POI not found' })
+  async update(@Param('id') id: string, @Body() updatePoiDto: UpdatePoiDto) {
     return this.poiService.update(id, updatePoiDto);
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Xóa POI và tất cả các bản dịch liên quan' })
-  remove(@Param('id') id: string) {
+  @ApiOperation({ summary: 'Delete a POI' })
+  @ApiParam({ name: 'id', description: 'POI unique ID' })
+  @ApiResponse({ status: 200, type: ResponsePoiDto })
+  @ApiResponse({ status: 404, description: 'POI not found' })
+  async remove(@Param('id') id: string) {
     return this.poiService.remove(id);
   }
 }

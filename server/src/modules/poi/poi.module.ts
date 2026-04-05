@@ -1,18 +1,15 @@
-// poi.module.ts
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PoiController } from './poi.controller';
 import { PoiService } from './poi.service';
-import { POI, POISchema } from './schema/poi.schema';
-import { LanguageModule } from '../language/language.module';
+import { Poi, PoiSchema } from './schema/poi.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: POI.name, schema: POISchema }]),
-    LanguageModule, // Access to LanguageModels
+    MongooseModule.forFeature([{ name: Poi.name, schema: PoiSchema }])
   ],
   controllers: [PoiController],
   providers: [PoiService],
-  exports: [PoiService],
+  exports: [PoiService]
 })
 export class PoiModule {}

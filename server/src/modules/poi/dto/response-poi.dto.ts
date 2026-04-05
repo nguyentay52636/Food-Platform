@@ -1,3 +1,39 @@
-export class ResponsePoiDto {
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+export class ResponsePoiDto {
+    @ApiProperty()
+    _id: string;
+
+    @ApiProperty()
+    tenPOI: string;
+
+    @ApiProperty()
+    loaiPOI: string;
+
+    @ApiProperty()
+    latitude: number;
+
+    @ApiProperty()
+    longitude: number;
+
+    @ApiPropertyOptional()
+    rangeTrigger?: number;
+
+    @ApiPropertyOptional()
+    thumbnail?: string;
+
+    @ApiPropertyOptional()
+    ngayTao?: Date;
+
+    @ApiPropertyOptional({ type: [String] })
+    images?: string[];
+
+    @ApiPropertyOptional()
+    address?: string;
+
+    @ApiPropertyOptional()
+    createdAt?: Date;
+
+    @ApiPropertyOptional()
+    updatedAt?: Date;
 }
