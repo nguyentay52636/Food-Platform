@@ -6,7 +6,9 @@ export type PoiTranslationDocument = PoiTranslation & Document;
 
 @Schema({
   timestamps: true,
-  collection: 'Tbl_POI_NgonNgu'
+  collection: 'Tbl_POI_NgonNgu',
+  // Legacy collection has mixed PascalCase/camelCase keys and indexes.
+  strict: false,
 })
 export class PoiTranslation {
   @Prop({ type: Types.ObjectId, ref: 'Poi', required: true })
@@ -24,6 +26,15 @@ export class PoiTranslation {
 
   @Prop()
   moTa?: string;
+
+  @Prop()
+  audioUrl?: string;
+
+  @Prop()
+  audioDurationSec?: number;
+
+  @Prop()
+  audioUpdatedAt?: Date;
 }
 
 export const PoiTranslationSchema = SchemaFactory.createForClass(PoiTranslation);

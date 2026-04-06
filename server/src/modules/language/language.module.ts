@@ -3,6 +3,8 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { LanguageController } from './language.controller';
 import { LanguageService } from './language.service';
+import { PoiTranslationController } from './poi-translation.controller';
+import { PoiTranslationService } from './poi-translation.service';
 import { Language, LanguageSchema } from './schema/language.schema';
 import { PoiTranslation, PoiTranslationSchema } from './schema/poi-translation.schema';
 
@@ -13,8 +15,8 @@ import { PoiTranslation, PoiTranslationSchema } from './schema/poi-translation.s
       { name: PoiTranslation.name, schema: PoiTranslationSchema }
     ]),
   ],
-  controllers: [LanguageController],
-  providers: [LanguageService],
-  exports: [LanguageService, MongooseModule]
+  controllers: [LanguageController, PoiTranslationController],
+  providers: [LanguageService, PoiTranslationService],
+  exports: [LanguageService, PoiTranslationService, MongooseModule]
 })
 export class LanguageModule { }

@@ -1,5 +1,25 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+class PoiTranslationSummaryDto {
+    @ApiProperty()
+    _id: string;
+
+    @ApiProperty()
+    maNgonNgu: string;
+
+    @ApiProperty()
+    tieuDe: string;
+
+    @ApiPropertyOptional()
+    moTa?: string;
+
+    @ApiPropertyOptional()
+    audioUrl?: string;
+
+    @ApiPropertyOptional()
+    audioDurationSec?: number;
+}
+
 export class ResponsePoiDto {
     @ApiProperty()
     _id: string;
@@ -36,4 +56,7 @@ export class ResponsePoiDto {
 
     @ApiPropertyOptional()
     updatedAt?: Date;
+
+    @ApiPropertyOptional({ type: [PoiTranslationSummaryDto] })
+    translations?: PoiTranslationSummaryDto[];
 }
