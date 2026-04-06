@@ -73,6 +73,8 @@ export interface Translations {
         subtitle: string
         searchPlaceholder: string
         nearbyLocations: string
+        favoriteLocations: string
+        noFavoritesYet: string
         viewAll: string
         scanQR: string
     }

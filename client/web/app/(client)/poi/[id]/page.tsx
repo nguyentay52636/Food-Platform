@@ -43,6 +43,7 @@ import { useLanguage } from "@/lib/context/language-context"
 import { useAudio } from "@/lib/context/audio-context"
 import { useVisitorSession, usePOIViewTracking, useAudioTracking } from "@/lib/context/visitor-session"
 import { getClientPOIById, CLIENT_MOCK_POIS } from "@/lib/client-mock-data"
+import { usePoiFavoriteIds, togglePoiFavorite } from "@/lib/poi-favorites-session"
 import { SUPPORTED_LANGUAGES, type LanguageCode } from "@/lib/client-types"
 
 interface POIDetailPageProps {
@@ -64,7 +65,7 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
     const visitor = useVisitorSession()
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
     const [showFullDescription, setShowFullDescription] = useState(false)
-    const [isFavorite, setIsFavorite] = useState(false)
+    const favoriteIds = usePoiFavoriteIds()
     const galleryRef = useRef<HTMLDivElement>(null)
 
     const poi = getClientPOIById(id)
@@ -79,6 +80,7 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
         notFound()
     }
 
+    const isFavorite = favoriteIds.includes(poi.id)
     const name = poi.name[language] || poi.name.en
     const description = poi.description[language] || poi.description.en
     const images = poi.images.length > 0 ? poi.images : []
@@ -180,7 +182,7 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
                             variant="ghost"
                             size="icon"
                             className="h-10 w-10 bg-black/30 hover:bg-black/50 text-white rounded-full"
-                            onClick={() => setIsFavorite(!isFavorite)}
+                            onClick={() => togglePoiFavorite(poi.id)}
                         >
                             <Heart className={`h-5 w-5 ${isFavorite ? "fill-red-500 text-red-500" : ""}`} />
                         </Button>

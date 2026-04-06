@@ -19,6 +19,8 @@ import type { ClientPOI } from "@/lib/client-types"
 import Image from "next/image"
 import { useVisitorSession } from "@/lib/context/visitor-session"
 import useGeolocation from "@/hooks/useGeolocation"
+import { usePoiFavoriteIds } from "@/lib/poi-favorites-session"
+import { cn } from "@/lib/utils"
 
 export default function ExplorePage() {
     const { language, t } = useLanguage()
@@ -29,7 +31,9 @@ export default function ExplorePage() {
     const [filter, setFilter] = useState<"all" | "major" | "minor">("all")
     const [sheetOpen, setSheetOpen] = useState(false)
     const [locateSignal, setLocateSignal] = useState(0)
-    
+    const [listTab, setListTab] = useState<"nearby" | "favorites">("nearby")
+    const favoriteIds = usePoiFavoriteIds()
+
     // Track page view and geolocation
     const visitor = useVisitorSession()
     const { position: userLocation } = useGeolocation()
@@ -38,12 +42,20 @@ export default function ExplorePage() {
         visitor.trackPageView("home", { filter: "all" })
     }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-    const pois = CLIENT_MOCK_POIS.filter((poi) => {
-        if (filter === "all") return true
-        return poi.category === filter
-    })
+    const matchesMapFilter = (poi: ClientPOI) =>
+        filter === "all" || poi.category === filter
+
+    const nearbyPois = CLIENT_MOCK_POIS.filter(matchesMapFilter)
+    const favoritePois = CLIENT_MOCK_POIS.filter(
+        (p) => favoriteIds.includes(p.id) && matchesMapFilter(p)
+    )
+    const pois = listTab === "nearby" ? nearbyPois : favoritePois
 
     const majorPois = CLIENT_MOCK_POIS.filter((p) => p.category === "major")
+    const stripPois =
+        listTab === "nearby"
+            ? majorPois
+            : CLIENT_MOCK_POIS.filter((p) => favoriteIds.includes(p.id) && p.category === "major")
 
     const handleMarkerClick = useCallback((poi: ClientPOI) => {
         setSelectedPoi(poi)
@@ -82,29 +94,65 @@ export default function ExplorePage() {
                 {/* Left: vertical list (desktop/tablet) */}
                 <aside className="hidden md:flex md:w-[30%] flex-col border-r border-border bg-card/60 backdrop-blur-xl overflow-y-auto">
                     <div className="p-3 space-y-3 w-full min-h-0">
-                        <div className="flex items-center justify-between px-1 pt-1">
-                            <h2 className="font-semibold text-sm">{t.home.nearbyLocations}</h2>
-                            <Badge variant="secondary" className="bg-primary/10 text-primary text-sm px-3 py-1 rounded-full">
-                                {pois.length}
-                            </Badge>
+                        <div className="flex flex-col gap-2 px-1 pt-1">
+                            <div className="flex items-center gap-2">
+                                <div className="flex flex-1 min-w-0 rounded-lg bg-muted/60 p-0.5 gap-0.5">
+                                    <button
+                                        type="button"
+                                        className={cn(
+                                            "flex-1 min-w-0 rounded-md py-2 px-1 text-xs font-medium transition-colors",
+                                            listTab === "nearby"
+                                                ? "bg-background text-foreground shadow-sm"
+                                                : "text-muted-foreground hover:text-foreground"
+                                        )}
+                                        onClick={() => setListTab("nearby")}
+                                    >
+                                        {t.home.nearbyLocations}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={cn(
+                                            "flex-1 min-w-0 rounded-md py-2 px-1 text-xs font-medium transition-colors",
+                                            listTab === "favorites"
+                                                ? "bg-background text-foreground shadow-sm"
+                                                : "text-muted-foreground hover:text-foreground"
+                                        )}
+                                        onClick={() => setListTab("favorites")}
+                                    >
+                                        {t.home.favoriteLocations}
+                                    </button>
+                                </div>
+                                <Badge
+                                    variant="secondary"
+                                    className="shrink-0 bg-primary/10 text-primary text-sm px-3 py-1 rounded-full"
+                                >
+                                    {pois.length}
+                                </Badge>
+                            </div>
                         </div>
 
                         <div className="space-y-3 pb-28">
-                            {pois.map((poi) => (
-                                <POICard
-                                    key={poi.id}
-                                    poi={poi}
-                                    language={language}
-                                    compact
-                                    distance={Math.random() * 5}
-                                    onLocate={(p) => {
-                                        setSelectedPoi(p)
-                                        setPreviewPoi(p)
-                                        setPreviewOpen(true)
-                                    }}
-                                    t={t}
-                                />
-                            ))}
+                            {pois.length === 0 && listTab === "favorites" ? (
+                                <p className="text-sm text-muted-foreground text-center py-8 px-2">
+                                    {t.home.noFavoritesYet}
+                                </p>
+                            ) : (
+                                pois.map((poi) => (
+                                    <POICard
+                                        key={poi.id}
+                                        poi={poi}
+                                        language={language}
+                                        compact
+                                        distance={Math.random() * 5}
+                                        onLocate={(p) => {
+                                            setSelectedPoi(p)
+                                            setPreviewPoi(p)
+                                            setPreviewOpen(true)
+                                        }}
+                                        t={t}
+                                    />
+                                ))
+                            )}
                         </div>
                     </div>
                 </aside>
@@ -252,17 +300,52 @@ export default function ExplorePage() {
                             <SheetContent side="bottom" className="h-auto max-h-[85vh] rounded-t-[2rem] px-0 pb-10 border-0 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] bg-background/98 backdrop-blur-xl">
                                 <SheetHeader className="pb-2 pt-2 px-6">
                                     <div className="mx-auto w-12 h-1.5 rounded-full bg-muted-foreground/20 mb-5" />
-                                    <SheetTitle className="text-2xl font-bold flex items-center justify-between">
-                                        {t.home.nearbyLocations}
-                                        <Badge variant="secondary" className="bg-primary/10 text-primary text-sm px-3 py-1 rounded-full">
-                                            {pois.length}
-                                        </Badge>
-                                    </SheetTitle>
+                                    <div className="flex flex-col gap-3">
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex flex-1 min-w-0 rounded-lg bg-muted/60 p-0.5 gap-0.5">
+                                                <button
+                                                    type="button"
+                                                    className={cn(
+                                                        "flex-1 min-w-0 rounded-md py-2 px-1 text-xs font-medium transition-colors",
+                                                        listTab === "nearby"
+                                                            ? "bg-background text-foreground shadow-sm"
+                                                            : "text-muted-foreground hover:text-foreground"
+                                                    )}
+                                                    onClick={() => setListTab("nearby")}
+                                                >
+                                                    {t.home.nearbyLocations}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className={cn(
+                                                        "flex-1 min-w-0 rounded-md py-2 px-1 text-xs font-medium transition-colors",
+                                                        listTab === "favorites"
+                                                            ? "bg-background text-foreground shadow-sm"
+                                                            : "text-muted-foreground hover:text-foreground"
+                                                    )}
+                                                    onClick={() => setListTab("favorites")}
+                                                >
+                                                    {t.home.favoriteLocations}
+                                                </button>
+                                            </div>
+                                            <Badge
+                                                variant="secondary"
+                                                className="shrink-0 bg-primary/10 text-primary text-sm px-3 py-1 rounded-full"
+                                            >
+                                                {pois.length}
+                                            </Badge>
+                                        </div>
+                                    </div>
                                 </SheetHeader>
 
                                 {/* Horizontal Swipeable List */}
                                 <div className="flex gap-4 overflow-x-auto pb-6 pt-4 px-6 snap-x snap-mandatory scrollbar-hide">
-                                    {pois.map((poi) => (
+                                    {pois.length === 0 && listTab === "favorites" ? (
+                                        <p className="text-sm text-muted-foreground py-6 px-2 w-full text-center">
+                                            {t.home.noFavoritesYet}
+                                        </p>
+                                    ) : (
+                                    pois.map((poi) => (
                                         <div key={poi.id} className="snap-center shrink-0 transition-transform duration-300 hover:scale-[1.02]">
                                             <POICard
                                                 poi={poi}
@@ -276,7 +359,8 @@ export default function ExplorePage() {
                                                 t={t}
                                             />
                                         </div>
-                                    ))}
+                                    ))
+                                    )}
                                 </div>
                             </SheetContent>
                         </Sheet>
@@ -288,29 +372,65 @@ export default function ExplorePage() {
             <div className="md:hidden">
                 {!selectedPoi && (
                     <div className="bg-card border-t border-border p-4 pb-16">
-                        <div className="flex items-center justify-between mb-3">
-                            <h2 className="font-semibold text-sm">{t.home.nearbyLocations}</h2>
-                            <Button
-                                variant="link"
-                                size="sm"
-                                className="h-auto p-0 text-xs"
-                                onClick={() => setSheetOpen(true)}
-                            >
-                                {t.home.viewAll}
-                            </Button>
+                        <div className="flex flex-col gap-2 mb-3">
+                            <div className="flex rounded-lg bg-muted/60 p-0.5 gap-0.5">
+                                <button
+                                    type="button"
+                                    className={cn(
+                                        "flex-1 rounded-md py-2 text-xs font-medium transition-colors",
+                                        listTab === "nearby"
+                                            ? "bg-background text-foreground shadow-sm"
+                                            : "text-muted-foreground hover:text-foreground"
+                                    )}
+                                    onClick={() => setListTab("nearby")}
+                                >
+                                    {t.home.nearbyLocations}
+                                </button>
+                                <button
+                                    type="button"
+                                    className={cn(
+                                        "flex-1 rounded-md py-2 text-xs font-medium transition-colors",
+                                        listTab === "favorites"
+                                            ? "bg-background text-foreground shadow-sm"
+                                            : "text-muted-foreground hover:text-foreground"
+                                    )}
+                                    onClick={() => setListTab("favorites")}
+                                >
+                                    {t.home.favoriteLocations}
+                                </button>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs text-muted-foreground">
+                                    {listTab === "favorites" ? t.home.favoriteLocations : t.home.nearbyLocations}
+                                </span>
+                                <Button
+                                    variant="link"
+                                    size="sm"
+                                    className="h-auto p-0 text-xs"
+                                    onClick={() => setSheetOpen(true)}
+                                >
+                                    {t.home.viewAll}
+                                </Button>
+                            </div>
                         </div>
 
                         <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-                            {majorPois.map((poi) => (
-                                <POICard
-                                    key={poi.id}
-                                    poi={poi}
-                                    language={language}
-                                    distance={Math.random() * 5}
-                                    onLocate={handleLocate}
-                                    t={t}
-                                />
-                            ))}
+                            {stripPois.length === 0 && listTab === "favorites" ? (
+                                <p className="text-sm text-muted-foreground py-4 px-2 w-full text-center">
+                                    {t.home.noFavoritesYet}
+                                </p>
+                            ) : (
+                                stripPois.map((poi) => (
+                                    <POICard
+                                        key={poi.id}
+                                        poi={poi}
+                                        language={language}
+                                        distance={Math.random() * 5}
+                                        onLocate={handleLocate}
+                                        t={t}
+                                    />
+                                ))
+                            )}
                         </div>
                     </div>
                 )}
