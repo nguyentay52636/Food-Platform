@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback, useState } from "react"
 import type { POI } from "@/lib/types"
+import { Navigation } from "lucide-react"
 
 interface POIMapProps {
     pois: POI[]
@@ -28,7 +29,10 @@ export function PoisMap({
     const mapInstanceRef = useRef<L.Map | null>(null)
     const markersRef = useRef<L.Marker[]>([])
     const pickerMarkerRef = useRef<L.Marker | null>(null)
+    const userMarkerRef = useRef<L.Marker | null>(null)
     const [isReady, setIsReady] = useState(false)
+    const [isLocating, setIsLocating] = useState(false)
+    const [locationError, setLocationError] = useState<string | null>(null)
 
     // Initialize map
     useEffect(() => {
@@ -191,6 +195,61 @@ export function PoisMap({
         })
     }, [selectedPoi, isReady])
 
+    const handleLocateUser = useCallback(() => {
+        if (!mapInstanceRef.current || !isReady) return
+        if (!navigator.geolocation) {
+            setLocationError("Trình duyệt không hỗ trợ định vị.")
+            return
+        }
+
+        setIsLocating(true)
+        setLocationError(null)
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords
+                const map = mapInstanceRef.current
+                if (!map) {
+                    setIsLocating(false)
+                    return
+                }
+
+                const L = (await import("leaflet")).default
+                if (userMarkerRef.current) {
+                    userMarkerRef.current.remove()
+                    userMarkerRef.current = null
+                }
+
+                const icon = L.divIcon({
+                    className: "user-location-marker",
+                    html: `<div style="
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 50%;
+                        background: #3b82f6;
+                        border: 3px solid #fff;
+                        box-shadow: 0 0 0 2px rgba(59,130,246,0.35), 0 2px 8px rgba(0,0,0,0.3);
+                    "></div>`,
+                    iconSize: [16, 16],
+                    iconAnchor: [8, 8],
+                })
+
+                userMarkerRef.current = L.marker([latitude, longitude], { icon }).addTo(map)
+                map.setView([latitude, longitude], 16, { animate: true })
+                setIsLocating(false)
+            },
+            (error) => {
+                setIsLocating(false)
+                setLocationError(error.message || "Không thể lấy vị trí hiện tại.")
+            },
+            {
+                enableHighAccuracy: true,
+                maximumAge: 1000,
+                timeout: 8000,
+            }
+        )
+    }, [isReady])
+
     // Ensure map recalculates size after layout changes
     useEffect(() => {
         if (!mapInstanceRef.current || !isReady) return
@@ -207,9 +266,23 @@ export function PoisMap({
     return (
         <div className={`relative ${className}`}>
             <div ref={mapRef} className="h-full w-full rounded-lg" />
+            <button
+                type="button"
+                onClick={handleLocateUser}
+                className="absolute right-3 top-3 z-[1000] flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background/95 text-foreground shadow-md backdrop-blur hover:bg-accent"
+                title="Xác định vị trí hiện tại"
+                disabled={!isReady || isLocating}
+            >
+                <Navigation className={`h-4 w-4 ${isLocating ? "animate-pulse" : ""}`} />
+            </button>
             {pickerMode && (
                 <div className="absolute left-3 top-3 z-[1000] rounded-md bg-card/95 px-3 py-1.5 text-xs font-medium text-foreground shadow-md backdrop-blur-sm">
                     Click on the map to select a location
+                </div>
+            )}
+            {locationError && (
+                <div className="absolute bottom-3 left-3 z-[1000] rounded-md bg-destructive/90 px-2.5 py-1.5 text-xs text-destructive-foreground shadow-md">
+                    {locationError}
                 </div>
             )}
         </div>
