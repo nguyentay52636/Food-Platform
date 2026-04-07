@@ -137,95 +137,95 @@ export function PoisSidebarForm({
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-1 flex-col">
-        <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
+        <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
           {error && <p className="rounded-md bg-destructive/10 p-2.5 text-sm text-destructive">{error}</p>}
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <Label htmlFor="poi-lat">Latitude</Label>
-            <Input
-              id="poi-lat"
-              type="number"
-              step="any"
-              value={latitude}
-              onChange={(e) => setLatitude(e.target.value)}
-              placeholder="16.0611"
-              required
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="poi-lat">Latitude</Label>
+              <Input
+                id="poi-lat"
+                type="number"
+                step="any"
+                value={latitude}
+                onChange={(e) => setLatitude(e.target.value)}
+                placeholder="16.0611"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="poi-lng">Longitude</Label>
+              <Input
+                id="poi-lng"
+                type="number"
+                step="any"
+                value={longitude}
+                onChange={(e) => setLongitude(e.target.value)}
+                placeholder="108.2278"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="poi-name">Tên điểm đến</Label>
+            <Input id="poi-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Tên POI" required />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="poi-desc">Mô tả</Label>
+            <Textarea
+              id="poi-desc"
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Mô tả ngắn về địa điểm..."
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="poi-lng">Longitude</Label>
-            <Input
-              id="poi-lng"
-              type="number"
-              step="any"
-              value={longitude}
-              onChange={(e) => setLongitude(e.target.value)}
-              placeholder="108.2278"
-              required
-            />
-          </div>
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="poi-name">Tên điểm đến</Label>
-          <Input id="poi-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Tên POI" required />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="poi-desc">Mô tả</Label>
-          <Textarea
-            id="poi-desc"
-            rows={3}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Mô tả ngắn về địa điểm..."
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <Label>Loại điểm</Label>
-            <Select value={category} onValueChange={(value) => setCategory(value as POICategory)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="major">Điểm chính</SelectItem>
-                <SelectItem value="minor">Điểm nhỏ</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {category === "minor" && (
-            <div className="space-y-2">
-              <Label>Loại phụ</Label>
-              <Select value={subCategory} onValueChange={(value) => setSubCategory(value as MinorSubCategory)}>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Loại điểm</Label>
+              <Select value={category} onValueChange={(value) => setCategory(value as POICategory)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Chọn loại..." />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {SUB_CATEGORIES.map((sc) => (
-                    <SelectItem key={sc.value} value={sc.value}>
-                      {sc.label}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="major">Điểm chính</SelectItem>
+                  <SelectItem value="minor">Điểm nhỏ</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-          )}
-        </div>
+            {category === "minor" && (
+              <div className="space-y-1.5">
+                <Label>Loại phụ</Label>
+                <Select value={subCategory} onValueChange={(value) => setSubCategory(value as MinorSubCategory)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn loại..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SUB_CATEGORIES.map((sc) => (
+                      <SelectItem key={sc.value} value={sc.value}>
+                        {sc.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="poi-image">Ảnh đại diện (URL)</Label>
-          <Input
-            id="poi-image"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            placeholder="https://example.com/image.jpg"
-          />
-        </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="poi-image">Ảnh đại diện (URL)</Label>
+            <Input
+              id="poi-image"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="https://example.com/image.jpg"
+            />
+          </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="poi-audio">Audio URL</Label>
             <Input
               id="poi-audio"
@@ -235,7 +235,7 @@ export function PoisSidebarForm({
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label>Đa ngôn ngữ</Label>
             <Select value={narrationLanguage} onValueChange={setNarrationLanguage}>
               <SelectTrigger>
