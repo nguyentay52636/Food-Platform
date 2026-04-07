@@ -269,7 +269,7 @@ export function PoisMap({
             <button
                 type="button"
                 onClick={handleLocateUser}
-                className="absolute right-3 top-3 z-[1000] flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background/95 text-foreground shadow-md backdrop-blur hover:bg-accent"
+                className="absolute left-3 top-[98px] z-[1000] flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background/95 text-foreground shadow-md backdrop-blur hover:bg-accent"
                 title="Xác định vị trí hiện tại"
                 disabled={!isReady || isLocating}
             >
