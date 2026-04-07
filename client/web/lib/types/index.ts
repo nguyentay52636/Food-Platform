@@ -11,6 +11,8 @@ export interface POI {
   latitude: number
   longitude: number
   imageUrl?: string
+  audioUrl?: string
+  narrationLanguages?: string[]
   address?: string
   rating?: number
   reviewCount?: number
@@ -26,6 +28,8 @@ export interface CreatePOIPayload {
   latitude: number
   longitude: number
   imageUrl?: string
+  audioUrl?: string
+  narrationLanguages?: string[]
   address?: string
 }
 

@@ -41,21 +41,21 @@ export function PoisListHeader({
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="all" className="gap-1.5 text-xs">
             <MapPin className="h-3.5 w-3.5" />
-            All
+            Tất cả
             <span className="ml-1 rounded-full bg-muted px-1.5 text-[10px] font-medium">
               {stats.total}
             </span>
           </TabsTrigger>
           <TabsTrigger value="major" className="gap-1.5 text-xs">
             <Star className="h-3.5 w-3.5" />
-            Major
+            Điểm chính
             <span className="ml-1 rounded-full bg-muted px-1.5 text-[10px] font-medium">
               {stats.major}
             </span>
           </TabsTrigger>
           <TabsTrigger value="minor" className="gap-1.5 text-xs">
             <Tag className="h-3.5 w-3.5" />
-            Minor
+            Điểm nhỏ
             <span className="ml-1 rounded-full bg-muted px-1.5 text-[10px] font-medium">
               {stats.minor}
             </span>

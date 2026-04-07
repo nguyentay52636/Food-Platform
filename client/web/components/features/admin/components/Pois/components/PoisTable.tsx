@@ -41,7 +41,7 @@ export function PoisTable({ pois, selectedPoi, onSelect, onEdit, onDelete }: POI
                 <TableHeader>
                     <TableRow>
                         <TableHead className="w-[200px]">Name</TableHead>
-                        <TableHead>Category</TableHead>
+                        <TableHead>Loại điểm</TableHead>
                         <TableHead className="hidden md:table-cell">Coordinates</TableHead>
                         <TableHead className="w-[100px] text-right">Actions</TableHead>
                     </TableRow>
@@ -70,7 +70,7 @@ export function PoisTable({ pois, selectedPoi, onSelect, onEdit, onDelete }: POI
                                         variant={poi.category === "major" ? "default" : "secondary"}
                                         className="text-xs"
                                     >
-                                        {poi.category}
+                                        {poi.category === "major" ? "Điểm chính" : "Điểm nhỏ"}
                                     </Badge>
                                     {poi.subCategory && (
                                         <Badge variant="outline" className="text-xs">

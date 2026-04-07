@@ -191,6 +191,19 @@ export function PoisMap({
         })
     }, [selectedPoi, isReady])
 
+    // Ensure map recalculates size after layout changes
+    useEffect(() => {
+        if (!mapInstanceRef.current || !isReady) return
+        const map = mapInstanceRef.current
+        const handleResize = () => map.invalidateSize()
+        const timeout = window.setTimeout(handleResize, 120)
+        window.addEventListener("resize", handleResize)
+        return () => {
+            window.clearTimeout(timeout)
+            window.removeEventListener("resize", handleResize)
+        }
+    }, [isReady, pois.length, pickerMode])
+
     return (
         <div className={`relative ${className}`}>
             <div ref={mapRef} className="h-full w-full rounded-lg" />

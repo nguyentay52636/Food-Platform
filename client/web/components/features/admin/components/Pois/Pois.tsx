@@ -7,30 +7,18 @@ import {
     usePOISelection,
     usePOIPicker,
     usePOIActions,
-    usePOIDialogs,
 } from "@/components/features/admin/components/Pois/hooks/usePois"
-import { PoisListHeader } from "./components/PoisCard/PoisListHeader"
-import { PoiSearchBar } from "./components/PoiSearchBar"
-import { POILoadingState } from "./components/PoisLoadingState"
-import { PoisTable } from "./components/PoisTable"
 import { PoisMap } from "./components/PoisMap"
 import { POIMapInfoOverlay } from "./components/PoisMapsInfoOverlay"
-import { POIFormDialog } from "./components/Dialog/PoisFormDialog"
 import { PoisDeleteDialog } from "./components/Dialog/PoisDeleteDialog"
 import { PoisCardStrip } from "./components/PoisCardStrip"
+import { PoisSidebarForm } from "./components/PoisSidebarForm"
 
 type NarrationLanguage = "vi-VN" | "en-US" | "zh-CN"
 
 export default function Pois() {
     const {
         pois,
-        isLoading,
-        search,
-        setSearch,
-        filterCategory,
-        setFilterCategory,
-        filteredPois,
-        stats,
         loadPOIs,
     } = usePOIs()
 
@@ -38,17 +26,8 @@ export default function Pois() {
 
     const { pickerState, activatePicker, deactivatePicker, setPickerLocation } = usePOIPicker()
 
-    const {
-        formOpen,
-        setFormOpen,
-        editingPoi,
-        deleteTarget,
-        openCreateDialog,
-        openEditDialog,
-        closeFormDialog,
-        openDeleteDialog,
-        closeDeleteDialog,
-    } = usePOIDialogs()
+    const [editingPoi, setEditingPoi] = useState<POI | null>(null)
+    const [deleteTarget, setDeleteTarget] = useState<POI | null>(null)
 
     // CRUD actions
     const { handleCreate, handleUpdate, handleDelete } = usePOIActions(loadPOIs, clearSelection)
@@ -71,17 +50,13 @@ export default function Pois() {
 
     // ─── Event Handlers ─────────────────────────────────────────────────────────
 
-    const handleCreateClick = useCallback(() => {
-        openCreateDialog()
-        activatePicker()
-    }, [openCreateDialog, activatePicker])
-
     const handleEditClick = useCallback(
         (poi: POI) => {
-            openEditDialog(poi)
+            setEditingPoi(poi)
+            selectPoi(poi)
             deactivatePicker()
         },
-        [openEditDialog, deactivatePicker]
+        [selectPoi, deactivatePicker]
     )
 
     const handleMapClick = useCallback(
@@ -97,22 +72,19 @@ export default function Pois() {
         (poi: POI) => {
             if (!pickerState.isActive) {
                 selectPoi(poi)
+                setEditingPoi(poi)
             }
         },
         [pickerState.isActive, selectPoi]
-    )
-
-    const handleViewOnMap = useCallback(
-        (poi: POI) => {
-            selectPoi(poi)
-        },
-        [selectPoi]
     )
 
     const handleFormSubmit = useCallback(
         async (data: CreatePOIPayload) => {
             if (editingPoi) {
                 await handleUpdate(editingPoi.id, data)
+                setEditingPoi((prev) =>
+                    prev ? { ...prev, ...data, updatedAt: new Date().toISOString() } : prev
+                )
             } else {
                 await handleCreate(data)
             }
@@ -121,23 +93,21 @@ export default function Pois() {
         [editingPoi, handleCreate, handleUpdate, deactivatePicker]
     )
 
-    const handleFormOpenChange = useCallback(
-        (open: boolean) => {
-            setFormOpen(open)
-            if (!open) {
-                closeFormDialog()
-                deactivatePicker()
-            }
-        },
-        [setFormOpen, closeFormDialog, deactivatePicker]
-    )
-
     const handleDeleteConfirm = useCallback(async () => {
         if (deleteTarget) {
             await handleDelete(deleteTarget)
-            closeDeleteDialog()
+            setDeleteTarget(null)
+            if (editingPoi?.id === deleteTarget.id) {
+                setEditingPoi(null)
+            }
         }
-    }, [deleteTarget, handleDelete, closeDeleteDialog])
+    }, [deleteTarget, handleDelete, editingPoi])
+
+    const handleResetForm = useCallback(() => {
+        setEditingPoi(null)
+        clearSelection()
+        deactivatePicker()
+    }, [clearSelection, deactivatePicker])
 
     const handleOverlayClose = useCallback(() => {
         clearSelection()
@@ -189,40 +159,34 @@ export default function Pois() {
     // ─── Render ─────────────────────────────────────────────────────────────────
 
     return (
-        <div className="flex h-full flex-col lg:flex-row">
-            {/* Left Panel: POI List */}
-            <div className="flex h-full w-full flex-col border-r border-border lg:w-[480px] xl:w-[540px]">
-                <PoisListHeader
-                    stats={stats}
-                    filterCategory={filterCategory}
-                    onFilterChange={setFilterCategory}
-                    onCreateClick={handleCreateClick}
+        <div className="flex h-full min-h-0">
+            <div className="hidden h-full w-[360px] shrink-0 lg:block">
+                <PoisSidebarForm
+                    poi={editingPoi}
+                    pickerLat={pickerState.lat}
+                    pickerLng={pickerState.lng}
+                    pickerMode={pickerState.isActive}
+                    onTogglePicker={() => (pickerState.isActive ? deactivatePicker() : activatePicker())}
+                    onResetForm={handleResetForm}
+                    onSubmit={handleFormSubmit}
                 />
-
-                <PoiSearchBar
-                    search={search}
-                    onSearchChange={setSearch}
-                    resultCount={filteredPois.length}
-                />
-
-                <div className="flex-1 overflow-y-auto">
-                    {isLoading ? (
-                        <POILoadingState />
-                    ) : (
-                        <PoisTable
-                            pois={filteredPois}
-                            selectedPoi={selectedPoi}
-                            onSelect={selectPoi}
-                            onEdit={handleEditClick}
-                            onDelete={openDeleteDialog}
-                        />
-                    )}
-                </div>
             </div>
 
-            <div className="flex min-h-0 flex-1 flex-col">
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                <div className="border-b border-border lg:hidden">
+                    <PoisSidebarForm
+                        poi={editingPoi}
+                        pickerLat={pickerState.lat}
+                        pickerLng={pickerState.lng}
+                        pickerMode={pickerState.isActive}
+                        onTogglePicker={() => (pickerState.isActive ? deactivatePicker() : activatePicker())}
+                        onResetForm={handleResetForm}
+                        onSubmit={handleFormSubmit}
+                    />
+                </div>
+
                 {/* Map (upper) */}
-                <div className="relative min-h-[280px] flex-1">
+                <div className="relative min-h-[420px] flex-1 overflow-hidden">
                     <PoisMap
                         pois={pois}
                         selectedPoi={selectedPoi}
@@ -239,7 +203,7 @@ export default function Pois() {
                         <POIMapInfoOverlay
                             poi={selectedPoi}
                             onEdit={() => handleEditClick(selectedPoi)}
-                            onDelete={() => openDeleteDialog(selectedPoi)}
+                            onDelete={() => setDeleteTarget(selectedPoi)}
                             onClose={handleOverlayClose}
                         />
                     )}
@@ -250,7 +214,7 @@ export default function Pois() {
                     <PoisCardStrip
                         pois={pois}
                         selectedPoi={selectedPoi}
-                        onSelect={selectPoi}
+                        onSelect={handleEditClick}
                     />
                 </div>
             </div>
@@ -295,19 +259,9 @@ export default function Pois() {
                 </div>
             )}
 
-            {/* Dialogs */}
-            <POIFormDialog
-                open={formOpen}
-                onOpenChange={handleFormOpenChange}
-                poi={editingPoi}
-                onSubmit={handleFormSubmit}
-                pickerLat={pickerState.lat}
-                pickerLng={pickerState.lng}
-            />
-
             <PoisDeleteDialog
                 poi={deleteTarget}
-                onClose={closeDeleteDialog}
+                onClose={() => setDeleteTarget(null)}
                 onConfirm={handleDeleteConfirm}
             />
         </div>

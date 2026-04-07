@@ -31,7 +31,7 @@ export function POIMapInfoOverlay({
                                 variant={poi.category === "major" ? "default" : "secondary"}
                                 className="text-xs"
                             >
-                                {poi.category === "major" ? "Major" : getSubCategoryLabel(poi.subCategory)}
+                                {poi.category === "major" ? "Điểm chính" : getSubCategoryLabel(poi.subCategory)}
                             </Badge>
                         </div>
                     </div>

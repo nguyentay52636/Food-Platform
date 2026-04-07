@@ -100,7 +100,7 @@ export function PoisCardStrip({ pois, selectedPoi, onSelect }: POICardsStripProp
                                         variant={poi.category === "major" ? "default" : "secondary"}
                                         className="absolute left-2 top-2 text-[10px] shadow-sm"
                                     >
-                                        {poi.category === "major" ? "Major" : getSubCategoryLabel(poi.subCategory)}
+                                        {poi.category === "major" ? "Điểm chính" : getSubCategoryLabel(poi.subCategory)}
                                     </Badge>
                                     {/* Distance badge */}
                                     <div className="absolute right-2 top-2 rounded-md bg-background/90 px-1.5 py-0.5 text-[10px] font-medium shadow-sm backdrop-blur-sm">
