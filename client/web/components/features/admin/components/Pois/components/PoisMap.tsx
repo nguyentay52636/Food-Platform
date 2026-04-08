@@ -285,6 +285,23 @@ export function PoisMap({
                     {locationError}
                 </div>
             )}
+            <div className="absolute bottom-3 right-3 z-[1000] rounded-md border border-border bg-background/95 px-3 py-2 shadow-md backdrop-blur-sm">
+                <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Chú thích</p>
+                <div className="space-y-1.5 text-xs text-foreground">
+                    <div className="flex items-center gap-2">
+                        <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                        <span>Đang chọn</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-500" />
+                        <span>Điểm chính</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="inline-block h-2.5 w-2.5 rounded-full bg-orange-500" />
+                        <span>Điểm phụ</span>
+                    </div>
+                </div>
+            </div>
         </div>
     )
 }
