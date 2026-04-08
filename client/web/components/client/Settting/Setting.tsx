@@ -8,9 +8,25 @@ import { Card } from "@/components/ui/card"
 import { BottomNav } from "@/components/client/ButtonNav"
 import { useLanguage } from "@/lib/context/language-context"
 import { SUPPORTED_LANGUAGES } from "@/lib/client-types"
+import { useTranslatedUiText } from "@/lib/translation-utils"
 
 export default function Setting() {
-    const { language, setLanguage, t } = useLanguage()
+    const { language, setLanguage } = useLanguage()
+    const settingsTitle = useTranslatedUiText("Cài đặt", language)
+    const languageTitle = useTranslatedUiText("Ngôn ngữ", language)
+    const aboutTitle = useTranslatedUiText("Về ứng dụng", language)
+    const versionTitle = useTranslatedUiText("Phiên bản", language)
+    const audioLabel = useTranslatedUiText("Audio", language, "en")
+    const audioFutureLabel = useTranslatedUiText(
+        "Audio playback settings will be available in future updates.",
+        language,
+        "en"
+    )
+    const developerLabel = useTranslatedUiText("Developer", language, "en")
+    const creditsLabel = useTranslatedUiText(
+        "Phố Ẩm Thực Vĩnh Khánh - Khám phá ẩm thực Sài Gòn",
+        language
+    )
     return (
         <>
             <div className="min-h-screen bg-background pb-20">
@@ -21,7 +37,7 @@ export default function Setting() {
                             <ArrowLeft className="h-5 w-5" />
                         </Button>
                     </Link>
-                    <h1 className="font-semibold">{t.settings.title}</h1>
+                    <h1 className="font-semibold">{settingsTitle}</h1>
                 </header>
 
                 <div className="p-4 space-y-6">
@@ -29,7 +45,7 @@ export default function Setting() {
                     <section>
                         <div className="flex items-center gap-2 mb-3">
                             <Globe className="h-4 w-4 text-muted-foreground" />
-                            <h2 className="font-medium text-sm">{t.settings.language}</h2>
+                            <h2 className="font-medium text-sm">{languageTitle}</h2>
                         </div>
 
                         <Card className="divide-y divide-border">
@@ -58,12 +74,12 @@ export default function Setting() {
                     <section>
                         <div className="flex items-center gap-2 mb-3">
                             <Volume2 className="h-4 w-4 text-muted-foreground" />
-                            <h2 className="font-medium text-sm">Audio</h2>
+                            <h2 className="font-medium text-sm">{audioLabel}</h2>
                         </div>
 
                         <Card className="p-4">
                             <p className="text-sm text-muted-foreground">
-                                Audio playback settings will be available in future updates.
+                                {audioFutureLabel}
                             </p>
                         </Card>
                     </section>
@@ -72,16 +88,16 @@ export default function Setting() {
                     <section>
                         <div className="flex items-center gap-2 mb-3">
                             <Info className="h-4 w-4 text-muted-foreground" />
-                            <h2 className="font-medium text-sm">{t.settings.about}</h2>
+                            <h2 className="font-medium text-sm">{aboutTitle}</h2>
                         </div>
 
                         <Card className="p-4 space-y-3">
                             <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">{t.settings.version}</span>
+                                <span className="text-muted-foreground">{versionTitle}</span>
                                 <span>1.0.0</span>
                             </div>
                             <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Developer</span>
+                                <span className="text-muted-foreground">{developerLabel}</span>
                                 <span>Vinh Khanh Food Street</span>
                             </div>
                         </Card>
@@ -89,7 +105,7 @@ export default function Setting() {
 
                     {/* Credits */}
                     <p className="text-center text-xs text-muted-foreground pt-4">
-                        Pho Am Thuc Vinh Khanh - Kham pha am thuc Sai Gon
+                        {creditsLabel}
                     </p>
                 </div>
 

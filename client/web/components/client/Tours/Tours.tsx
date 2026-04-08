@@ -15,8 +15,9 @@ import { useAudio } from "@/lib/context/audio-context"
 import { CLIENT_MOCK_TOURS, CLIENT_MOCK_POIS } from "@/lib/client-mock-data"
 import { LanguageCode } from "@/lib/client-types"
 import { useVisitorSession } from "@/lib/context/visitor-session"
+import { useTranslatedText, useTranslatedUiText } from "@/lib/translation-utils"
 
-const LABELS: Record<LanguageCode, {
+const LABELS: Partial<Record<LanguageCode, {
     title: string;
     subtitle: string;
     search: string;
@@ -24,7 +25,7 @@ const LABELS: Record<LanguageCode, {
     allTours: string;
     stops: string;
     duration: string;
-}> = {
+}>> = {
     vi: {
         title: "Tours",
         subtitle: "Khám phá các tuyến tham quan",
@@ -76,7 +77,7 @@ export default function Tours() {
     const { language } = useLanguage()
     const audio = useAudio()
     const [searchQuery, setSearchQuery] = useState("")
-    const labels = LABELS[language]
+    const labels = LABELS[language] || LABELS.en!
     const visitor = useVisitorSession()
 
 
@@ -89,8 +90,9 @@ export default function Tours() {
     })
 
     const featuredTour = CLIENT_MOCK_TOURS[0]
-    const featuredName = featuredTour.name[language] || featuredTour.name.en
-    const featuredDesc = featuredTour.description[language] || featuredTour.description.en
+    const featuredName = useTranslatedText(featuredTour.name, language)
+    const featuredDesc = useTranslatedText(featuredTour.description, language)
+    const noToursText = useTranslatedUiText("No tours found", language, "en")
 
     return (
         <div className="min-h-screen bg-background pb-20">
@@ -197,7 +199,7 @@ export default function Tours() {
                         <div className="text-center py-12">
                             <Route className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                             <p className="text-muted-foreground">
-                                {language === "vi" ? "Không tìm thấy tour" : "No tours found"}
+                                {noToursText}
                             </p>
                         </div>
                     )}

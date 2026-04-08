@@ -11,15 +11,16 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
-import type { ClientPOI, LanguageCode, Translations } from "@/lib/client-types"
+import type { ClientPOI, LanguageCode } from "@/lib/client-types"
 import { useAudio } from "@/lib/context/audio-context"
+import { useTranslatedText, useTranslatedUiText } from "@/lib/translation-utils"
 
 interface POIPreviewDialogProps {
     poi: ClientPOI | null
     language: LanguageCode
     open: boolean
     onOpenChange: (open: boolean) => void
-    t: Translations
+    t?: Translations
 }
 
 export function POIPreviewDialog({
@@ -30,11 +31,15 @@ export function POIPreviewDialog({
     t,
 }: POIPreviewDialogProps) {
     const audio = useAudio()
+    const name = useTranslatedText(poi?.name ?? { en: "" }, language)
+    const description = useTranslatedText(poi?.description ?? { en: "" }, language)
+    const majorLabel = useTranslatedUiText("Điểm chính", language)
+    const minorLabel = useTranslatedUiText("Điểm phụ", language)
+    const playAudioLabel = useTranslatedUiText("Nghe thuyết minh", language)
+    const pauseAudioLabel = useTranslatedUiText("Tạm dừng", language)
+    const viewDetailLabel = useTranslatedUiText("Xem chi tiết", language)
 
     if (!poi) return null
-
-    const name = poi.name[language] || poi.name.en
-    const description = poi.description[language] || poi.description.en
     const image = poi.images[0]
     const hasAudio = !!poi.audio[language]
 
@@ -72,7 +77,7 @@ export function POIPreviewDialog({
                         variant={poi.category === "major" ? "default" : "secondary"}
                         className="absolute top-3 left-3"
                     >
-                        {poi.category === "major" ? "Major" : poi.subCategory || "Minor"}
+                        {poi.category === "major" ? majorLabel : poi.subCategory || minorLabel}
                     </Badge>
 
                     {/* Audio indicator */}
@@ -145,14 +150,14 @@ export function POIPreviewDialog({
                             >
                                 <Headphones className="h-4 w-4 mr-2" />
                                 {audio.currentPOI?.id === poi.id && audio.isPlaying
-                                    ? t.poi.pauseAudio
-                                    : t.poi.playAudio}
+                                    ? pauseAudioLabel
+                                    : playAudioLabel}
                             </Button>
                         )}
                         <Button className="flex-1" asChild>
                             <Link href={`/poi/${poi.id}`}>
                                 <Eye className="h-4 w-4 mr-2" />
-                                {t.poi.viewDetail}
+                                {viewDetailLabel}
                             </Link>
                         </Button>
                     </div>

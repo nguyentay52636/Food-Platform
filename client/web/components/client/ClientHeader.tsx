@@ -5,6 +5,8 @@ import { UtensilsCrossed, QrCode, Search, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/lib/context/language-context"
 import { SUPPORTED_LANGUAGES } from "@/lib/client-types"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useTranslatedUiText } from "@/lib/translation-utils"
 
 interface ClientHeaderProps {
     showSearch?: boolean
@@ -12,10 +14,13 @@ interface ClientHeaderProps {
 }
 
 export function ClientHeader({ showSearch = true, onSearchClick }: ClientHeaderProps) {
-    const { language, setLanguage, t } = useLanguage()
+    const { language, setLanguage } = useLanguage()
+    const homeTitle = useTranslatedUiText("Phố Ẩm Thực", language)
+    const homeSubtitle = useTranslatedUiText("Vĩnh Khánh - Quận 4", language)
+    const scanQrText = useTranslatedUiText("Quét QR", language)
+    const settingsText = useTranslatedUiText("Cài đặt", language)
 
     const currentLang = SUPPORTED_LANGUAGES.find((l) => l.code === language)
-    const nextLang = SUPPORTED_LANGUAGES.find((l) => l.code !== language)
 
     return (
         <header className="sticky top-0 z-50 flex items-center justify-between bg-background/95 backdrop-blur-sm px-4 py-3 border-b border-border">
@@ -24,8 +29,8 @@ export function ClientHeader({ showSearch = true, onSearchClick }: ClientHeaderP
                     <UtensilsCrossed className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                    <h1 className="text-sm font-bold tracking-tight">{t.home.title}</h1>
-                    <p className="text-[10px] text-muted-foreground">{t.home.subtitle}</p>
+                    <h1 className="text-sm font-bold tracking-tight">{homeTitle}</h1>
+                    <p className="text-[10px] text-muted-foreground">{homeSubtitle}</p>
                 </div>
             </Link>
 
@@ -40,24 +45,35 @@ export function ClientHeader({ showSearch = true, onSearchClick }: ClientHeaderP
                 <Link href="/scan">
                     <Button variant="ghost" size="icon" className="h-9 w-9">
                         <QrCode className="h-5 w-5" />
-                        <span className="sr-only">{t.home.scanQR}</span>
+                        <span className="sr-only">{scanQrText}</span>
                     </Button>
                 </Link>
 
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9"
-                    onClick={() => nextLang && setLanguage(nextLang.code)}
-                >
-                    <span className="text-lg">{currentLang?.flag}</span>
-                    <span className="sr-only">{t.settings.language}</span>
-                </Button>
+                <Select value={language} onValueChange={(value) => setLanguage(value as typeof language)}>
+                    <SelectTrigger className="h-9 min-w-[86px] px-2">
+                        <SelectValue>
+                            <span className="flex items-center gap-1.5 text-xs">
+                                <span className="font-semibold uppercase">{currentLang?.code}</span>
+                                <span className="font-medium">{currentLang?.nativeName || currentLang?.name}</span>
+                            </span>
+                        </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent align="end">
+                        {SUPPORTED_LANGUAGES.map((lang) => (
+                            <SelectItem key={lang.code} value={lang.code}>
+                                <span className="flex items-center gap-2 text-xs">
+                                    <span className="font-semibold uppercase">{lang.code}</span>
+                                    <span>{lang.nativeName}</span>
+                                </span>
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
 
                 <Link href="/settings">
                     <Button variant="ghost" size="icon" className="h-9 w-9">
                         <Settings className="h-5 w-5" />
-                        <span className="sr-only">{t.settings.title}</span>
+                        <span className="sr-only">{settingsText}</span>
                     </Button>
                 </Link>
             </div>

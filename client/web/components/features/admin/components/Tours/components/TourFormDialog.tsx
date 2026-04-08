@@ -276,7 +276,7 @@ export function TourFormDialog({
                                                 {majorPois.length > 0 && (
                                                     <>
                                                         <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                                            Major POIs
+                                                            Điểm chính
                                                         </div>
                                                         {majorPois.map((p) => (
                                                             <SelectItem key={p.id} value={p.id}>
@@ -291,7 +291,7 @@ export function TourFormDialog({
                                                 {minorPois.length > 0 && (
                                                     <>
                                                         <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                                            Minor POIs
+                                                            Điểm phụ
                                                         </div>
                                                         {minorPois.map((p) => (
                                                             <SelectItem key={p.id} value={p.id}>
@@ -374,10 +374,10 @@ export function TourFormDialog({
                                                         }`}
                                                 >
                                                     {isMajor
-                                                        ? "Major"
+                                                        ? "Điểm chính"
                                                         : poi?.subCategory
                                                             ? SUB_CATEGORY_LABELS[poi.subCategory] ?? poi.subCategory
-                                                            : "Minor"}
+                                                            : "Điểm phụ"}
                                                 </Badge>
 
                                                 {/* Move arrows */}

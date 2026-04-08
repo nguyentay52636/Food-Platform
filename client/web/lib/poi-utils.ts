@@ -15,7 +15,7 @@ export const SUB_CATEGORY_ICONS: Record<string, string> = {
 }
 
 export function getSubCategoryLabel(subCategory: string | undefined): string {
-  if (!subCategory) return "Minor"
+  if (!subCategory) return "Điểm phụ"
   return SUB_CATEGORY_LABELS[subCategory] ?? subCategory
 }
 

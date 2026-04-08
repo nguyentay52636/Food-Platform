@@ -9,6 +9,7 @@ import { useAudio } from "@/lib/context/audio-context"
 import { useLanguage } from "@/lib/context/language-context"
 import { cn } from "@/lib/utils"
 import { Progress } from "../ui/progress"
+import { useTranslatedText } from "@/lib/translation-utils"
 
 interface MiniPlayerProps {
     className?: string
@@ -29,7 +30,7 @@ export function MiniPlayer({ className }: MiniPlayerProps) {
     if (!currentPOI) return null
 
     const progress = duration > 0 ? (currentTime / duration) * 100 : 0
-    const name = currentPOI.name[language] || currentPOI.name.en
+    const name = useTranslatedText(currentPOI.name, language)
     const image = currentPOI.images[0]
 
     return (

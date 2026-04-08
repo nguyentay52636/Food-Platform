@@ -21,9 +21,10 @@ import { useVisitorSession } from "@/lib/context/visitor-session"
 import useGeolocation from "@/hooks/useGeolocation"
 import { usePoiFavoriteIds } from "@/lib/poi-favorites-session"
 import { cn } from "@/lib/utils"
+import { useTranslatedText, useTranslatedUiText } from "@/lib/translation-utils"
 
 export default function ExplorePage() {
-    const { language, t } = useLanguage()
+    const { language } = useLanguage()
     const audio = useAudio()
     const [selectedPoi, setSelectedPoi] = useState<ClientPOI | null>(null)
     const [previewPoi, setPreviewPoi] = useState<ClientPOI | null>(null)
@@ -33,6 +34,21 @@ export default function ExplorePage() {
     const [locateSignal, setLocateSignal] = useState(0)
     const [listTab, setListTab] = useState<"nearby" | "favorites">("nearby")
     const favoriteIds = usePoiFavoriteIds()
+    const selectedPoiName = useTranslatedText(selectedPoi?.name ?? { en: "" }, language)
+    const selectedPoiDescription = useTranslatedText(selectedPoi?.description ?? { en: "" }, language)
+    const allLabel = useTranslatedUiText("All", language, "en")
+    const majorLabel = useTranslatedUiText("Điểm chính", language)
+    const minorLabel = useTranslatedUiText("Điểm phụ", language)
+    const nearbyLabel = useTranslatedUiText("Quán ăn gần đây", language)
+    const favoritesLabel = useTranslatedUiText("Quán ăn yêu thích", language)
+    const noFavoritesLabel = useTranslatedUiText(
+        "Chưa có quán yêu thích. Bấm trái tim ở trang chi tiết để lưu.",
+        language
+    )
+    const viewAllLabel = useTranslatedUiText("Xem tất cả", language)
+    const viewDetailLabel = useTranslatedUiText("Xem chi tiết", language)
+    const playAudioLabel = useTranslatedUiText("Nghe thuyết minh", language)
+    const pauseAudioLabel = useTranslatedUiText("Tạm dừng", language)
 
     // Track page view and geolocation
     const visitor = useVisitorSession()
@@ -107,7 +123,7 @@ export default function ExplorePage() {
                                         )}
                                         onClick={() => setListTab("nearby")}
                                     >
-                                        {t.home.nearbyLocations}
+                                        {nearbyLabel}
                                     </button>
                                     <button
                                         type="button"
@@ -119,7 +135,7 @@ export default function ExplorePage() {
                                         )}
                                         onClick={() => setListTab("favorites")}
                                     >
-                                        {t.home.favoriteLocations}
+                                        {favoritesLabel}
                                     </button>
                                 </div>
                                 <Badge
@@ -134,7 +150,7 @@ export default function ExplorePage() {
                         <div className="space-y-3 pb-28">
                             {pois.length === 0 && listTab === "favorites" ? (
                                 <p className="text-sm text-muted-foreground text-center py-8 px-2">
-                                    {t.home.noFavoritesYet}
+                                    {noFavoritesLabel}
                                 </p>
                             ) : (
                                 pois.map((poi) => (
@@ -149,7 +165,6 @@ export default function ExplorePage() {
                                             setPreviewPoi(p)
                                             setPreviewOpen(true)
                                         }}
-                                        t={t}
                                     />
                                 ))
                             )}
@@ -180,7 +195,7 @@ export default function ExplorePage() {
                                     className="h-8 rounded-full shadow-md"
                                     onClick={() => setFilter(f)}
                                 >
-                                    {f === "all" ? "All" : f === "major" ? "Major" : "Minor"}
+                                    {f === "all" ? allLabel : f === "major" ? majorLabel : minorLabel}
                                 </Button>
                             ))}
                         </div>
@@ -212,7 +227,7 @@ export default function ExplorePage() {
                                         {selectedPoi.images[0] ? (
                                             <Image
                                                 src={selectedPoi.images[0]}
-                                                alt={selectedPoi.name[language]}
+                                                alt={selectedPoiName}
                                                 fill
                                                 className="object-cover"
                                                 sizes="112px"
@@ -226,14 +241,14 @@ export default function ExplorePage() {
                                             variant={selectedPoi.category === "major" ? "default" : "secondary"}
                                             className="absolute top-2 left-2 text-[10px]"
                                         >
-                                            {selectedPoi.category === "major" ? "Major" : "Minor"}
+                                            {selectedPoi.category === "major" ? majorLabel : minorLabel}
                                         </Badge>
                                     </div>
 
                                     <div className="flex flex-1 flex-col p-3">
                                         <div className="flex items-start justify-between gap-2">
                                             <h3 className="font-semibold text-sm line-clamp-1">
-                                                {selectedPoi.name[language]}
+                                                {selectedPoiName}
                                             </h3>
                                             <Button
                                                 variant="ghost"
@@ -246,7 +261,7 @@ export default function ExplorePage() {
                                         </div>
 
                                         <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                                            {selectedPoi.description[language]}
+                                            {selectedPoiDescription}
                                         </p>
 
                                         <div className="flex gap-2 mt-auto pt-2">
@@ -258,7 +273,7 @@ export default function ExplorePage() {
                                             >
                                                 <a href={`/poi/${selectedPoi.id}`}>
                                                     <MapPin className="h-3.5 w-3.5 mr-1" />
-                                                    {t.poi.viewDetail}
+                                                    {viewDetailLabel}
                                                 </a>
                                             </Button>
 
@@ -270,8 +285,8 @@ export default function ExplorePage() {
                                                 >
                                                     <Headphones className="h-3.5 w-3.5 mr-1" />
                                                     {audio.currentPOI?.id === selectedPoi.id && audio.isPlaying
-                                                        ? t.poi.pauseAudio
-                                                        : t.poi.playAudio}
+                                                        ? pauseAudioLabel
+                                                        : playAudioLabel}
                                                 </Button>
                                             )}
                                         </div>
@@ -293,7 +308,7 @@ export default function ExplorePage() {
                                 >
                                     <ChevronUp className="h-5 w-5 mr-1 text-primary" />
                                     <List className="h-4 w-4 mr-2" />
-                                    {t.home.nearbyLocations}
+                                    {nearbyLabel}
                                 </Button>
                             </SheetTrigger>
 
@@ -313,7 +328,7 @@ export default function ExplorePage() {
                                                     )}
                                                     onClick={() => setListTab("nearby")}
                                                 >
-                                                    {t.home.nearbyLocations}
+                                                    {nearbyLabel}
                                                 </button>
                                                 <button
                                                     type="button"
@@ -325,7 +340,7 @@ export default function ExplorePage() {
                                                     )}
                                                     onClick={() => setListTab("favorites")}
                                                 >
-                                                    {t.home.favoriteLocations}
+                                                    {favoritesLabel}
                                                 </button>
                                             </div>
                                             <Badge
@@ -342,7 +357,7 @@ export default function ExplorePage() {
                                 <div className="flex gap-4 overflow-x-auto pb-6 pt-4 px-6 snap-x snap-mandatory scrollbar-hide">
                                     {pois.length === 0 && listTab === "favorites" ? (
                                         <p className="text-sm text-muted-foreground py-6 px-2 w-full text-center">
-                                            {t.home.noFavoritesYet}
+                                            {noFavoritesLabel}
                                         </p>
                                     ) : (
                                     pois.map((poi) => (
@@ -356,7 +371,6 @@ export default function ExplorePage() {
                                                     setSheetOpen(false)
                                                     handleLocate(p)
                                                 }}
-                                                t={t}
                                             />
                                         </div>
                                     ))
@@ -384,7 +398,7 @@ export default function ExplorePage() {
                                     )}
                                     onClick={() => setListTab("nearby")}
                                 >
-                                    {t.home.nearbyLocations}
+                                    {nearbyLabel}
                                 </button>
                                 <button
                                     type="button"
@@ -396,12 +410,12 @@ export default function ExplorePage() {
                                     )}
                                     onClick={() => setListTab("favorites")}
                                 >
-                                    {t.home.favoriteLocations}
+                                    {favoritesLabel}
                                 </button>
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-xs text-muted-foreground">
-                                    {listTab === "favorites" ? t.home.favoriteLocations : t.home.nearbyLocations}
+                                    {listTab === "favorites" ? favoritesLabel : nearbyLabel}
                                 </span>
                                 <Button
                                     variant="link"
@@ -409,7 +423,7 @@ export default function ExplorePage() {
                                     className="h-auto p-0 text-xs"
                                     onClick={() => setSheetOpen(true)}
                                 >
-                                    {t.home.viewAll}
+                                    {viewAllLabel}
                                 </Button>
                             </div>
                         </div>
@@ -417,7 +431,7 @@ export default function ExplorePage() {
                         <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
                             {stripPois.length === 0 && listTab === "favorites" ? (
                                 <p className="text-sm text-muted-foreground py-4 px-2 w-full text-center">
-                                    {t.home.noFavoritesYet}
+                                    {noFavoritesLabel}
                                 </p>
                             ) : (
                                 stripPois.map((poi) => (
@@ -427,7 +441,6 @@ export default function ExplorePage() {
                                         language={language}
                                         distance={Math.random() * 5}
                                         onLocate={handleLocate}
-                                        t={t}
                                     />
                                 ))
                             )}
@@ -450,7 +463,6 @@ export default function ExplorePage() {
                 language={language}
                 open={previewOpen}
                 onOpenChange={setPreviewOpen}
-                t={t}
             />
         </div>
     )

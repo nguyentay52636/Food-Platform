@@ -8,16 +8,24 @@ import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/lib/context/language-context"
 import { useVisitorSession } from "@/lib/context/visitor-session"
 import { CLIENT_MOCK_POIS, CLIENT_MOCK_TOURS } from "@/lib/client-mock-data"
+import { useTranslatedUiText } from "@/lib/translation-utils"
 
 export default function Scan() {
     const router = useRouter()
-    const { t } = useLanguage()
+    const { language } = useLanguage()
     const visitor = useVisitorSession()
     const [hasPermission, setHasPermission] = useState<boolean | null>(null)
     const [scanning, setScanning] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const videoRef = useRef<HTMLVideoElement>(null)
     const streamRef = useRef<MediaStream | null>(null)
+    const qrTitle = useTranslatedUiText("Quét mã QR", language)
+    const retryText = useTranslatedUiText("Thử lại", language)
+    const instructionsText = useTranslatedUiText(
+        "Hướng camera vào mã QR để xem thông tin quán",
+        language
+    )
+    const skipText = useTranslatedUiText("Bỏ qua", language)
 
     useEffect(() => {
         async function startCamera() {
@@ -75,7 +83,7 @@ export default function Scan() {
                         <X className="h-6 w-6" />
                     </Button>
                 </Link>
-                <h1 className="text-white font-semibold">{t.qr.title}</h1>
+                <h1 className="text-white font-semibold">{qrTitle}</h1>
                 <div className="w-10" />
             </div>
 
@@ -89,7 +97,7 @@ export default function Scan() {
                             Please allow camera access to scan QR codes
                         </p>
                         <Button onClick={() => window.location.reload()}>
-                            {t.common.retry}
+                            {retryText}
                         </Button>
                     </div>
                 ) : (
@@ -129,7 +137,7 @@ export default function Scan() {
             {/* Bottom Controls */}
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 pb-safe">
                 <p className="text-white text-center text-sm mb-6 opacity-80">
-                    {t.qr.instructions}
+                    {instructionsText}
                 </p>
 
                 {/* Demo buttons (for testing without real QR) */}
@@ -152,7 +160,7 @@ export default function Scan() {
 
                 <Link href="/" className="block">
                     <Button variant="ghost" className="w-full text-white hover:bg-white/20">
-                        {t.qr.skip}
+                        {skipText}
                     </Button>
                 </Link>
             </div>

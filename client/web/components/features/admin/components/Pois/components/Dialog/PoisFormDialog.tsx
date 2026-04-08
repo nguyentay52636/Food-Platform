@@ -166,8 +166,8 @@ export function POIFormDialog({
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="major">Major</SelectItem>
-                                    <SelectItem value="minor">Minor</SelectItem>
+                                    <SelectItem value="major">Điểm chính</SelectItem>
+                                    <SelectItem value="minor">Điểm phụ</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

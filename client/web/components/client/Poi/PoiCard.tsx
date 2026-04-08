@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import type { ClientPOI, LanguageCode, Translations } from "@/lib/client-types"
+import { useTranslatedText, useTranslatedUiText } from "@/lib/translation-utils"
 
 interface POICardProps {
     poi: ClientPOI
@@ -18,8 +19,12 @@ interface POICardProps {
 }
 
 export function POICard({ poi, language, distance, compact = false, onLocate, t }: POICardProps) {
-    const name = poi.name[language] || poi.name.en
-    const description = poi.description[language] || poi.description.en
+    const name = useTranslatedText(poi.name, language)
+    const description = useTranslatedText(poi.description, language)
+    const majorLabel = useTranslatedUiText("Điểm chính", language)
+    const minorLabel = useTranslatedUiText("Điểm phụ", language)
+    const locateLabel = useTranslatedUiText("Xem trên bản đồ", language)
+    const viewDetailLabel = useTranslatedUiText("Xem chi tiết", language)
     const image = poi.images[0]
     const hasAudio = !!poi.audio[language]
 
@@ -88,7 +93,7 @@ export function POICard({ poi, language, distance, compact = false, onLocate, t 
                                 }}
                             >
                                 <Navigation className="h-3.5 w-3.5 mr-1" />
-                                {t?.poi.locateOnMap || "Map"}
+                                {locateLabel}
                             </Button>
                         )}
                         <Button
@@ -105,7 +110,7 @@ export function POICard({ poi, language, distance, compact = false, onLocate, t 
                                 }}
                             >
                                 <Eye className="h-3.5 w-3.5 mr-1" />
-                                {t?.poi.viewDetail || "View"}
+                                {viewDetailLabel}
                             </Link>
                         </Button>
                     </div>
@@ -142,7 +147,7 @@ export function POICard({ poi, language, distance, compact = false, onLocate, t 
                             variant={poi.category === "major" ? "default" : "secondary"}
                             className="text-[10px] px-1.5 py-0.5"
                         >
-                            {poi.category === "major" ? "Major" : poi.subCategory || "Minor"}
+                            {poi.category === "major" ? majorLabel : poi.subCategory || minorLabel}
                         </Badge>
                     </div>
 
@@ -200,7 +205,7 @@ export function POICard({ poi, language, distance, compact = false, onLocate, t 
                         }}
                     >
                         <Navigation className="h-3.5 w-3.5 mr-1" />
-                        {t?.poi.locateOnMap || "Map"}
+                        {locateLabel}
                     </Button>
                 )}
                 <Button
@@ -211,7 +216,7 @@ export function POICard({ poi, language, distance, compact = false, onLocate, t 
                 >
                     <Link href={`/poi/${poi.id}`}>
                         <Eye className="h-3.5 w-3.5 mr-1" />
-                        {t?.poi.viewDetail || "View"}
+                        {viewDetailLabel}
                     </Link>
                 </Button>
             </div>
