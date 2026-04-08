@@ -12,8 +12,15 @@ import { getSubCategoryLabel } from "@/lib/poi-utils"
 interface POICardsStripProps {
     pois: POI[]
     selectedPoi?: POI | null
+    uiLanguage: "vi" | "en" | "zh"
     onSelect: (poi: POI) => void
 }
+
+const STRIP_TEXT = {
+    vi: { title: "Nearby Locations", found: "locations found", primary: "Điểm chính" },
+    en: { title: "Nearby Locations", found: "locations found", primary: "Primary point" },
+    zh: { title: "附近地点", found: "个地点", primary: "主要点位" },
+} as const
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 6371 // Earth's radius in km
@@ -36,7 +43,8 @@ function formatDistance(km: number): string {
     return `${km.toFixed(1)}km`
 }
 
-export function PoisCardStrip({ pois, selectedPoi, onSelect }: POICardsStripProps) {
+export function PoisCardStrip({ pois, selectedPoi, uiLanguage, onSelect }: POICardsStripProps) {
+    const t = STRIP_TEXT[uiLanguage]
     const scrollRef = useRef<HTMLDivElement>(null)
     const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map())
     const isDraggingRef = useRef(false)
@@ -86,8 +94,10 @@ export function PoisCardStrip({ pois, selectedPoi, onSelect }: POICardsStripProp
     return (
         <div className="border-t border-border bg-card/80 backdrop-blur-sm">
             <div className="px-4 py-3 border-b border-border/50">
-                <h3 className="text-sm font-semibold text-foreground">Nearby Locations</h3>
-                <p className="text-xs text-muted-foreground">{pois.length} locations found</p>
+                <h3 className="text-sm font-semibold text-foreground">{t.title}</h3>
+                <p className="text-xs text-muted-foreground">
+                    {uiLanguage === "zh" ? `${pois.length}${t.found}` : `${pois.length} ${t.found}`}
+                </p>
             </div>
             <div
                 ref={scrollRef}
@@ -141,7 +151,7 @@ export function PoisCardStrip({ pois, selectedPoi, onSelect }: POICardsStripProp
                                         variant={poi.category === "major" ? "default" : "secondary"}
                                         className="absolute left-2 top-2 text-[10px] shadow-sm"
                                     >
-                                        {poi.category === "major" ? "Điểm chính" : getSubCategoryLabel(poi.subCategory)}
+                                        {poi.category === "major" ? t.primary : getSubCategoryLabel(poi.subCategory)}
                                     </Badge>
                                     {/* Distance badge */}
                                     <div className="absolute right-2 top-2 rounded-md bg-background/90 px-1.5 py-0.5 text-[10px] font-medium shadow-sm backdrop-blur-sm">

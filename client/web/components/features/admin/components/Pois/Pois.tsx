@@ -14,6 +14,52 @@ import { PoisCardStrip } from "./components/PoisCardStrip"
 import { PoisSidebarForm } from "./components/PoisSidebarForm"
 
 type NarrationLanguage = "vi-VN" | "en-US" | "zh-CN"
+type AdminUiLanguage = "vi" | "en" | "zh"
+
+const UI_TEXT: Record<
+    AdminUiLanguage,
+    {
+        audioGuide: string
+        language: string
+        playAudio: string
+        stop: string
+        playing: string
+        ready: string
+        categoryLabel: string
+        addressLabel: string
+    }
+> = {
+    vi: {
+        audioGuide: "Audio thuyết minh",
+        language: "Ngôn ngữ:",
+        playAudio: "Phát audio",
+        stop: "Dừng",
+        playing: "Đang phát...",
+        ready: "Sẵn sàng",
+        categoryLabel: "Loại điểm",
+        addressLabel: "Địa chỉ",
+    },
+    en: {
+        audioGuide: "Audio guide",
+        language: "Language:",
+        playAudio: "Play audio",
+        stop: "Stop",
+        playing: "Playing...",
+        ready: "Ready",
+        categoryLabel: "Type",
+        addressLabel: "Address",
+    },
+    zh: {
+        audioGuide: "语音导览",
+        language: "语言：",
+        playAudio: "播放",
+        stop: "停止",
+        playing: "播放中...",
+        ready: "就绪",
+        categoryLabel: "类型",
+        addressLabel: "地址",
+    },
+}
 
 export default function Pois() {
     const {
@@ -30,22 +76,24 @@ export default function Pois() {
 
     // CRUD actions
     const { handleCreate, handleUpdate, handleDelete } = usePOIActions(loadPOIs, clearSelection)
+    const [uiLanguage, setUiLanguage] = useState<AdminUiLanguage>("vi")
     const [narrationLanguage, setNarrationLanguage] = useState<NarrationLanguage>("vi-VN")
     const [isSpeaking, setIsSpeaking] = useState(false)
     const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
 
     const narrationText = useMemo(() => {
         if (!selectedPoi) return ""
-        const addressText = selectedPoi.address ? `Địa chỉ: ${selectedPoi.address}.` : ""
+        const labels = UI_TEXT[uiLanguage]
+        const addressText = selectedPoi.address ? `${labels.addressLabel}: ${selectedPoi.address}.` : ""
         switch (narrationLanguage) {
             case "en-US":
-                return `${selectedPoi.name}. ${selectedPoi.description}. Category: ${selectedPoi.category}. ${selectedPoi.address ? `Address: ${selectedPoi.address}.` : ""}`
+                return `${selectedPoi.name}. ${selectedPoi.description}. ${labels.categoryLabel}: ${selectedPoi.category}. ${selectedPoi.address ? `${labels.addressLabel}: ${selectedPoi.address}.` : ""}`
             case "zh-CN":
-                return `${selectedPoi.name}。${selectedPoi.description}。分类：${selectedPoi.category}。${selectedPoi.address ? `地址：${selectedPoi.address}。` : ""}`
+                return `${selectedPoi.name}。${selectedPoi.description}。${labels.categoryLabel}：${selectedPoi.category}。${selectedPoi.address ? `${labels.addressLabel}：${selectedPoi.address}。` : ""}`
             default:
-                return `${selectedPoi.name}. ${selectedPoi.description}. Danh mục: ${selectedPoi.category}. ${addressText}`
+                return `${selectedPoi.name}. ${selectedPoi.description}. ${labels.categoryLabel}: ${selectedPoi.category}. ${addressText}`
         }
-    }, [selectedPoi, narrationLanguage])
+    }, [selectedPoi, narrationLanguage, uiLanguage])
 
     // ─── Event Handlers ─────────────────────────────────────────────────────────
 
@@ -161,6 +209,7 @@ export default function Pois() {
                     pickerLat={pickerState.lat}
                     pickerLng={pickerState.lng}
                     pickerMode={pickerState.isActive}
+                    uiLanguage={uiLanguage}
                     onTogglePicker={() => (pickerState.isActive ? deactivatePicker() : activatePicker())}
                     onResetForm={handleResetForm}
                     onSubmit={handleFormSubmit}
@@ -174,6 +223,7 @@ export default function Pois() {
                         pickerLat={pickerState.lat}
                         pickerLng={pickerState.lng}
                         pickerMode={pickerState.isActive}
+                        uiLanguage={uiLanguage}
                         onTogglePicker={() => (pickerState.isActive ? deactivatePicker() : activatePicker())}
                         onResetForm={handleResetForm}
                         onSubmit={handleFormSubmit}
@@ -190,6 +240,8 @@ export default function Pois() {
                         pickerMode={pickerState.isActive}
                         pickerLat={pickerState.lat}
                         pickerLng={pickerState.lng}
+                        uiLanguage={uiLanguage}
+                        onUiLanguageChange={setUiLanguage}
                         className="h-full w-full"
                     />
 
@@ -200,6 +252,7 @@ export default function Pois() {
                     <PoisCardStrip
                         pois={pois}
                         selectedPoi={selectedPoi}
+                        uiLanguage={uiLanguage}
                         onSelect={handleEditClick}
                     />
                 </div>
@@ -207,11 +260,11 @@ export default function Pois() {
 
             {selectedPoi && (
                 <div className="fixed bottom-4 right-4 z-[70] w-[360px] rounded-xl border border-border bg-background/95 p-4 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/85">
-                    <p className="text-sm font-semibold">Audio thuyết minh</p>
+                    <p className="text-sm font-semibold">{UI_TEXT[uiLanguage].audioGuide}</p>
                     <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{selectedPoi.name}</p>
 
                     <div className="mt-3 flex items-center gap-2">
-                        <label className="text-xs text-muted-foreground">Ngôn ngữ:</label>
+                        <label className="text-xs text-muted-foreground">{UI_TEXT[uiLanguage].language}</label>
                         <select
                             value={narrationLanguage}
                             onChange={(e) => setNarrationLanguage(e.target.value as NarrationLanguage)}
@@ -229,17 +282,17 @@ export default function Pois() {
                             onClick={speakNarration}
                             className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
                         >
-                            Phát audio
+                            {UI_TEXT[uiLanguage].playAudio}
                         </button>
                         <button
                             type="button"
                             onClick={stopNarration}
                             className="rounded-md border border-input px-3 py-1.5 text-xs font-medium hover:bg-accent"
                         >
-                            Dừng
+                            {UI_TEXT[uiLanguage].stop}
                         </button>
                         <span className="self-center text-xs text-muted-foreground">
-                            {isSpeaking ? "Đang phát..." : "Sẵn sàng"}
+                            {isSpeaking ? UI_TEXT[uiLanguage].playing : UI_TEXT[uiLanguage].ready}
                         </span>
                     </div>
                 </div>

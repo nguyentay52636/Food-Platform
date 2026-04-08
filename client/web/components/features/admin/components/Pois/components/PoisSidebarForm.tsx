@@ -27,20 +27,101 @@ interface PoisSidebarFormProps {
   pickerLat?: number
   pickerLng?: number
   pickerMode: boolean
+  uiLanguage: "vi" | "en" | "zh"
   onTogglePicker: () => void
   onResetForm: () => void
   onSubmit: (data: CreatePOIPayload) => Promise<void>
 }
+
+const FORM_TEXT = {
+  vi: {
+    title: "Quản lý điểm đến",
+    subtitleEdit: "Đang chỉnh sửa POI đã chọn",
+    subtitleCreate: "Thêm POI mới trực tiếp từ sidebar",
+    latitude: "Latitude",
+    longitude: "Longitude",
+    name: "Tên điểm đến",
+    description: "Mô tả",
+    descriptionPlaceholder: "Mô tả ngắn về địa điểm...",
+    poiType: "Loại điểm",
+    primaryPoint: "Điểm chính",
+    secondaryPoint: "Điểm nhỏ",
+    subType: "Loại phụ",
+    subTypePlaceholder: "Chọn loại...",
+    imageUrl: "Ảnh đại diện (URL)",
+    audioUrl: "Audio URL",
+    language: "Đa ngôn ngữ",
+    languagePlaceholder: "Chọn ngôn ngữ",
+    mapPickerOn: "Đang chọn trên bản đồ...",
+    mapPickerOff: "Chọn tọa độ từ bản đồ",
+    reset: "Đặt lại",
+    update: "Cập nhật",
+    create: "Thêm mới",
+    saving: "Đang lưu",
+  },
+  en: {
+    title: "POI Management",
+    subtitleEdit: "Editing selected POI",
+    subtitleCreate: "Create POI directly from sidebar",
+    latitude: "Latitude",
+    longitude: "Longitude",
+    name: "POI name",
+    description: "Description",
+    descriptionPlaceholder: "Short description for this location...",
+    poiType: "POI type",
+    primaryPoint: "Primary point",
+    secondaryPoint: "Secondary point",
+    subType: "Sub type",
+    subTypePlaceholder: "Select type...",
+    imageUrl: "Image URL",
+    audioUrl: "Audio URL",
+    language: "Language",
+    languagePlaceholder: "Select language",
+    mapPickerOn: "Selecting on map...",
+    mapPickerOff: "Pick coordinates from map",
+    reset: "Reset",
+    update: "Update",
+    create: "Create",
+    saving: "Saving",
+  },
+  zh: {
+    title: "兴趣点管理",
+    subtitleEdit: "正在编辑已选点位",
+    subtitleCreate: "在侧栏直接新增点位",
+    latitude: "纬度",
+    longitude: "经度",
+    name: "点位名称",
+    description: "描述",
+    descriptionPlaceholder: "输入地点简短描述...",
+    poiType: "点位类型",
+    primaryPoint: "主要点位",
+    secondaryPoint: "次要点位",
+    subType: "子类型",
+    subTypePlaceholder: "选择类型...",
+    imageUrl: "图片链接 (URL)",
+    audioUrl: "音频链接 (URL)",
+    language: "语言",
+    languagePlaceholder: "选择语言",
+    mapPickerOn: "地图选点中...",
+    mapPickerOff: "从地图选择坐标",
+    reset: "重置",
+    update: "更新",
+    create: "新增",
+    saving: "保存中",
+  },
+} as const
 
 export function PoisSidebarForm({
   poi,
   pickerLat,
   pickerLng,
   pickerMode,
+  uiLanguage,
   onTogglePicker,
   onResetForm,
   onSubmit,
 }: PoisSidebarFormProps) {
+  const t = FORM_TEXT[uiLanguage]
   const isEdit = !!poi
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
@@ -130,9 +211,9 @@ export function PoisSidebarForm({
   return (
     <div className="flex h-full flex-col border-r border-border bg-background">
       <div className="border-b border-border px-4 py-3">
-        <p className="text-sm font-semibold">Quản lý điểm đến</p>
+        <p className="text-sm font-semibold">{t.title}</p>
         <p className="mt-1 text-xs text-muted-foreground">
-          {isEdit ? "Đang chỉnh sửa POI đã chọn" : "Thêm POI mới trực tiếp từ sidebar"}
+          {isEdit ? t.subtitleEdit : t.subtitleCreate}
         </p>
       </div>
 
@@ -142,7 +223,7 @@ export function PoisSidebarForm({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="poi-lat">Latitude</Label>
+              <Label htmlFor="poi-lat">{t.latitude}</Label>
               <Input
                 id="poi-lat"
                 type="number"
@@ -154,7 +235,7 @@ export function PoisSidebarForm({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="poi-lng">Longitude</Label>
+              <Label htmlFor="poi-lng">{t.longitude}</Label>
               <Input
                 id="poi-lng"
                 type="number"
@@ -168,40 +249,40 @@ export function PoisSidebarForm({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="poi-name">Tên điểm đến</Label>
-            <Input id="poi-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Tên POI" required />
+            <Label htmlFor="poi-name">{t.name}</Label>
+            <Input id="poi-name" value={name} onChange={(e) => setName(e.target.value)} placeholder={t.name} required />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="poi-desc">Mô tả</Label>
+            <Label htmlFor="poi-desc">{t.description}</Label>
             <Textarea
               id="poi-desc"
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Mô tả ngắn về địa điểm..."
+              placeholder={t.descriptionPlaceholder}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Loại điểm</Label>
+              <Label>{t.poiType}</Label>
               <Select value={category} onValueChange={(value) => setCategory(value as POICategory)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="major">Điểm chính</SelectItem>
-                  <SelectItem value="minor">Điểm nhỏ</SelectItem>
+                  <SelectItem value="major">{t.primaryPoint}</SelectItem>
+                  <SelectItem value="minor">{t.secondaryPoint}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             {category === "minor" && (
               <div className="space-y-1.5">
-                <Label>Loại phụ</Label>
+                <Label>{t.subType}</Label>
                 <Select value={subCategory} onValueChange={(value) => setSubCategory(value as MinorSubCategory)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Chọn loại..." />
+                    <SelectValue placeholder={t.subTypePlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
                     {SUB_CATEGORIES.map((sc) => (
@@ -216,7 +297,7 @@ export function PoisSidebarForm({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="poi-image">Ảnh đại diện (URL)</Label>
+            <Label htmlFor="poi-image">{t.imageUrl}</Label>
             <Input
               id="poi-image"
               value={imageUrl}
@@ -226,7 +307,7 @@ export function PoisSidebarForm({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="poi-audio">Audio URL</Label>
+            <Label htmlFor="poi-audio">{t.audioUrl}</Label>
             <Input
               id="poi-audio"
               value={audioUrl}
@@ -236,10 +317,10 @@ export function PoisSidebarForm({
           </div>
 
           <div className="space-y-1.5">
-            <Label>Đa ngôn ngữ</Label>
+            <Label>{t.language}</Label>
             <Select value={narrationLanguage} onValueChange={setNarrationLanguage}>
               <SelectTrigger>
-                <SelectValue placeholder="Chọn ngôn ngữ" />
+                <SelectValue placeholder={t.languagePlaceholder} />
               </SelectTrigger>
               <SelectContent>
                 {LANGUAGE_OPTIONS.map((language) => (
@@ -254,22 +335,22 @@ export function PoisSidebarForm({
 
         <div className="space-y-2 border-t border-border px-4 py-3">
           <Button type="button" variant={pickerMode ? "default" : "outline"} className="w-full" onClick={onTogglePicker}>
-            {pickerMode ? "Đang chọn trên bản đồ..." : "Chọn tọa độ từ bản đồ"}
+            {pickerMode ? t.mapPickerOn : t.mapPickerOff}
           </Button>
           <div className="flex gap-2">
             <Button type="button" variant="outline" className="flex-1" onClick={onResetForm}>
-              Đặt lại
+              {t.reset}
             </Button>
             <Button type="submit" className="flex-1" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Spinner className="mr-2 h-4 w-4" />
-                  Đang lưu
+                  {t.saving}
                 </>
               ) : isEdit ? (
-                "Cập nhật"
+                t.update
               ) : (
-                "Thêm mới"
+                t.create
               )}
             </Button>
           </div>
