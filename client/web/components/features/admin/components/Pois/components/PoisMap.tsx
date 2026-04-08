@@ -12,8 +12,43 @@ interface POIMapProps {
     pickerMode?: boolean
     pickerLat?: number
     pickerLng?: number
+    uiLanguage: "vi" | "en" | "zh"
+    onUiLanguageChange: (language: "vi" | "en" | "zh") => void
     className?: string
 }
+
+const MAP_TEXT = {
+    vi: {
+        locateTitle: "Xác định vị trí hiện tại",
+        unsupported: "Trình duyệt không hỗ trợ định vị.",
+        locateFailed: "Không thể lấy vị trí hiện tại.",
+        pickerHint: "Click on the map to select a location",
+        legend: "Chú thích",
+        selected: "Đang chọn",
+        primary: "Điểm chính",
+        secondary: "Điểm phụ",
+    },
+    en: {
+        locateTitle: "Locate current position",
+        unsupported: "This browser does not support geolocation.",
+        locateFailed: "Unable to get current position.",
+        pickerHint: "Click on the map to select a location",
+        legend: "Legend",
+        selected: "Selected",
+        primary: "Primary point",
+        secondary: "Secondary point",
+    },
+    zh: {
+        locateTitle: "定位当前位置",
+        unsupported: "浏览器不支持定位。",
+        locateFailed: "无法获取当前位置。",
+        pickerHint: "点击地图选择位置",
+        legend: "图例",
+        selected: "当前选中",
+        primary: "主要点位",
+        secondary: "次要点位",
+    },
+} as const
 
 export function PoisMap({
     pois,
@@ -23,8 +58,11 @@ export function PoisMap({
     pickerMode = false,
     pickerLat,
     pickerLng,
+    uiLanguage,
+    onUiLanguageChange,
     className = "",
 }: POIMapProps) {
+    const t = MAP_TEXT[uiLanguage]
     const mapRef = useRef<HTMLDivElement>(null)
     const mapInstanceRef = useRef<L.Map | null>(null)
     const markersRef = useRef<L.Marker[]>([])
@@ -198,7 +236,7 @@ export function PoisMap({
     const handleLocateUser = useCallback(() => {
         if (!mapInstanceRef.current || !isReady) return
         if (!navigator.geolocation) {
-            setLocationError("Trình duyệt không hỗ trợ định vị.")
+            setLocationError(t.unsupported)
             return
         }
 
@@ -240,7 +278,7 @@ export function PoisMap({
             },
             (error) => {
                 setIsLocating(false)
-                setLocationError(error.message || "Không thể lấy vị trí hiện tại.")
+                setLocationError(error.message || t.locateFailed)
             },
             {
                 enableHighAccuracy: true,
@@ -248,7 +286,7 @@ export function PoisMap({
                 timeout: 8000,
             }
         )
-    }, [isReady])
+    }, [isReady, t.locateFailed, t.unsupported])
 
     // Ensure map recalculates size after layout changes
     useEffect(() => {
@@ -266,18 +304,29 @@ export function PoisMap({
     return (
         <div className={`relative ${className}`}>
             <div ref={mapRef} className="h-full w-full rounded-lg" />
+            <div className="absolute left-14 top-3 z-[1000]">
+                <select
+                    value={uiLanguage}
+                    onChange={(e) => onUiLanguageChange(e.target.value as "vi" | "en" | "zh")}
+                    className="h-8 rounded-md border border-border bg-background/95 px-2 text-xs text-foreground shadow-md backdrop-blur-sm"
+                >
+                    <option value="vi">Tiếng Việt</option>
+                    <option value="en">English</option>
+                    <option value="zh">中文</option>
+                </select>
+            </div>
             <button
                 type="button"
                 onClick={handleLocateUser}
                 className="absolute left-3 top-[98px] z-[1000] flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background/95 text-foreground shadow-md backdrop-blur hover:bg-accent"
-                title="Xác định vị trí hiện tại"
+                title={t.locateTitle}
                 disabled={!isReady || isLocating}
             >
                 <Navigation className={`h-4 w-4 ${isLocating ? "animate-pulse" : ""}`} />
             </button>
             {pickerMode && (
-                <div className="absolute left-3 top-3 z-[1000] rounded-md bg-card/95 px-3 py-1.5 text-xs font-medium text-foreground shadow-md backdrop-blur-sm">
-                    Click on the map to select a location
+                <div className="absolute left-3 top-12 z-[1000] rounded-md bg-card/95 px-3 py-1.5 text-xs font-medium text-foreground shadow-md backdrop-blur-sm">
+                    {t.pickerHint}
                 </div>
             )}
             {locationError && (
@@ -286,19 +335,19 @@ export function PoisMap({
                 </div>
             )}
             <div className="absolute bottom-3 right-3 z-[1000] rounded-md border border-border bg-background/95 px-3 py-2 shadow-md backdrop-blur-sm">
-                <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Chú thích</p>
+                <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{t.legend}</p>
                 <div className="space-y-1.5 text-xs text-foreground">
                     <div className="flex items-center gap-2">
                         <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                        <span>Đang chọn</span>
+                        <span>{t.selected}</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-500" />
-                        <span>Điểm chính</span>
+                        <span>{t.primary}</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="inline-block h-2.5 w-2.5 rounded-full bg-orange-500" />
-                        <span>Điểm phụ</span>
+                        <span>{t.secondary}</span>
                     </div>
                 </div>
             </div>
