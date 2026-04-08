@@ -164,7 +164,7 @@ export function PoisMap({
           width: ${isSelected ? "18px" : "14px"};
           height: ${isSelected ? "18px" : "14px"};
           border-radius: 50%;
-          background: ${isMajor ? "#2dd4bf" : "#94a3b8"};
+          background: ${isMajor ? "#3b82f6" : "#f59e0b"};
           border: 2px solid ${isSelected ? "#fff" : "rgba(255,255,255,0.5)"};
           box-shadow: 0 2px 6px rgba(0,0,0,0.3);
           transition: all 0.2s;
