@@ -11,13 +11,14 @@ export default function ClientLayout({
     const pathname = usePathname();
     const isAuthPage = pathname?.startsWith("/auth/") ?? false;
     const isAdminPage = pathname?.startsWith("/admin") ?? false;
+    const isOwnerPage = pathname?.startsWith("/owner") ?? false;
 
     return (
         <>
             {/* <DynamicLang /> */}
-            {!isAuthPage && !isAdminPage}
+            {!isAuthPage && !isAdminPage && !isOwnerPage}
             {children}
-            {!isAuthPage && !isAdminPage}
+            {!isAuthPage && !isAdminPage && !isOwnerPage}
         </>
     );
 }

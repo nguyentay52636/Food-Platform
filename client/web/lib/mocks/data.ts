@@ -1,4 +1,4 @@
-import type { POI, Tour, AdminUser } from "@/lib/types"
+import type { POI, Tour, AdminUser, OwnerUser, Review } from "@/lib/types"
 
 export const MOCK_ADMIN: AdminUser = {
   id: "admin-1",
@@ -17,6 +17,9 @@ export const MOCK_POIS: POI[] = [
     longitude: 108.2278,
     createdAt: "2025-01-15T08:00:00Z",
     updatedAt: "2025-01-15T08:00:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1529692236671-f1f6cf9683a5?w=800&h=600&fit=crop",
+    rating: 4.5,
+    reviewCount: 2,
   },
   {
     id: "poi-2",
@@ -27,6 +30,9 @@ export const MOCK_POIS: POI[] = [
     longitude: 108.2634,
     createdAt: "2025-01-15T09:00:00Z",
     updatedAt: "2025-01-15T09:00:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1523906834514-1e0f1f8f0c6f?w=800&h=600&fit=crop",
+    rating: 4.7,
+    reviewCount: 3,
   },
   {
     id: "poi-3",
@@ -37,6 +43,9 @@ export const MOCK_POIS: POI[] = [
     longitude: 108.2478,
     createdAt: "2025-01-16T10:00:00Z",
     updatedAt: "2025-01-16T10:00:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&h=600&fit=crop",
+    rating: 4.0,
+    reviewCount: 1,
   },
   {
     id: "poi-4",
@@ -48,6 +57,9 @@ export const MOCK_POIS: POI[] = [
     longitude: 108.2638,
     createdAt: "2025-01-17T11:00:00Z",
     updatedAt: "2025-01-17T11:00:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=800&h=600&fit=crop",
+    rating: 4.0,
+    reviewCount: 2,
   },
   {
     id: "poi-5",
@@ -59,6 +71,9 @@ export const MOCK_POIS: POI[] = [
     longitude: 108.2485,
     createdAt: "2025-01-18T12:00:00Z",
     updatedAt: "2025-01-18T12:00:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&h=600&fit=crop",
+    rating: 4.5,
+    reviewCount: 2,
   },
   {
     id: "poi-6",
@@ -70,6 +85,9 @@ export const MOCK_POIS: POI[] = [
     longitude: 108.228,
     createdAt: "2025-01-19T13:00:00Z",
     updatedAt: "2025-01-19T13:00:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=800&h=600&fit=crop",
+    rating: 3.0,
+    reviewCount: 1,
   },
   {
     id: "poi-7",
@@ -81,6 +99,9 @@ export const MOCK_POIS: POI[] = [
     longitude: 108.225,
     createdAt: "2025-01-20T14:00:00Z",
     updatedAt: "2025-01-20T14:00:00Z",
+    imageUrl: "https://images.unsplash.com/photo-1521017365318-38b3a7fcb7c8?w=800&h=600&fit=crop",
+    rating: 4.0,
+    reviewCount: 3,
   },
 ]
 
@@ -138,5 +159,135 @@ export const MOCK_TOURS: Tour[] = [
     status: "draft",
     createdAt: "2025-03-20T11:00:00Z",
     updatedAt: "2025-03-20T11:00:00Z",
+  },
+]
+
+export const MOCK_OWNERS: OwnerUser[] = [
+  {
+    id: "owner-1",
+    name: "Chủ quán A",
+    role: "owner",
+    poiIds: ["poi-1", "poi-4", "poi-6"],
+  },
+  {
+    id: "owner-2",
+    name: "Chủ quán B",
+    role: "owner",
+    poiIds: ["poi-2", "poi-3", "poi-5", "poi-7"],
+  },
+]
+
+export const MOCK_REVIEWS: Review[] = [
+  {
+    id: "rev-1",
+    poiId: "poi-1",
+    userName: "Minh",
+    rating: 5,
+    content: "Cảnh đẹp, trải nghiệm rất tuyệt.",
+    createdAt: "2025-02-01T10:00:00Z",
+  },
+  {
+    id: "rev-2",
+    poiId: "poi-1",
+    userName: "Lan",
+    rating: 4,
+    content: "Gần trung tâm, đi lại dễ dàng.",
+    createdAt: "2025-02-05T15:30:00Z",
+  },
+  {
+    id: "rev-3",
+    poiId: "poi-2",
+    userName: "Hải",
+    rating: 5,
+    content: "Vị trí thuận lợi, view đẹp.",
+    createdAt: "2025-02-07T11:00:00Z",
+  },
+  {
+    id: "rev-4",
+    poiId: "poi-2",
+    userName: "Quỳnh",
+    rating: 5,
+    content: "Nhiều điểm tham quan, đáng đi.",
+    createdAt: "2025-02-10T09:20:00Z",
+  },
+  {
+    id: "rev-5",
+    poiId: "poi-2",
+    userName: "Thắng",
+    rating: 4,
+    content: "Giá vé hợp lý, dịch vụ ổn.",
+    createdAt: "2025-02-12T17:45:00Z",
+  },
+  {
+    id: "rev-6",
+    poiId: "poi-3",
+    userName: "Vy",
+    rating: 4,
+    content: "Bãi biển sạch, nước trong.",
+    createdAt: "2025-02-18T08:10:00Z",
+  },
+  {
+    id: "rev-7",
+    poiId: "poi-4",
+    userName: "Tâm",
+    rating: 4,
+    content: "Nhân viên nhanh nhẹn.",
+    createdAt: "2025-02-20T13:25:00Z",
+  },
+  {
+    id: "rev-8",
+    poiId: "poi-4",
+    userName: "Khang",
+    rating: 4,
+    content: "Xếp hàng hơi lâu nhưng ổn.",
+    createdAt: "2025-02-22T16:05:00Z",
+  },
+  {
+    id: "rev-9",
+    poiId: "poi-5",
+    userName: "Dũng",
+    rating: 5,
+    content: "Bãi xe rộng, giữ xe an toàn.",
+    createdAt: "2025-02-24T07:40:00Z",
+  },
+  {
+    id: "rev-10",
+    poiId: "poi-5",
+    userName: "Hương",
+    rating: 4,
+    content: "Dễ tìm, bảo vệ nhiệt tình.",
+    createdAt: "2025-02-26T18:00:00Z",
+  },
+  {
+    id: "rev-11",
+    poiId: "poi-6",
+    userName: "Anh",
+    rating: 3,
+    content: "Vệ sinh ổn nhưng hơi đông.",
+    createdAt: "2025-02-27T12:10:00Z",
+  },
+  {
+    id: "rev-12",
+    poiId: "poi-7",
+    userName: "Ngọc",
+    rating: 4,
+    content: "Đón hoàng hôn rất đẹp.",
+    createdAt: "2025-03-01T06:30:00Z",
+  },
+  {
+    id: "rev-13",
+    poiId: "poi-7",
+    userName: "Bình",
+    rating: 3,
+    content: "Giá hơi cao, nhưng chuyến đi vui.",
+    createdAt: "2025-03-03T19:10:00Z",
+  },
+  {
+    id: "rev-14",
+    poiId: "poi-7",
+    userName: "Trang",
+    rating: 5,
+    content: "Chuyến đi đáng tiền!",
+    createdAt: "2025-03-05T21:50:00Z",
   },
 ]

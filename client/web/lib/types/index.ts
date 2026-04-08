@@ -94,3 +94,24 @@ export interface IRestaurant {
   isLive: boolean
   image: string
 }
+
+// ────────────────────────────────────────────────────────────────
+// Owner (chủ quán) & Reviews (đánh giá người dùng) - dùng cho UI demo
+// ────────────────────────────────────────────────────────────────
+
+export interface OwnerUser {
+  id: string
+  name: string
+  role: "owner"
+  // POIs mà owner được admin gán để owner chỉ có thể xem
+  poiIds: string[]
+}
+
+export interface Review {
+  id: string
+  poiId: string
+  userName: string
+  rating: number
+  content?: string
+  createdAt: string // ISO string
+}
