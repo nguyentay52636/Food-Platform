@@ -12,8 +12,9 @@ import type {
   UpdateTourPayload,
   LoginPayload,
   AuthResponse,
+  Review,
 } from "@/lib/types"
-import { MOCK_ADMIN, MOCK_POIS, MOCK_TOURS } from "@/lib/mocks/data"
+import { MOCK_ADMIN, MOCK_OWNERS, MOCK_POIS, MOCK_REVIEWS, MOCK_TOURS } from "@/lib/mocks/data"
 
 const delay = (ms = 400) => new Promise((r) => setTimeout(r, ms))
 
@@ -128,4 +129,63 @@ export async function deleteTour(id: string): Promise<void> {
   const idx = tours.findIndex((t) => t.id === id)
   if (idx === -1) throw new Error("Tour not found")
   tours = tours.filter((t) => t.id !== id)
+}
+
+// ─── Owner (chủ quán) - UI demo ─────────────────────────────────────────────
+
+function assertPoiBelongsToOwner(ownerId: string, poiId: string) {
+  const owner = MOCK_OWNERS.find((o) => o.id === ownerId)
+  if (!owner || !owner.poiIds.includes(poiId)) {
+    throw new Error("Forbidden: POI does not belong to this owner")
+  }
+  return owner
+}
+
+export async function fetchOwnerPOIs(ownerId: string): Promise<POI[]> {
+  await delay()
+  const owner = MOCK_OWNERS.find((o) => o.id === ownerId)
+  if (!owner) return []
+
+  const allowed = new Set(owner.poiIds)
+  return pois.filter((p) => allowed.has(p.id))
+}
+
+export async function updateOwnerPOI(
+  ownerId: string,
+  poiId: string,
+  payload: UpdatePOIPayload,
+): Promise<POI> {
+  await delay(500)
+  assertPoiBelongsToOwner(ownerId, poiId)
+
+  const idx = pois.findIndex((p) => p.id === poiId)
+  if (idx === -1) throw new Error("POI not found")
+
+  const updated: POI = {
+    ...pois[idx],
+    ...(payload.description !== undefined ? { description: payload.description } : {}),
+    ...(payload.imageUrl !== undefined ? { imageUrl: payload.imageUrl } : {}),
+    updatedAt: new Date().toISOString(),
+  }
+
+  pois = pois.map((p) => (p.id === poiId ? updated : p))
+  return updated
+}
+
+export async function fetchOwnerPOIReviews(
+  ownerId: string,
+  poiId: string,
+  page = 1,
+  limit = 10,
+): Promise<{ data: Review[]; total: number }> {
+  await delay()
+  assertPoiBelongsToOwner(ownerId, poiId)
+
+  const all = MOCK_REVIEWS
+    .filter((r) => r.poiId === poiId)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+  const total = all.length
+  const data = all.slice((page - 1) * limit, page * limit)
+  return { data, total }
 }
