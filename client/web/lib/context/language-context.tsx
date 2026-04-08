@@ -10,6 +10,7 @@ import {
 } from "react"
 import type { LanguageCode, Translations } from "@/lib/client-types"
 import { getTranslations } from "@/lib/i18n"
+import { SUPPORTED_LANGUAGES } from "@/lib/client-types"
 
 interface LanguageContextValue {
     language: LanguageCode
@@ -28,7 +29,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         setMounted(true)
         const stored = localStorage.getItem(STORAGE_KEY) as LanguageCode | null
-        if (stored && (stored === "vi" || stored === "en")) {
+        if (stored && SUPPORTED_LANGUAGES.some((lang) => lang.code === stored)) {
             setLanguageState(stored)
         }
     }, [])

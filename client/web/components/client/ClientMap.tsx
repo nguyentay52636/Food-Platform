@@ -3,6 +3,7 @@
 import { useEffect, useRef, useId, useState } from "react"
 import type L from "leaflet"
 import type { ClientPOI, LanguageCode } from "@/lib/client-types"
+import { useTranslatedUiText } from "@/lib/translation-utils"
 
 interface ClientMapProps {
     pois: ClientPOI[]
@@ -31,6 +32,7 @@ export function ClientMap({
     const [isReady, setIsReady] = useState(false)
     const initializedRef = useRef(false)
     const lastCenteredPoiIdRef = useRef<number | null>(null)
+    const loadingMapText = useTranslatedUiText("Loading map...", language, "en")
 
     // Initialize map
     useEffect(() => {
@@ -230,7 +232,7 @@ export function ClientMap({
         >
             {!isReady && (
                 <div className="flex h-full w-full items-center justify-center bg-muted">
-                    <div className="text-sm text-muted-foreground">Loading map...</div>
+                    <div className="text-sm text-muted-foreground">{loadingMapText}</div>
                 </div>
             )}
         </div>

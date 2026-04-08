@@ -5,8 +5,8 @@ import type { POIFilterCategory } from "@/src/types/poi"
 
 const CHIPS: { value: POIFilterCategory; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "major", label: "Major" },
-  { value: "minor", label: "Minor" },
+  { value: "major", label: "Điểm chính" },
+  { value: "minor", label: "Điểm phụ" },
 ]
 
 type Props = {

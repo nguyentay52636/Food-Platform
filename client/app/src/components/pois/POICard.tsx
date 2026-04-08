@@ -70,7 +70,7 @@ export function POICard({ poi, distanceKm, onPress, onEdit, onDelete }: Props) {
   const theme = useTheme()
 
   const categoryLabel =
-    poi.category === "major" ? "Major" : getSubCategoryLabel(poi.subCategory)
+    poi.category === "major" ? "Điểm chính" : getSubCategoryLabel(poi.subCategory)
 
   return (
     <Swipeable

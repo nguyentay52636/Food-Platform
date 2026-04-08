@@ -10,8 +10,10 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAudio } from "@/lib/context/audio-context"
 import { useLanguage } from "@/lib/context/language-context"
+import { useTranslatedUiText } from "@/lib/translation-utils"
 
 import { SUPPORTED_LANGUAGES, type ClientPOI, type LanguageCode } from "@/lib/client-types"
 
@@ -23,7 +25,7 @@ interface AudioPlayerProps {
 const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2]
 
 export function AudioPlayer({ poi }: AudioPlayerProps) {
-    const { language, t } = useLanguage()
+    const { language, setLanguage } = useLanguage()
     const {
         isPlaying,
         isLoading,
@@ -41,6 +43,8 @@ export function AudioPlayer({ poi }: AudioPlayerProps) {
     } = useAudio()
 
     const audioContent = poi.audio[language]
+    const noAudioLabel = useTranslatedUiText("Chưa có audio", language)
+    const audioLanguageLabel = useTranslatedUiText("Ngôn ngữ audio", language)
     const isCurrentPOI = currentPOI?.id === poi.id
     const availableLanguages = SUPPORTED_LANGUAGES.filter(
         (lang) => poi.audio[lang.code]
@@ -50,7 +54,7 @@ export function AudioPlayer({ poi }: AudioPlayerProps) {
         return (
             <Card className="p-4 text-center text-muted-foreground">
                 <Volume2 className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">{t.poi.noAudio}</p>
+                <p className="text-sm">{noAudioLabel}</p>
             </Card>
         )
     }
@@ -71,6 +75,7 @@ export function AudioPlayer({ poi }: AudioPlayerProps) {
     }
 
     const handleLanguageChange = (langCode: LanguageCode) => {
+        setLanguage(langCode)
         play(poi, langCode)
     }
 
@@ -82,23 +87,22 @@ export function AudioPlayer({ poi }: AudioPlayerProps) {
             {/* Language selector */}
             {availableLanguages.length > 1 && (
                 <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
-                    <span className="text-xs text-muted-foreground">{t.poi.audioLanguage}</span>
-                    <div className="flex gap-1">
-                        {availableLanguages.map((lang) => (
-                            <Button
-                                key={lang.code}
-                                variant={
-                                    isCurrentPOI && language === lang.code ? "default" : "outline"
-                                }
-                                size="sm"
-                                className="h-7 px-2 text-xs"
-                                onClick={() => handleLanguageChange(lang.code)}
-                            >
-                                <span className="mr-1">{lang.flag}</span>
-                                {lang.nativeName}
-                            </Button>
-                        ))}
-                    </div>
+                    <span className="text-xs text-muted-foreground">{audioLanguageLabel}</span>
+                    <Select value={language} onValueChange={(value) => handleLanguageChange(value as LanguageCode)}>
+                        <SelectTrigger className="h-8 min-w-[170px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent align="end">
+                            {availableLanguages.map((lang) => (
+                                <SelectItem key={lang.code} value={lang.code}>
+                                    <span className="flex items-center gap-2">
+                                        <span className="font-semibold uppercase">{lang.code}</span>
+                                        <span>{lang.nativeName}</span>
+                                    </span>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
             )}
 

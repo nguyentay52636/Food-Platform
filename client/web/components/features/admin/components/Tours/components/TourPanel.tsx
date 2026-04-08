@@ -113,14 +113,14 @@ export function TourDetailPanel({
                     <div className="rounded-lg border border-border bg-card p-3 text-center">
                         <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
                             <Navigation className="h-3.5 w-3.5" />
-                            <span className="text-[11px] font-medium">Major POIs</span>
+                            <span className="text-[11px] font-medium">Điểm chính</span>
                         </div>
                         <p className="mt-1 text-2xl font-bold text-primary">{majorCount}</p>
                     </div>
                     <div className="rounded-lg border border-border bg-card p-3 text-center">
                         <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
                             <Tag className="h-3.5 w-3.5" />
-                            <span className="text-[11px] font-medium">Minor POIs</span>
+                            <span className="text-[11px] font-medium">Điểm phụ</span>
                         </div>
                         <p className="mt-1 text-2xl font-bold text-muted-foreground">{minorCount}</p>
                     </div>
@@ -212,7 +212,7 @@ export function TourDetailPanel({
                                                             className={`text-[10px] px-1.5 py-0 ${isMajor ? "" : "text-muted-foreground"
                                                                 }`}
                                                         >
-                                                            {isMajor ? "Major" : getSubCategoryLabel(poi?.subCategory)}
+                                                            {isMajor ? "Điểm chính" : getSubCategoryLabel(poi?.subCategory)}
                                                         </Badge>
                                                     )}
                                                 </div>

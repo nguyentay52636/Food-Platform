@@ -6,6 +6,7 @@ import { Route, Clock, MapPin, ChevronRight } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { ClientTour, LanguageCode } from "@/lib/client-types"
+import { useTranslatedText, useTranslatedUiText } from "@/lib/translation-utils"
 
 interface TourCardProps {
     tour: ClientTour
@@ -23,8 +24,10 @@ function formatDuration(minutes: number, lang: LanguageCode): string {
 }
 
 export function TourCard({ tour, language, compact = false }: TourCardProps) {
-    const name = tour.name[language] || tour.name.en
-    const description = tour.description[language] || tour.description.en
+    const name = useTranslatedText(tour.name, language)
+    const description = useTranslatedText(tour.description, language)
+    const stopsLabel = useTranslatedUiText("stops", language, "en")
+    const pointsLabel = useTranslatedUiText("điểm", language)
 
     if (compact) {
         return (
@@ -55,7 +58,7 @@ export function TourCard({ tour, language, compact = false }: TourCardProps) {
                             <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                     <MapPin className="h-3 w-3" />
-                                    {tour.pois.length} {language === "vi" ? "điểm" : "stops"}
+                                    {tour.pois.length} {language === "vi" ? pointsLabel : stopsLabel}
                                 </span>
                                 <span className="flex items-center gap-1">
                                     <Clock className="h-3 w-3" />

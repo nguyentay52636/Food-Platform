@@ -1,6 +1,26 @@
 // Client-side types for GPS Tours User App
 
-export type LanguageCode = "vi" | "en" | "zh" | "ja"
+export type LanguageCode =
+    | "vi"
+    | "en"
+    | "zh"
+    | "ja"
+    | "ko"
+    | "fr"
+    | "de"
+    | "es"
+    | "it"
+    | "pt"
+    | "ru"
+    | "ar"
+    | "hi"
+    | "th"
+    | "id"
+    | "ms"
+    | "tr"
+    | "nl"
+    | "pl"
+    | "sv"
 
 export interface Language {
     code: LanguageCode
@@ -14,7 +34,25 @@ export const SUPPORTED_LANGUAGES: Language[] = [
     { code: "en", name: "English", nativeName: "English", flag: "🇬🇧" },
     { code: "zh", name: "Chinese", nativeName: "中文", flag: "🇨🇳" },
     { code: "ja", name: "Japanese", nativeName: "日本語", flag: "🇯🇵" },
+    { code: "ko", name: "Korean", nativeName: "한국어", flag: "🇰🇷" },
+    { code: "fr", name: "French", nativeName: "Français", flag: "🇫🇷" },
+    { code: "de", name: "German", nativeName: "Deutsch", flag: "🇩🇪" },
+    { code: "es", name: "Spanish", nativeName: "Español", flag: "🇪🇸" },
+    { code: "it", name: "Italian", nativeName: "Italiano", flag: "🇮🇹" },
+    { code: "pt", name: "Portuguese", nativeName: "Português", flag: "🇵🇹" },
+    { code: "ru", name: "Russian", nativeName: "Русский", flag: "🇷🇺" },
+    { code: "ar", name: "Arabic", nativeName: "العربية", flag: "🇸🇦" },
+    { code: "hi", name: "Hindi", nativeName: "हिन्दी", flag: "🇮🇳" },
+    { code: "th", name: "Thai", nativeName: "ไทย", flag: "🇹🇭" },
+    { code: "id", name: "Indonesian", nativeName: "Bahasa Indonesia", flag: "🇮🇩" },
+    { code: "ms", name: "Malay", nativeName: "Bahasa Melayu", flag: "🇲🇾" },
+    { code: "tr", name: "Turkish", nativeName: "Türkçe", flag: "🇹🇷" },
+    { code: "nl", name: "Dutch", nativeName: "Nederlands", flag: "🇳🇱" },
+    { code: "pl", name: "Polish", nativeName: "Polski", flag: "🇵🇱" },
+    { code: "sv", name: "Swedish", nativeName: "Svenska", flag: "🇸🇪" },
 ]
+
+export type LocalizedText = Partial<Record<LanguageCode, string>> & { en: string; vi?: string }
 
 export interface AudioContent {
     languageCode: LanguageCode
@@ -25,8 +63,8 @@ export interface AudioContent {
 
 export interface ClientPOI {
     id: string
-    name: Record<LanguageCode, string>
-    description: Record<LanguageCode, string>
+    name: LocalizedText
+    description: LocalizedText
     category: "major" | "minor"
     subCategory?: "wc" | "ticket" | "parking" | "dock"
     latitude: number
@@ -40,8 +78,8 @@ export interface ClientPOI {
 
 export interface ClientTour {
     id: string
-    name: Record<LanguageCode, string>
-    description: Record<LanguageCode, string>
+    name: LocalizedText
+    description: LocalizedText
     pois: { poiId: string; order: number }[]
     estimatedDuration: number // in minutes
     distance: number // in km

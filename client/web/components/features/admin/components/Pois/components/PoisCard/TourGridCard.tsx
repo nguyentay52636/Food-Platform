@@ -95,7 +95,7 @@ export function TourGridCard({
                         <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                             <MapPin className="h-3 w-3" />
                             <span>
-                                {majorCount} major, {minorCount} minor
+                                {majorCount} điểm chính, {minorCount} điểm phụ
                             </span>
                         </div>
                         <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">

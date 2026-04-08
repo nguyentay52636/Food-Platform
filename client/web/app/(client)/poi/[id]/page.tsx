@@ -31,6 +31,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { Slider } from "@/components/ui/slider"
 import { Separator } from "@/components/ui/separator"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -44,7 +45,8 @@ import { useAudio } from "@/lib/context/audio-context"
 import { useVisitorSession, usePOIViewTracking, useAudioTracking } from "@/lib/context/visitor-session"
 import { getClientPOIById, CLIENT_MOCK_POIS } from "@/lib/client-mock-data"
 import { usePoiFavoriteIds, togglePoiFavorite } from "@/lib/poi-favorites-session"
-import { SUPPORTED_LANGUAGES, type LanguageCode } from "@/lib/client-types"
+import { SUPPORTED_LANGUAGES, type LanguageCode, type ClientPOI } from "@/lib/client-types"
+import { useTranslatedText, useTranslatedUiText } from "@/lib/translation-utils"
 
 interface POIDetailPageProps {
     params: Promise<{ id: string }>
@@ -58,9 +60,47 @@ function formatTime(seconds: number): string {
     return `${mins}:${secs.toString().padStart(2, "0")}`
 }
 
+function RelatedPOITile({ relatedPoi, language }: { relatedPoi: ClientPOI; language: LanguageCode }) {
+    const relatedName = useTranslatedText(relatedPoi.name, language)
+
+    return (
+        <Link href={`/poi/${relatedPoi.id}`}>
+            <Card className="overflow-hidden hover:shadow-md transition-shadow">
+                <div className="relative h-24 bg-muted">
+                    {relatedPoi.images[0] ? (
+                        <Image
+                            src={relatedPoi.images[0]}
+                            alt={relatedName}
+                            fill
+                            className="object-cover"
+                            sizes="50vw"
+                        />
+                    ) : (
+                        <div className="h-full flex items-center justify-center">
+                            <Utensils className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                    )}
+                    {relatedPoi.rating && (
+                        <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                            {relatedPoi.rating}
+                        </div>
+                    )}
+                </div>
+                <div className="p-2.5">
+                    <p className="font-medium text-sm line-clamp-1">{relatedName}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                        {relatedPoi.address}
+                    </p>
+                </div>
+            </Card>
+        </Link>
+    )
+}
+
 export default function POIDetailPage({ params }: POIDetailPageProps) {
     const { id } = use(params)
-    const { language, t } = useLanguage()
+    const { language, setLanguage } = useLanguage()
     const audio = useAudio()
     const visitor = useVisitorSession()
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -81,8 +121,23 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
     }
 
     const isFavorite = favoriteIds.includes(poi.id)
-    const name = poi.name[language] || poi.name.en
-    const description = poi.description[language] || poi.description.en
+    const name = useTranslatedText(poi.name, language)
+    const description = useTranslatedText(poi.description, language)
+    const featuredLabel = useTranslatedUiText("Nổi bật", language)
+    const restaurantLabel = useTranslatedUiText("Quán ăn", language)
+    const topRatedLabel = useTranslatedUiText("Top Rated", language, "en")
+    const reviewsLabel = useTranslatedUiText("reviews", language, "en")
+    const openHoursLabel = useTranslatedUiText("Giờ mở cửa", language)
+    const priceLabel = useTranslatedUiText("Giá", language)
+    const contactLabel = useTranslatedUiText("Liên hệ", language)
+    const introLabel = useTranslatedUiText("Giới thiệu", language)
+    const collapseLabel = useTranslatedUiText("Thu gọn", language)
+    const readMoreLabel = useTranslatedUiText("Xem thêm", language)
+    const shareLabel = useTranslatedUiText("Chia sẻ", language)
+    const playAudioLabel = useTranslatedUiText("Nghe thuyết minh", language)
+    const audioLanguageLabel = useTranslatedUiText("Ngôn ngữ audio", language)
+    const directionsLabel = useTranslatedUiText("Chỉ đường", language)
+    const relatedLabel = useTranslatedUiText("Quán ăn liên quan", language)
     const images = poi.images.length > 0 ? poi.images : []
 
     // Get related POIs (same category, excluding current)
@@ -96,15 +151,17 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
     const availableLanguages = SUPPORTED_LANGUAGES.filter((lang) => poi.audio[lang.code])
     const progress = isCurrentPOI && audio.duration > 0 ? audio.currentTime : 0
     const totalDuration = isCurrentPOI ? audio.duration : (audioContent?.duration || 0)
+    const narrationText = `${name}. ${description}`
 
     const handlePlayPause = () => {
-        if (isCurrentPOI && audio.isPlaying) {
+        const isSameLanguage = audio.currentLanguage === language
+
+        if (isCurrentPOI && audio.isPlaying && isSameLanguage) {
             audio.pause()
-        } else if (isCurrentPOI) {
+        } else if (isCurrentPOI && isSameLanguage) {
             audio.resume()
         } else {
-            const langToPlay = audioContent ? language : availableLanguages[0]?.code || language
-            audio.play(poi, langToPlay)
+            audio.play(poi, language, narrationText)
             // Track audio play for anonymous visitor session
             audioTracking.onPlay()
         }
@@ -130,7 +187,8 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
     }, [isCurrentPOI, audio.currentTime, audio.duration, audioTracking])
 
     const handleLanguageChange = (langCode: LanguageCode) => {
-        audio.play(poi, langCode)
+        setLanguage(langCode)
+        audio.play(poi, langCode, narrationText)
     }
 
     const handleOpenMaps = () => {
@@ -292,11 +350,11 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
                                 className="shrink-0 bg-orange-500 hover:bg-orange-600"
                             >
                                 <Utensils className="h-3 w-3 mr-1" />
-                                {poi.category === "major" ? "Noi bat" : poi.subCategory || "Quan an"}
+                                {poi.category === "major" ? featuredLabel : poi.subCategory || restaurantLabel}
                             </Badge>
                             {poi.rating && poi.rating >= 4.5 && (
                                 <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50">
-                                    Top Rated
+                                    {topRatedLabel}
                                 </Badge>
                             )}
                         </div>
@@ -320,7 +378,7 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
                                 <span className="font-semibold text-lg">{poi.rating}</span>
                                 {poi.reviewCount && (
                                     <span className="text-muted-foreground">
-                                        ({poi.reviewCount.toLocaleString()} reviews)
+                                        ({poi.reviewCount.toLocaleString()} {reviewsLabel})
                                     </span>
                                 )}
                             </div>
@@ -331,17 +389,17 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
                     <div className="grid grid-cols-3 gap-3">
                         <Card className="p-3 text-center bg-orange-50 border-orange-100">
                             <Clock className="h-5 w-5 mx-auto text-orange-500 mb-1" />
-                            <p className="text-xs text-muted-foreground">Gio mo cua</p>
+                            <p className="text-xs text-muted-foreground">{openHoursLabel}</p>
                             <p className="text-sm font-medium">16:00 - 23:00</p>
                         </Card>
                         <Card className="p-3 text-center bg-green-50 border-green-100">
                             <DollarSign className="h-5 w-5 mx-auto text-green-500 mb-1" />
-                            <p className="text-xs text-muted-foreground">Gia</p>
+                            <p className="text-xs text-muted-foreground">{priceLabel}</p>
                             <p className="text-sm font-medium">50-200k</p>
                         </Card>
                         <Card className="p-3 text-center bg-blue-50 border-blue-100">
                             <Phone className="h-5 w-5 mx-auto text-blue-500 mb-1" />
-                            <p className="text-xs text-muted-foreground">Lien he</p>
+                            <p className="text-xs text-muted-foreground">{contactLabel}</p>
                             <p className="text-sm font-medium">090.xxx.xxx</p>
                         </Card>
                     </div>
@@ -371,28 +429,29 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
                     <div>
                         <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
                             <Volume2 className="h-5 w-5 text-primary" />
-                            {t.poi.playAudio}
+                            {playAudioLabel}
                         </h2>
 
                         <Card className="p-5 bg-gradient-to-br from-orange-50 to-amber-50 border-orange-100">
                             {/* Language selector */}
                             {availableLanguages.length > 0 && (
                                 <div className="flex flex-wrap items-center gap-2 mb-5">
-                                    <span className="text-sm text-muted-foreground">{t.poi.audioLanguage}:</span>
-                                    <div className="flex flex-wrap gap-2">
-                                        {availableLanguages.map((lang) => (
-                                            <Button
-                                                key={lang.code}
-                                                variant={isCurrentPOI && language === lang.code ? "default" : "outline"}
-                                                size="sm"
-                                                className={`h-8 px-3 ${isCurrentPOI && language === lang.code ? "bg-orange-500 hover:bg-orange-600" : ""}`}
-                                                onClick={() => handleLanguageChange(lang.code)}
-                                            >
-                                                <span className="mr-1.5 text-base">{lang.flag}</span>
-                                                {lang.nativeName}
-                                            </Button>
-                                        ))}
-                                    </div>
+                                    <span className="text-sm text-muted-foreground">{audioLanguageLabel}:</span>
+                                    <Select value={language} onValueChange={(value) => handleLanguageChange(value as LanguageCode)}>
+                                        <SelectTrigger className="h-9 min-w-[180px]">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent align="start">
+                                            {SUPPORTED_LANGUAGES.map((lang) => (
+                                                <SelectItem key={lang.code} value={lang.code}>
+                                                    <span className="flex items-center gap-2">
+                                                        <span className="font-semibold uppercase">{lang.code}</span>
+                                                        <span>{lang.nativeName}</span>
+                                                    </span>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                             )}
 
@@ -476,7 +535,7 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
 
                     {/* Description */}
                     <div>
-                        <h2 className="text-lg font-semibold mb-3">Gioi thieu</h2>
+                        <h2 className="text-lg font-semibold mb-3">{introLabel}</h2>
                         <p
                             className={`text-muted-foreground leading-relaxed ${!showFullDescription && description.length > 250 ? "line-clamp-4" : ""
                                 }`}
@@ -490,7 +549,7 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
                                 className="h-auto p-0 mt-2 text-orange-500"
                                 onClick={() => setShowFullDescription(!showFullDescription)}
                             >
-                                {showFullDescription ? "Thu gon" : "Xem them"}
+                                {showFullDescription ? collapseLabel : readMoreLabel}
                             </Button>
                         )}
                     </div>
@@ -502,7 +561,7 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
                             onClick={handleOpenMaps}
                         >
                             <Navigation className="h-5 w-5 mr-2" />
-                            {t.poi.directions}
+                            {directionsLabel}
                         </Button>
                         <Button
                             variant="outline"
@@ -510,7 +569,7 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
                             onClick={handleShare}
                         >
                             <Share2 className="h-5 w-5 mr-2" />
-                            Chia se
+                            {shareLabel}
                         </Button>
                     </div>
 
@@ -519,42 +578,10 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
                     {/* Related POIs */}
                     {relatedPois.length > 0 && (
                         <div>
-                            <h2 className="text-lg font-semibold mb-4">{t.poi.relatedLocations}</h2>
+                            <h2 className="text-lg font-semibold mb-4">{relatedLabel}</h2>
                             <div className="grid grid-cols-2 gap-3">
                                 {relatedPois.slice(0, 4).map((relatedPoi) => (
-                                    <Link key={relatedPoi.id} href={`/poi/${relatedPoi.id}`}>
-                                        <Card className="overflow-hidden hover:shadow-md transition-shadow">
-                                            <div className="relative h-24 bg-muted">
-                                                {relatedPoi.images[0] ? (
-                                                    <Image
-                                                        src={relatedPoi.images[0]}
-                                                        alt={relatedPoi.name[language] || relatedPoi.name.en}
-                                                        fill
-                                                        className="object-cover"
-                                                        sizes="50vw"
-                                                    />
-                                                ) : (
-                                                    <div className="h-full flex items-center justify-center">
-                                                        <Utensils className="h-8 w-8 text-muted-foreground" />
-                                                    </div>
-                                                )}
-                                                {relatedPoi.rating && (
-                                                    <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded flex items-center gap-0.5">
-                                                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                                                        {relatedPoi.rating}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="p-2.5">
-                                                <p className="font-medium text-sm line-clamp-1">
-                                                    {relatedPoi.name[language] || relatedPoi.name.en}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-                                                    {relatedPoi.address}
-                                                </p>
-                                            </div>
-                                        </Card>
-                                    </Link>
+                                    <RelatedPOITile key={relatedPoi.id} relatedPoi={relatedPoi} language={language} />
                                 ))}
                             </div>
                         </div>
