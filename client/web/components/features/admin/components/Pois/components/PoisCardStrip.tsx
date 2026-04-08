@@ -1,12 +1,11 @@
 "use client"
 
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, type MouseEvent } from "react"
 import Image from "next/image"
 import { MapPin, Star, Image as ImageIcon } from "lucide-react"
 import type { POI } from "@/lib/types"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { getSubCategoryLabel } from "@/lib/poi-utils"
 
@@ -40,6 +39,10 @@ function formatDistance(km: number): string {
 export function PoisCardStrip({ pois, selectedPoi, onSelect }: POICardsStripProps) {
     const scrollRef = useRef<HTMLDivElement>(null)
     const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+    const isDraggingRef = useRef(false)
+    const dragStartXRef = useRef(0)
+    const dragStartScrollLeftRef = useRef(0)
+    const movedRef = useRef(false)
 
     // Center position (Da Nang city center)
     const centerLat = 16.047
@@ -55,14 +58,49 @@ export function PoisCardStrip({ pois, selectedPoi, onSelect }: POICardsStripProp
 
     if (pois.length === 0) return null
 
+    const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
+        if (!scrollRef.current) return
+        isDraggingRef.current = true
+        movedRef.current = false
+        dragStartXRef.current = e.clientX
+        dragStartScrollLeftRef.current = scrollRef.current.scrollLeft
+    }
+
+    const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+        if (!isDraggingRef.current || !scrollRef.current) return
+        const deltaX = e.clientX - dragStartXRef.current
+        if (Math.abs(deltaX) > 4) {
+            movedRef.current = true
+        }
+        scrollRef.current.scrollLeft = dragStartScrollLeftRef.current - deltaX
+    }
+
+    const handleMouseUp = () => {
+        isDraggingRef.current = false
+        // Reset shortly after mouseup so click event can be suppressed if drag happened
+        window.setTimeout(() => {
+            movedRef.current = false
+        }, 0)
+    }
+
     return (
         <div className="border-t border-border bg-card/80 backdrop-blur-sm">
             <div className="px-4 py-3 border-b border-border/50">
                 <h3 className="text-sm font-semibold text-foreground">Nearby Locations</h3>
                 <p className="text-xs text-muted-foreground">{pois.length} locations found</p>
             </div>
-            <ScrollArea className="w-full whitespace-nowrap">
-                <div ref={scrollRef} className="flex gap-3 p-4">
+            <div
+                ref={scrollRef}
+                className={cn(
+                    "w-full overflow-x-auto whitespace-nowrap",
+                    "cursor-grab active:cursor-grabbing"
+                )}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+            >
+                <div className="flex gap-3 p-4">
                     {pois.map((poi) => {
                         const distance = calculateDistance(centerLat, centerLng, poi.latitude, poi.longitude)
                         const isSelected = selectedPoi?.id === poi.id
@@ -78,7 +116,10 @@ export function PoisCardStrip({ pois, selectedPoi, onSelect }: POICardsStripProp
                                     "hover:shadow-lg hover:scale-[1.02] hover:border-primary/50",
                                     isSelected && "ring-2 ring-primary shadow-lg scale-[1.02]"
                                 )}
-                                onClick={() => onSelect(poi)}
+                                onClick={() => {
+                                    if (movedRef.current) return
+                                    onSelect(poi)
+                                }}
                             >
                                 {/* Thumbnail */}
                                 <div className="relative h-32 w-full bg-muted">
@@ -135,8 +176,7 @@ export function PoisCardStrip({ pois, selectedPoi, onSelect }: POICardsStripProp
                         )
                     })}
                 </div>
-                <ScrollBar orientation="horizontal" />
-            </ScrollArea>
+            </div>
         </div>
     )
 }

@@ -9,7 +9,6 @@ import {
     usePOIActions,
 } from "@/components/features/admin/components/Pois/hooks/usePois"
 import { PoisMap } from "./components/PoisMap"
-import { POIMapInfoOverlay } from "./components/PoisMapsInfoOverlay"
 import { PoisDeleteDialog } from "./components/Dialog/PoisDeleteDialog"
 import { PoisCardStrip } from "./components/PoisCardStrip"
 import { PoisSidebarForm } from "./components/PoisSidebarForm"
@@ -109,10 +108,6 @@ export default function Pois() {
         deactivatePicker()
     }, [clearSelection, deactivatePicker])
 
-    const handleOverlayClose = useCallback(() => {
-        clearSelection()
-    }, [clearSelection])
-
     const stopNarration = useCallback(() => {
         if (typeof window === "undefined" || !window.speechSynthesis) return
         window.speechSynthesis.cancel()
@@ -198,15 +193,6 @@ export default function Pois() {
                         className="h-full w-full"
                     />
 
-                    {/* Selected POI Info Overlay */}
-                    {selectedPoi && !pickerState.isActive && (
-                        <POIMapInfoOverlay
-                            poi={selectedPoi}
-                            onEdit={() => handleEditClick(selectedPoi)}
-                            onDelete={() => setDeleteTarget(selectedPoi)}
-                            onClose={handleOverlayClose}
-                        />
-                    )}
                 </div>
 
                 {/* Nearby Locations strip (lower) */}
