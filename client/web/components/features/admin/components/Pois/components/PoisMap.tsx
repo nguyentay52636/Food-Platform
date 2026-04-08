@@ -161,16 +161,24 @@ export function PoisMap({
             const icon = L.divIcon({
                 className: "custom-marker",
                 html: `<div style="
-          width: ${isSelected ? "18px" : "14px"};
-          height: ${isSelected ? "18px" : "14px"};
+          width: ${isSelected ? "22px" : "18px"};
+          height: ${isSelected ? "22px" : "18px"};
           border-radius: 50%;
           background: ${isMajor ? "#3b82f6" : "#f59e0b"};
           border: 2px solid ${isSelected ? "#fff" : "rgba(255,255,255,0.5)"};
           box-shadow: 0 2px 6px rgba(0,0,0,0.3);
           transition: all 0.2s;
-        "></div>`,
-                iconSize: [isSelected ? 18 : 14, isSelected ? 18 : 14],
-                iconAnchor: [isSelected ? 9 : 7, isSelected ? 9 : 7],
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        ">
+          <svg width="${isSelected ? "12" : "10"}" height="${isSelected ? "12" : "10"}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" fill="white" fill-opacity="0.95"/>
+            <circle cx="12" cy="10" r="2.5" fill="${isMajor ? "#3b82f6" : "#f59e0b"}"/>
+          </svg>
+        </div>`,
+                iconSize: [isSelected ? 22 : 18, isSelected ? 22 : 18],
+                iconAnchor: [isSelected ? 11 : 9, isSelected ? 11 : 9],
             })
 
             const marker = L.marker([poi.latitude, poi.longitude], { icon })
