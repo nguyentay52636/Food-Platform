@@ -29,6 +29,7 @@ import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
+import { Textarea } from "@/components/ui/textarea"
 import { Slider } from "@/components/ui/slider"
 import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -132,6 +133,12 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
     const [showFullDescription, setShowFullDescription] = useState(false)
     const [narrationLanguage, setNarrationLanguage] = useState<LanguageCode>(language)
+    const [selectedReviewStars, setSelectedReviewStars] = useState<number>(5)
+    const [reviewCommentInput, setReviewCommentInput] = useState("")
+    const [sessionRated, setSessionRated] = useState(false)
+    const [userReviews, setUserReviews] = useState<
+        { id: string; author: string; rating: number; date: string; comment: string }[]
+    >([])
     const favoriteIds = usePoiFavoriteIds()
     const galleryRef = useRef<HTMLDivElement>(null)
     const narrationCacheRef = useRef<Record<string, string>>({})
@@ -169,9 +176,14 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
     const ratingAndCommentsLabel = useTranslatedUiText("Đánh giá và bình luận", language)
     const ratingOverviewLabel = useTranslatedUiText("Tổng quan đánh giá", language)
     const recentCommentsLabel = useTranslatedUiText("Bình luận gần đây", language)
+    const rateNowLabel = useTranslatedUiText("Đánh giá ngay", language)
+    const yourRatingLabel = useTranslatedUiText("Đánh giá của bạn", language)
+    const yourCommentLabel = useTranslatedUiText("Bình luận của bạn", language)
+    const submitReviewLabel = useTranslatedUiText("Gửi đánh giá", language)
+    const thanksReviewLabel = useTranslatedUiText("Bạn đã đánh giá POI này trong phiên hiện tại.", language)
     const images = poi.images.length > 0 ? poi.images : []
-    const reviews = getMockReviews(name)
-    const totalReviews = poi.reviewCount || reviews.length
+    const reviews = [...userReviews, ...getMockReviews(name)]
+    const totalReviews = (poi.reviewCount || getMockReviews(name).length) + userReviews.length
     const ratingValue = poi.rating || 4.5
     const ratingPercentages = [
         { star: 5, value: 62 },
@@ -195,6 +207,13 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
     React.useEffect(() => {
         setNarrationLanguage(language)
     }, [language])
+
+    React.useEffect(() => {
+        const reviewSessionKey = `poi-review-session:${poi.id}`
+        if (typeof window !== "undefined") {
+            setSessionRated(window.sessionStorage.getItem(reviewSessionKey) === "1")
+        }
+    }, [poi.id])
 
     const sourceName = poi.name.vi || poi.name.en
     const sourceDescription = poi.description.vi || poi.description.en
@@ -290,6 +309,28 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
             setLanguage(langCode)
         }
         void startNarrationForLanguage(langCode)
+    }
+
+    const handleSubmitReview = () => {
+        if (sessionRated) return
+        const comment = reviewCommentInput.trim()
+        if (!comment) return
+
+        const newReview = {
+            id: `u-${Date.now()}`,
+            author: "Bạn",
+            rating: selectedReviewStars,
+            date: "Vừa xong",
+            comment,
+        }
+
+        setUserReviews((prev) => [newReview, ...prev])
+        setReviewCommentInput("")
+        setSessionRated(true)
+
+        if (typeof window !== "undefined") {
+            window.sessionStorage.setItem(`poi-review-session:${poi.id}`, "1")
+        }
     }
 
     const handleOpenMaps = () => {
@@ -756,6 +797,55 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
                                 ))}
                             </div>
                         </div>
+
+                        <Card className="mt-4 p-4 border-border/70 bg-card/80">
+                            <h3 className="font-semibold text-sm mb-3">{rateNowLabel}</h3>
+
+                            {sessionRated ? (
+                                <p className="text-sm text-muted-foreground">{thanksReviewLabel}</p>
+                            ) : (
+                                <div className="space-y-3">
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-1.5">{yourRatingLabel}</p>
+                                        <div className="flex items-center gap-1">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <button
+                                                    key={star}
+                                                    type="button"
+                                                    onClick={() => setSelectedReviewStars(star)}
+                                                    className="p-0.5"
+                                                >
+                                                    <Star
+                                                        className={`h-5 w-5 ${star <= selectedReviewStars
+                                                            ? "fill-amber-400 text-amber-400"
+                                                            : "text-gray-300"
+                                                            }`}
+                                                    />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-1.5">{yourCommentLabel}</p>
+                                        <Textarea
+                                            value={reviewCommentInput}
+                                            onChange={(e) => setReviewCommentInput(e.target.value)}
+                                            placeholder="Chia sẻ trải nghiệm của bạn..."
+                                            className="min-h-[88px]"
+                                        />
+                                    </div>
+
+                                    <Button
+                                        className="w-full bg-orange-500 hover:bg-orange-600"
+                                        onClick={handleSubmitReview}
+                                        disabled={!reviewCommentInput.trim()}
+                                    >
+                                        {submitReviewLabel}
+                                    </Button>
+                                </div>
+                            )}
+                        </Card>
                     </section>
                 </div>
             </div>
