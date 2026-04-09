@@ -1,9 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { UserRole } from '../schema/user.schema';
 
 export class UserResponseDto {
     @ApiProperty({ example: '64a1b2c3d4e5f6a7b8c9d0e1', description: 'MongoDB ObjectId' })
-    _id?: string;
+    _id: string;
 
     @ApiProperty({ example: 'john_doe', description: 'Tên đăng nhập' })
     username: string;
@@ -11,41 +12,29 @@ export class UserResponseDto {
     @ApiProperty({ example: 'john@example.com', description: 'Email' })
     email: string;
 
-    @ApiProperty({ example: 'guest', enum: ['guest', 'admin', 'staff'], description: 'Vai trò' })
+    @ApiProperty({ example: 'owner', enum: UserRole, description: 'Vai trò' })
     role: string;
-
-    @ApiProperty({ example: 'active', enum: ['active', 'inactive'], description: 'Trạng thái tài khoản' })
-    status: string;
-
-    @ApiProperty({ example: '0901234567', description: 'Số điện thoại', nullable: true })
-    phone: string;
-
-    @ApiProperty({ example: 'https://example.com/avatar.jpg', description: 'URL ảnh đại diện', nullable: true })
-    avatar: string;
-
-    @ApiProperty({ example: '2024-01-01T00:00:00.000Z', description: 'Ngày tạo' })
-    createdAt: Date;
-
-    @ApiProperty({ example: '2024-01-01T00:00:00.000Z', description: 'Ngày cập nhật' })
-    updatedAt: Date;
 }
-export class userCreateDto {
-    @ApiProperty({ example: '', description: 'Tên đăng nhập' })
+
+export class UserCreateDto {
+    @ApiProperty({ example: 'john_doe', description: 'Tên đăng nhập' })
     @IsNotEmpty()
+    @IsString()
     username: string;
-    @ApiProperty({ example: '', description: 'Email' })
+
+    @ApiProperty({ example: 'john@example.com', description: 'Email' })
     @IsNotEmpty()
+    @IsEmail()
     email: string;
-    @ApiProperty({ example: 'guest', enum: ['guest', 'admin', 'staff'], description: 'Vai trò' })
+
+    @ApiProperty({ example: 'password123', description: 'Mật khẩu' })
     @IsNotEmpty()
-    role: string;
-    @ApiProperty({ example: 'active', enum: ['active', 'inactive'], description: 'Trạng thái tài khoản' })
-    @IsNotEmpty()
-    status: string;
-    @ApiProperty({ example: '0901234567', description: 'Số điện thoại', nullable: true })
+    @IsString()
+    @MinLength(6)
+    password: string;
+
+    @ApiProperty({ example: 'owner', enum: UserRole, description: 'Vai trò', required: false })
     @IsOptional()
-    phone: string;
-    @ApiProperty({ example: '', description: 'URL ảnh đại diện', nullable: true })
-    @IsOptional()
-    avatar: string;
+    @IsEnum(UserRole)
+    role?: UserRole;
 }

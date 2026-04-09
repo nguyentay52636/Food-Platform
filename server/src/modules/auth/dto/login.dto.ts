@@ -1,5 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { UserRole } from '../../user/schema/user.schema';
 
 export class LoginDto {
     @ApiProperty({ description: 'Tên đăng nhập hoặc email', example: 'thanhdz123' })
@@ -21,17 +22,8 @@ export class AuthUserDto {
     @ApiProperty({ example: 'thanhdz@example.com' })
     email: string;
 
-    @ApiProperty({ example: 'guest', enum: ['guest', 'admin', 'staff'] })
+    @ApiProperty({ example: 'owner', enum: UserRole })
     role: string;
-
-    @ApiProperty({ example: 'active', enum: ['active', 'inactive'] })
-    status: string;
-
-    @ApiProperty({ example: '0987654321', nullable: true })
-    phone: string | null;
-
-    @ApiProperty({ example: null, nullable: true })
-    avatar: string | null;
 
     @ApiProperty({ example: '2026-03-25T08:00:00.000Z' })
     createdAt: string;

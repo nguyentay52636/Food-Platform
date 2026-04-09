@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User, UserDocument } from './schema/user.schema';
-import { userCreateDto } from './dto/user.dto';
+import { User, UserDocument, UserRole } from './schema/user.schema';
+import { UserCreateDto } from './dto/user.dto';
 
 @Injectable()
 export class UserService {
@@ -18,7 +18,7 @@ export class UserService {
         }).exec();
     }
 
-    async create(createDto: userCreateDto) {
+    async create(createDto: UserCreateDto) {
         const createdUser = new this.userModel(createDto);
         return createdUser.save();
     }
@@ -29,5 +29,9 @@ export class UserService {
 
     async findAll() {
         return this.userModel.find().select('-password').lean().exec();
+    }
+
+    async findByRole(role: UserRole) {
+        return this.userModel.find({ role }).select('-password').lean().exec();
     }
 }

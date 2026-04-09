@@ -1,8 +1,9 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterDto, RegisterResponseDto } from './dto/register.dto';
+import { RegisterDto, RegisterOwnerDto, RegisterResponseDto } from './dto/register.dto';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { UserRole } from '../user/schema/user.schema';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -17,10 +18,20 @@ export class AuthController {
         return this.authService.register(registerDto);
     }
 
+    @ApiOperation({ summary: 'Đăng ký tài khoản với role mặc định là OWNER' })
+    @ApiResponse({ status: 201, description: 'Đăng ký OWNER thành công.', type: RegisterResponseDto })
+    @Post('register-owner')
+    async registerOwner(@Body() registerDto: RegisterOwnerDto): Promise<RegisterResponseDto> {
+        const fullDto: RegisterDto = {
+            ...registerDto,
+            role: UserRole.OWNER,
+        };
+        return this.authService.register(fullDto);
+    }
+
     @ApiOperation({ summary: 'Đăng nhập hệ thống' })
     @ApiResponse({ status: 200, description: 'Đăng nhập thành công, trả về access_token + thông tin user.', type: LoginResponseDto })
     @ApiResponse({ status: 401, description: 'Tài khoản hoặc mật khẩu không chính xác.' })
-    @ApiResponse({ status: 403, description: 'Tài khoản đã bị khóa (inactive).' })
     @HttpCode(HttpStatus.OK)
     @Post('login')
     async login(@Body() loginDto: LoginDto): Promise<LoginResponseDto> {

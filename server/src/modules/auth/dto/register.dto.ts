@@ -1,6 +1,7 @@
-import { IsEmail, IsNotEmpty, MinLength, IsOptional } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEmail, IsNotEmpty, MinLength, IsEnum, IsOptional } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import { LoginResponseDto } from './login.dto';
+import { UserRole } from '../../user/schema/user.schema';
 
 export class RegisterDto {
     @ApiProperty({ description: 'Tên đăng nhập', example: 'thanhdz123' })
@@ -15,10 +16,24 @@ export class RegisterDto {
     @MinLength(6)
     password: string;
 
-    @ApiPropertyOptional({ description: 'Số điện thoại', example: '0987654321' })
+    @ApiProperty({ description: 'Vai trò', enum: UserRole, example: 'owner', required: false })
+    @IsEnum(UserRole)
     @IsOptional()
-    phone?: string;
+    role?: UserRole;
 }
 
-// Response đăng ký có cùng cấu trúc với login (token + user)
-export class RegisterResponseDto extends LoginResponseDto {}
+export class RegisterOwnerDto {
+    @ApiProperty({ description: 'Tên đăng nhập', example: 'thanhdz123' })
+    @IsNotEmpty()
+    username: string;
+
+    @ApiProperty({ description: 'Địa chỉ email', example: 'thanhdz@example.com' })
+    @IsEmail()
+    email: string;
+
+    @ApiProperty({ description: 'Mật khẩu (ít nhất 6 ký tự)', example: 'password123' })
+    @MinLength(6)
+    password: string;
+}
+
+export class RegisterResponseDto extends LoginResponseDto { }

@@ -7,7 +7,6 @@ import {
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { UserStatus } from '../user/schema/user.schema';
 
 @Injectable()
 export class AuthService {
@@ -39,9 +38,7 @@ export class AuthService {
         const user = await this.userService.findByEmailOrUsername(dto.account);
         if (!user) throw new UnauthorizedException('Invalid account');
 
-        if (user.status !== UserStatus.ACTIVE) {
-            throw new ForbiddenException('Account inactive');
-        }
+
 
         const match = await bcrypt.compare(dto.password, user.password);
         if (!match) throw new UnauthorizedException('Wrong password');
@@ -64,9 +61,6 @@ export class AuthService {
                 username: user.username,
                 email: user.email,
                 role: user.role,
-                status: user.status,
-                phone: user.phone ?? null,
-                avatar: user.avatar ?? null,
                 createdAt: user.createdAt,
                 updatedAt: user.updatedAt,
             },
