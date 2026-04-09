@@ -13,6 +13,7 @@ export interface POI {
   imageUrl?: string
   audioUrl?: string
   narrationLanguages?: string[]
+  ownerId?: string
   address?: string
   rating?: number
   reviewCount?: number
@@ -30,6 +31,7 @@ export interface CreatePOIPayload {
   imageUrl?: string
   audioUrl?: string
   narrationLanguages?: string[]
+  ownerId?: string
   address?: string
 }
 
@@ -102,6 +104,8 @@ export interface IRestaurant {
 export interface OwnerUser {
   id: string
   name: string
+  username: string
+  password: string
   role: "owner"
   // POIs mà owner được admin gán để owner chỉ có thể xem
   poiIds: string[]

@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from "react"
 import type { CreatePOIPayload, MinorSubCategory, POI, POICategory } from "@/lib/types"
+import type { OwnerUser } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Spinner } from "@/components/ui/spinner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Plus } from "lucide-react"
+import { createOwner, fetchOwners } from "@/lib/api"
 
 const SUB_CATEGORIES: { value: MinorSubCategory; label: string }[] = [
   { value: "wc", label: "Restroom (WC)" },
@@ -49,7 +53,12 @@ const FORM_TEXT = {
     subType: "Loại phụ",
     subTypePlaceholder: "Chọn loại...",
     imageUrl: "Ảnh đại diện (URL)",
-    audioUrl: "Audio URL",
+    owner: "Chủ shop",
+    ownerPlaceholder: "Chọn chủ shop...",
+    addOwner: "Tạo chủ shop mới",
+    ownerUsername: "Tài khoản",
+    ownerPassword: "Mật khẩu",
+    ownerCreate: "Tạo",
     language: "Đa ngôn ngữ",
     languagePlaceholder: "Chọn ngôn ngữ",
     mapPickerOn: "Đang chọn trên bản đồ...",
@@ -74,7 +83,12 @@ const FORM_TEXT = {
     subType: "Sub type",
     subTypePlaceholder: "Select type...",
     imageUrl: "Image URL",
-    audioUrl: "Audio URL",
+    owner: "Owner",
+    ownerPlaceholder: "Select owner...",
+    addOwner: "Create owner",
+    ownerUsername: "Username",
+    ownerPassword: "Password",
+    ownerCreate: "Create",
     language: "Language",
     languagePlaceholder: "Select language",
     mapPickerOn: "Selecting on map...",
@@ -99,7 +113,12 @@ const FORM_TEXT = {
     subType: "子类型",
     subTypePlaceholder: "选择类型...",
     imageUrl: "图片链接 (URL)",
-    audioUrl: "音频链接 (URL)",
+    owner: "店主",
+    ownerPlaceholder: "选择店主...",
+    addOwner: "新增店主",
+    ownerUsername: "账号",
+    ownerPassword: "密码",
+    ownerCreate: "新增",
     language: "语言",
     languagePlaceholder: "选择语言",
     mapPickerOn: "地图选点中...",
@@ -130,10 +149,30 @@ export function PoisSidebarForm({
   const [latitude, setLatitude] = useState("")
   const [longitude, setLongitude] = useState("")
   const [imageUrl, setImageUrl] = useState("")
-  const [audioUrl, setAudioUrl] = useState("")
   const [narrationLanguage, setNarrationLanguage] = useState<string>("vi-VN")
+  const [owners, setOwners] = useState<OwnerUser[]>([])
+  const [ownerId, setOwnerId] = useState<string>("")
+  const [isOwnerDialogOpen, setIsOwnerDialogOpen] = useState(false)
+  const [newOwnerUsername, setNewOwnerUsername] = useState("")
+  const [newOwnerPassword, setNewOwnerPassword] = useState("")
+  const [isCreatingOwner, setIsCreatingOwner] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
+
+  useEffect(() => {
+    let mounted = true
+    fetchOwners()
+      .then((data) => {
+        if (!mounted) return
+        setOwners(data)
+      })
+      .catch(() => {
+        // ignore for demo
+      })
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   useEffect(() => {
     if (poi) {
@@ -144,8 +183,8 @@ export function PoisSidebarForm({
       setLatitude(String(poi.latitude))
       setLongitude(String(poi.longitude))
       setImageUrl(poi.imageUrl ?? "")
-      setAudioUrl(poi.audioUrl ?? "")
       setNarrationLanguage(poi.narrationLanguages?.[0] ?? "vi-VN")
+      setOwnerId(poi.ownerId ?? "")
     } else {
       setName("")
       setDescription("")
@@ -154,8 +193,8 @@ export function PoisSidebarForm({
       setLatitude(pickerLat != null ? String(pickerLat.toFixed(6)) : "")
       setLongitude(pickerLng != null ? String(pickerLng.toFixed(6)) : "")
       setImageUrl("")
-      setAudioUrl("")
       setNarrationLanguage("vi-VN")
+      setOwnerId("")
     }
     setError("")
   }, [poi, pickerLat, pickerLng])
@@ -198,13 +237,34 @@ export function PoisSidebarForm({
         latitude: lat,
         longitude: lng,
         imageUrl: imageUrl.trim() || undefined,
-        audioUrl: audioUrl.trim() || undefined,
         narrationLanguages: [narrationLanguage],
+        ownerId: ownerId || undefined,
       })
     } catch {
       setError("Failed to save POI. Please try again.")
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  async function handleCreateOwner() {
+    setIsCreatingOwner(true)
+    setError("")
+    try {
+      const created = await createOwner({
+        username: newOwnerUsername,
+        password: newOwnerPassword,
+      })
+      const updated = [created, ...owners]
+      setOwners(updated)
+      setOwnerId(created.id)
+      setIsOwnerDialogOpen(false)
+      setNewOwnerUsername("")
+      setNewOwnerPassword("")
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to create owner.")
+    } finally {
+      setIsCreatingOwner(false)
     }
   }
 
@@ -307,13 +367,31 @@ export function PoisSidebarForm({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="poi-audio">{t.audioUrl}</Label>
-            <Input
-              id="poi-audio"
-              value={audioUrl}
-              onChange={(e) => setAudioUrl(e.target.value)}
-              placeholder="https://example.com/audio.mp3"
-            />
+            <div className="flex items-center justify-between gap-2">
+              <Label>{t.owner}</Label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setIsOwnerDialogOpen(true)}
+                aria-label={t.addOwner}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            <Select value={ownerId} onValueChange={setOwnerId}>
+              <SelectTrigger>
+                <SelectValue placeholder={t.ownerPlaceholder} />
+              </SelectTrigger>
+              <SelectContent>
+                {owners.map((o) => (
+                  <SelectItem key={o.id} value={o.id}>
+                    {o.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-1.5">
@@ -356,6 +434,52 @@ export function PoisSidebarForm({
           </div>
         </div>
       </form>
+
+      <Dialog open={isOwnerDialogOpen} onOpenChange={setIsOwnerDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t.addOwner}</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="owner-username">{t.ownerUsername}</Label>
+              <Input
+                id="owner-username"
+                value={newOwnerUsername}
+                onChange={(e) => setNewOwnerUsername(e.target.value)}
+                placeholder="owner_shop_01"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="owner-password">{t.ownerPassword}</Label>
+              <Input
+                id="owner-password"
+                type="password"
+                value={newOwnerPassword}
+                onChange={(e) => setNewOwnerPassword(e.target.value)}
+                placeholder="••••••••"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="pt-2">
+            <Button type="button" variant="outline" onClick={() => setIsOwnerDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleCreateOwner} disabled={isCreatingOwner}>
+              {isCreatingOwner ? (
+                <>
+                  <Spinner className="mr-2 h-4 w-4" />
+                  {t.saving}
+                </>
+              ) : (
+                t.ownerCreate
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

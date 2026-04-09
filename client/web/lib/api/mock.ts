@@ -12,6 +12,7 @@ import type {
   UpdateTourPayload,
   LoginPayload,
   AuthResponse,
+  OwnerUser,
   Review,
 } from "@/lib/types"
 import { MOCK_ADMIN, MOCK_OWNERS, MOCK_POIS, MOCK_REVIEWS, MOCK_TOURS } from "@/lib/mocks/data"
@@ -20,6 +21,7 @@ const delay = (ms = 400) => new Promise((r) => setTimeout(r, ms))
 
 let pois: POI[] = [...MOCK_POIS]
 let tours: Tour[] = [...MOCK_TOURS]
+let owners: OwnerUser[] = [...MOCK_OWNERS]
 
 // ─── Auth ──────────────────────────────────────────
 
@@ -58,6 +60,12 @@ export async function createPOI(payload: CreatePOIPayload): Promise<POI> {
     updatedAt: now,
   }
   pois = [...pois, newPoi]
+
+  if (payload.ownerId) {
+    owners = owners.map((o) =>
+      o.id === payload.ownerId ? { ...o, poiIds: Array.from(new Set([...o.poiIds, newPoi.id])) } : o,
+    )
+  }
   return newPoi
 }
 
@@ -79,6 +87,7 @@ export async function deletePOI(id: string): Promise<void> {
   const idx = pois.findIndex((p) => p.id === id)
   if (idx === -1) throw new Error("POI not found")
   pois = pois.filter((p) => p.id !== id)
+  owners = owners.map((o) => ({ ...o, poiIds: o.poiIds.filter((poiId) => poiId !== id) }))
 }
 
 // ─── Tours ─────────────────────────────────────────
@@ -134,7 +143,7 @@ export async function deleteTour(id: string): Promise<void> {
 // ─── Owner (chủ quán) - UI demo ─────────────────────────────────────────────
 
 function assertPoiBelongsToOwner(ownerId: string, poiId: string) {
-  const owner = MOCK_OWNERS.find((o) => o.id === ownerId)
+  const owner = owners.find((o) => o.id === ownerId)
   if (!owner || !owner.poiIds.includes(poiId)) {
     throw new Error("Forbidden: POI does not belong to this owner")
   }
@@ -143,7 +152,7 @@ function assertPoiBelongsToOwner(ownerId: string, poiId: string) {
 
 export async function fetchOwnerPOIs(ownerId: string): Promise<POI[]> {
   await delay()
-  const owner = MOCK_OWNERS.find((o) => o.id === ownerId)
+  const owner = owners.find((o) => o.id === ownerId)
   if (!owner) return []
 
   const allowed = new Set(owner.poiIds)
@@ -188,4 +197,31 @@ export async function fetchOwnerPOIReviews(
   const total = all.length
   const data = all.slice((page - 1) * limit, page * limit)
   return { data, total }
+}
+
+// ─── Owners (chủ POI) - Admin demo ───────────────────────────────────────────
+
+export async function fetchOwners(): Promise<OwnerUser[]> {
+  await delay()
+  return owners.map((o) => ({ ...o }))
+}
+
+export async function createOwner(payload: { username: string; password: string }): Promise<OwnerUser> {
+  await delay(400)
+  const username = payload.username.trim()
+  if (!username) throw new Error("Username is required")
+
+  const exists = owners.some((o) => o.username.toLowerCase() === username.toLowerCase())
+  if (exists) throw new Error("Username already exists")
+
+  const owner: OwnerUser = {
+    id: "owner-" + Date.now(),
+    name: username,
+    username,
+    password: payload.password,
+    role: "owner",
+    poiIds: [],
+  }
+  owners = [owner, ...owners]
+  return { ...owner }
 }

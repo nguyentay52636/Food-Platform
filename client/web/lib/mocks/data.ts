@@ -166,12 +166,16 @@ export const MOCK_OWNERS: OwnerUser[] = [
   {
     id: "owner-1",
     name: "Chủ quán A",
+    username: "owner_a",
+    password: "owner_a123",
     role: "owner",
     poiIds: ["poi-1", "poi-4", "poi-6"],
   },
   {
     id: "owner-2",
     name: "Chủ quán B",
+    username: "owner_b",
+    password: "owner_b123",
     role: "owner",
     poiIds: ["poi-2", "poi-3", "poi-5", "poi-7"],
   },
