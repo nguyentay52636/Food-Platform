@@ -13,6 +13,7 @@ interface ClientMapProps {
     className?: string
     userLocation?: { lat: number; lng: number } | null
     locateSignal?: number
+    focusFilterSignal?: number
 }
 
 export function ClientMap({
@@ -23,6 +24,7 @@ export function ClientMap({
     className = "",
     userLocation,
     locateSignal,
+    focusFilterSignal,
 }: ClientMapProps) {
     const uniqueId = useId()
     const containerRef = useRef<HTMLDivElement>(null)
@@ -223,6 +225,30 @@ export function ClientMap({
             animate: true,
         })
     }, [isReady, locateSignal, userLocation])
+
+    // Focus map to currently filtered POIs when filter chip is pressed.
+    useEffect(() => {
+        if (!isReady || !mapInstanceRef.current) return
+        if (!focusFilterSignal) return
+        if (pois.length === 0) return
+
+        const map = mapInstanceRef.current
+        if (pois.length === 1) {
+            map.setView([pois[0].latitude, pois[0].longitude], 16, { animate: true })
+            return
+        }
+
+        import("leaflet").then((L) => {
+            const bounds = L.default.latLngBounds(
+                pois.map((poi) => [poi.latitude, poi.longitude] as [number, number])
+            )
+            map.fitBounds(bounds, {
+                padding: [60, 60],
+                maxZoom: 16,
+                animate: true,
+            })
+        })
+    }, [isReady, focusFilterSignal, pois])
 
     return (
         <div
