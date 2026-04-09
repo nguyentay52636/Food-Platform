@@ -3,7 +3,9 @@ import "./globals.css";
 
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { TranslationProvider } from "@/app/context/TranslationContext";
+import { ReduxProvider } from "@/redux/provider";
 import ClientLayout from "./ClientLayout";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,10 +26,13 @@ export default function RootLayout({
           defaultTheme="light"
           enableSystem>
           <TranslationProvider>
-            <ClientLayout>
-              {children}
-            </ClientLayout>
+            <ReduxProvider>
+              <ClientLayout>
+                {children}
+              </ClientLayout>
+            </ReduxProvider>
           </TranslationProvider>
+          <Toaster position="top-right" richColors />
         </ThemeProvider>
 
       </body>
