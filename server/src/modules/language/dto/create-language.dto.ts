@@ -1,15 +1,24 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateLanguageDto {
-  @ApiProperty({ example: 'VI' })
+  @ApiProperty({ example: 'vi' })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(10)
-  maNgonNgu: string;
+  code: string;
+
+  @ApiProperty({ example: 'Vietnamese' })
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 
   @ApiProperty({ example: 'Tiếng Việt' })
   @IsString()
   @IsNotEmpty()
-  tenNgonNgu: string;
+  nativeName: string;
+
+  @ApiProperty({ example: '🇻🇳' })
+  @IsString()
+  @IsNotEmpty()
+  flag: string;
 }

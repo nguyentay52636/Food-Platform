@@ -2,16 +2,18 @@
 import React from 'react'
 
 import Link from "next/link"
-import { ArrowLeft, Globe, Info, Volume2, Check } from "lucide-react"
+import { ArrowLeft, Globe, Info, Volume2, Check, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { BottomNav } from "@/components/client/ButtonNav"
 import { useLanguage } from "@/lib/context/language-context"
-import { SUPPORTED_LANGUAGES } from "@/lib/client-types"
 import { useTranslatedUiText } from "@/lib/translation-utils"
+import { useLanguages } from "./hooks/useLanguage"
 
 export default function Setting() {
     const { language, setLanguage } = useLanguage()
+    const { languages, isLoading } = useLanguages()
+
     const settingsTitle = useTranslatedUiText("Cài đặt", language)
     const languageTitle = useTranslatedUiText("Ngôn ngữ", language)
     const aboutTitle = useTranslatedUiText("Về ứng dụng", language)
@@ -27,6 +29,9 @@ export default function Setting() {
         "Phố Ẩm Thực Vĩnh Khánh - Khám phá ẩm thực Sài Gòn",
         language
     )
+
+
+
     return (
         <>
             <div className="min-h-screen bg-background pb-20">
@@ -48,25 +53,36 @@ export default function Setting() {
                             <h2 className="font-medium text-sm">{languageTitle}</h2>
                         </div>
 
-                        <Card className="divide-y divide-border">
-                            {SUPPORTED_LANGUAGES.map((lang) => (
-                                <button
-                                    key={lang.code}
-                                    className="flex items-center justify-between w-full p-4 hover:bg-accent/50 transition-colors"
-                                    onClick={() => setLanguage(lang.code)}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-2xl">{lang.flag}</span>
-                                        <div className="text-left">
-                                            <p className="font-medium text-sm">{lang.nativeName}</p>
-                                            <p className="text-xs text-muted-foreground">{lang.name}</p>
+                        <Card className="divide-y divide-border overflow-hidden">
+                            {isLoading ? (
+                                <div className="flex flex-col items-center justify-center py-10 gap-2">
+                                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                                    <p className="text-sm text-muted-foreground">Đang tải ngôn ngữ...</p>
+                                </div>
+                            ) : languages.length > 0 ? (
+                                languages.map((lang) => (
+                                    <button
+                                        key={lang.code}
+                                        className="flex items-center justify-between w-full p-4 hover:bg-accent/50 transition-colors"
+                                        onClick={() => setLanguage(lang.code as any)}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-2xl">{lang.flag}</span>
+                                            <div className="text-left">
+                                                <p className="font-medium text-sm">{lang.nativeName}</p>
+                                                <p className="text-xs text-muted-foreground">{lang.name}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    {language === lang.code && (
-                                        <Check className="h-5 w-5 text-primary" />
-                                    )}
-                                </button>
-                            ))}
+                                        {language === lang.code && (
+                                            <Check className="h-5 w-5 text-primary" />
+                                        )}
+                                    </button>
+                                ))
+                            ) : (
+                                <div className="p-8 text-center text-sm text-muted-foreground">
+                                    Không tìm thấy ngôn ngữ nào.
+                                </div>
+                            )}
                         </Card>
                     </section>
 
@@ -115,3 +131,4 @@ export default function Setting() {
         </>
     )
 }
+
