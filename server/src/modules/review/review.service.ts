@@ -19,7 +19,7 @@ export class ReviewService {
   ): Promise<ReviewDocument> {
     const review = await this.reviewModel.create({
       maPOI: new Types.ObjectId(dto.maPOI),
-      maSession: dto.maSession,
+      maSession: dto.maSession as any,
       deviceId: dto.deviceId,
       ipAddress: ipAddress || dto.ipAddress,
       tenNguoiDung: dto.tenNguoiDung || 'Khách du lịch',
@@ -48,6 +48,7 @@ export class ReviewService {
     const [data, total, ratingAgg] = await Promise.all([
       this.reviewModel
         .find(filter)
+        .populate('maSession')
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
@@ -77,6 +78,7 @@ export class ReviewService {
       this.reviewModel
         .find(filter)
         .populate('maPOI', 'tenPOI loaiPOI')
+        .populate('maSession')
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit),

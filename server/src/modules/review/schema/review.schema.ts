@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { Session } from '../../session/schema/session.schema';
 
 export type ReviewDocument = Review & Document;
 
@@ -20,7 +21,7 @@ export class Review {
     ref: 'Session',
     required: true
   })
-  maSession: string;
+  maSession: Session;
 
   @Prop({ type: String, sparse: true })
   deviceId?: string | null;

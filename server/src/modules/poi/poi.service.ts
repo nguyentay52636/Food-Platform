@@ -42,6 +42,7 @@ export type PoiContentByLanguageResult = {
       thoiLuong?: number;
     };
   };
+  reviews?: any[];
 };
 
 @Injectable()
@@ -119,6 +120,7 @@ export class PoiService {
           thoiLuong: chosen.audioDurationSec,
         },
       },
+      reviews: poi.reviews as any[],
     };
   }
 
@@ -188,7 +190,7 @@ export class PoiService {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('id không hợp lệ');
     }
-    const poi = await this.poiModel.findById(id).lean<Record<string, unknown>>().exec();
+    const poi = await this.poiModel.findById(id).populate('reviews').lean<Record<string, unknown>>().exec();
     if (!poi) {
       throw new NotFoundException(`POI with ID ${id} not found`);
     }

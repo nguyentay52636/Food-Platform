@@ -36,3 +36,6 @@ PATCH /poi/:id?maNgonNgu=<languageId>
 PATCH /poi/:id/translations với body:
 maNgonNgu (required)
 tieuDe, moTa, audioUrl, audioDurationSec (optional)
+
+
+ http://localhost:8000/router/69d759f86d689259344bba3d

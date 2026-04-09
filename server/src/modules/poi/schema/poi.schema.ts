@@ -4,7 +4,11 @@ import { Document, Types } from 'mongoose';
 
 export type PoiDocument = Poi & Document;
 
-@Schema({ timestamps: true })
+@Schema({ 
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+})
 export class Poi {
     @Prop({ required: true, unique: true, trim: true })
     tenPOI: string;
@@ -33,6 +37,7 @@ export class Poi {
 
     @Prop()
     ngayTao?: Date;
+    
     @Prop([String])
     images?: string[];
 
@@ -41,6 +46,13 @@ export class Poi {
 }
 
 export const PoiSchema = SchemaFactory.createForClass(Poi);
+
+// Liên kết virtual với Review
+PoiSchema.virtual('reviews', {
+    ref: 'Review',
+    localField: '_id',
+    foreignField: 'maPOI',
+});
 
 PoiSchema.index({ latitude: 1, longitude: 1 });
 PoiSchema.index({ loaiPOI: 1 });
