@@ -31,7 +31,7 @@ export function ClientMap({
     const userMarkerRef = useRef<L.Marker | null>(null)
     const [isReady, setIsReady] = useState(false)
     const initializedRef = useRef(false)
-    const lastCenteredPoiIdRef = useRef<number | null>(null)
+    const lastCenteredPoiIdRef = useRef<string | null>(null)
     const loadingMapText = useTranslatedUiText("Loading map...", language, "en")
 
     // Initialize map

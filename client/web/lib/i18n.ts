@@ -187,5 +187,5 @@ const ja: Translations = {
 export const translations: Partial<Record<LanguageCode, Translations>> = { vi, en, zh, ja }
 
 export function getTranslations(lang: LanguageCode): Translations {
-    return translations[lang] || translations.en
+    return translations[lang] ?? en
 }

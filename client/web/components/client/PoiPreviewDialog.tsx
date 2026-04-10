@@ -11,7 +11,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
-import type { ClientPOI, LanguageCode } from "@/lib/client-types"
+import type { ClientPOI, LanguageCode, Translations } from "@/lib/client-types"
 import { useAudio } from "@/lib/context/audio-context"
 import { useTranslatedText, useTranslatedUiText } from "@/lib/translation-utils"
 
