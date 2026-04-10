@@ -13,7 +13,7 @@ interface POICardsStripProps {
     pois: POI[]
     selectedPoi?: POI | null
     adminUi: AdminPoisUi
-    onSelect: (poi: POI) => void
+    onRequestDelete: (poi: POI) => void
 }
 
 function subCategoryLabel(adminUi: AdminPoisUi, subCategory: string | undefined): string {
@@ -43,7 +43,7 @@ function formatDistance(km: number): string {
     return `${km.toFixed(1)}km`
 }
 
-export function PoisCardStrip({ pois, selectedPoi, adminUi, onSelect }: POICardsStripProps) {
+export function PoisCardStrip({ pois, selectedPoi, adminUi, onRequestDelete }: POICardsStripProps) {
     const t = adminUi.strip
     const foundLine =
         t.foundCountStyle === "suffix" ? `${pois.length}${t.found}` : `${pois.length} ${t.found}`
@@ -130,7 +130,7 @@ export function PoisCardStrip({ pois, selectedPoi, adminUi, onSelect }: POICards
                                 )}
                                 onClick={() => {
                                     if (movedRef.current) return
-                                    onSelect(poi)
+                                    onRequestDelete(poi)
                                 }}
                             >
                                 {/* Thumbnail */}
