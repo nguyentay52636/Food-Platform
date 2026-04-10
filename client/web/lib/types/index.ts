@@ -53,6 +53,8 @@ export interface Tour {
   updatedAt: string
   /** Ảnh bìa tour (URL). Nếu thiếu, UI có thể fallback ảnh POI. */
   coverImage?: string
+  /** Thời lượng ước tính (phút). */
+  estimatedDurationMinutes?: number
 }
 
 export interface CreateTourPayload {
@@ -61,6 +63,7 @@ export interface CreateTourPayload {
   pois: TourPOI[]
   status?: "draft" | "published"
   coverImage?: string
+  estimatedDurationMinutes?: number
 }
 
 export type UpdateTourPayload = Partial<CreateTourPayload>

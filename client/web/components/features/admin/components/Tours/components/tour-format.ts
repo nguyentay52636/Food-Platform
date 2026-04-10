@@ -22,6 +22,18 @@ export function getMockTourDurationMinutes(tour: Tour): number {
   return Math.min(480, Math.max(30, base + jitter))
 }
 
+/** Thời lượng hiển thị: dùng giá trị đã lưu trên tour, không có thì fallback mock. */
+export function getTourDurationMinutes(tour: Tour): number {
+  if (
+    typeof tour.estimatedDurationMinutes === "number" &&
+    Number.isFinite(tour.estimatedDurationMinutes) &&
+    tour.estimatedDurationMinutes > 0
+  ) {
+    return Math.min(24 * 60, Math.max(1, Math.round(tour.estimatedDurationMinutes)))
+  }
+  return getMockTourDurationMinutes(tour)
+}
+
 /** Hiển thị thời lượng tiếng Việt, có tiền tố ~ */
 export function formatTourDurationVi(minutes: number): string {
   const h = Math.floor(minutes / 60)

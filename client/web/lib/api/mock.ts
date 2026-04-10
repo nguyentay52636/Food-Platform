@@ -107,6 +107,13 @@ export async function fetchTour(id: string): Promise<Tour> {
 export async function createTour(payload: CreateTourPayload): Promise<Tour> {
   await delay(500)
   const now = new Date().toISOString()
+  const duration =
+    payload.estimatedDurationMinutes != null &&
+    Number.isFinite(payload.estimatedDurationMinutes) &&
+    payload.estimatedDurationMinutes > 0
+      ? Math.min(24 * 60, Math.max(1, Math.round(payload.estimatedDurationMinutes)))
+      : 120
+
   const newTour: Tour = {
     id: "tour-" + Date.now(),
     name: payload.name,
@@ -115,6 +122,7 @@ export async function createTour(payload: CreateTourPayload): Promise<Tour> {
     status: payload.status ?? "draft",
     createdAt: now,
     updatedAt: now,
+    estimatedDurationMinutes: duration,
     ...(payload.coverImage ? { coverImage: payload.coverImage } : {}),
   }
   tours = [...tours, newTour]

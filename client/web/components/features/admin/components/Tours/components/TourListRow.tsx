@@ -13,7 +13,7 @@ import {
   ChevronRight,
 } from "lucide-react"
 import type { Tour } from "@/lib/types"
-import { formatTourDurationVi, getMockTourDurationMinutes } from "./tour-format"
+import { formatTourDurationVi, getTourDurationMinutes } from "./tour-format"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -78,7 +78,7 @@ export function TourListRow({
           </span>
           <span className="flex items-center gap-1 text-foreground/90">
             <Timer className="h-3 w-3 shrink-0" />
-            {formatTourDurationVi(getMockTourDurationMinutes(tour))}
+            {formatTourDurationVi(getTourDurationMinutes(tour))}
           </span>
           <span className="flex items-center gap-1">
             <Clock className="h-3 w-3 shrink-0" />

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { GripVertical, Plus, X, MapPin, Route, AlertCircle } from "lucide-react"
+import { GripVertical, Plus, X, MapPin, Route, AlertCircle, Timer } from "lucide-react"
 import type { Tour, POI, TourPOI, CreateTourPayload } from "@/lib/types"
 import { SUB_CATEGORY_LABELS } from "@/lib/utils"
 import {
@@ -26,6 +26,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
+import { getTourDurationMinutes } from "./tour-format"
 
 interface TourFormDialogProps {
     open: boolean
@@ -52,6 +53,7 @@ export function TourFormDialog({
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState("")
     const [dragIndex, setDragIndex] = useState<number | null>(null)
+    const [durationMinutes, setDurationMinutes] = useState("120")
 
     useEffect(() => {
         if (tour) {
@@ -59,11 +61,13 @@ export function TourFormDialog({
             setDescription(tour.description)
             setStatus(tour.status)
             setTourPois([...tour.pois])
+            setDurationMinutes(String(getTourDurationMinutes(tour)))
         } else {
             setName("")
             setDescription("")
             setStatus("draft")
             setTourPois([])
+            setDurationMinutes("120")
         }
         setError("")
         setSelectedPoiToAdd("")
@@ -155,6 +159,12 @@ export function TourFormDialog({
             return
         }
 
+        const dm = parseInt(durationMinutes, 10)
+        if (!Number.isFinite(dm) || dm < 1 || dm > 24 * 60) {
+            setError("Thời lượng phải từ 1 đến 1440 phút (24 giờ).")
+            return
+        }
+
         setIsSubmitting(true)
         try {
             await onSubmit({
@@ -162,6 +172,7 @@ export function TourFormDialog({
                 description: description.trim(),
                 pois: tourPois,
                 status,
+                estimatedDurationMinutes: dm,
             })
             onOpenChange(false)
         } catch {
@@ -243,6 +254,26 @@ export function TourFormDialog({
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="tour-duration" className="flex items-center gap-2">
+                                    <Timer className="h-3.5 w-3.5 text-muted-foreground" />
+                                    Thời lượng ước tính (phút)
+                                </Label>
+                                <Input
+                                    id="tour-duration"
+                                    type="number"
+                                    min={1}
+                                    max={1440}
+                                    step={1}
+                                    value={durationMinutes}
+                                    onChange={(e) => setDurationMinutes(e.target.value)}
+                                    placeholder="120"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Tổng thời gian tham quan dự kiến (1–1440 phút).
+                                </p>
                             </div>
                         </div>
 

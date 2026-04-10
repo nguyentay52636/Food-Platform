@@ -140,6 +140,9 @@ export default function Tours() {
         pois: tour.pois,
         status: "draft",
         ...(tour.coverImage ? { coverImage: tour.coverImage } : {}),
+        ...(tour.estimatedDurationMinutes != null
+          ? { estimatedDurationMinutes: tour.estimatedDurationMinutes }
+          : {}),
       })
       toast.success(`Đã nhân bản "${tour.name}"`)
       await loadData()

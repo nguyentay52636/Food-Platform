@@ -28,7 +28,7 @@ import {
 import {
   formatTourDate,
   formatTourDurationVi,
-  getMockTourDurationMinutes,
+  getTourDurationMinutes,
   getTourRelativeTime,
 } from "./tour-format"
 import { getTourCoverImage } from "./tour-helpers"
@@ -184,7 +184,7 @@ export function TourGridCard({
             </div>
             <div className="flex items-center gap-1.5 text-[11px] font-medium text-foreground">
               <Timer className="h-3 w-3 shrink-0 text-primary" />
-              <span>{formatTourDurationVi(getMockTourDurationMinutes(tour))}</span>
+              <span>{formatTourDurationVi(getTourDurationMinutes(tour))}</span>
             </div>
             <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
               <Calendar className="h-3 w-3 shrink-0" />

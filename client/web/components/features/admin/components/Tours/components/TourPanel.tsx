@@ -26,7 +26,7 @@ import {
     formatTime,
     getRelativeTime,
 } from "@/lib/utils"
-import { formatTourDurationVi, getMockTourDurationMinutes } from "./tour-format"
+import { formatTourDurationVi, getTourDurationMinutes } from "./tour-format"
 
 interface TourDetailPanelProps {
     tour: Tour
@@ -56,7 +56,7 @@ export function TourDetailPanel({
 
     const minorCount = sortedPois.length - majorCount
 
-    const estimatedMinutes = useMemo(() => getMockTourDurationMinutes(tour), [tour])
+    const estimatedMinutes = useMemo(() => getTourDurationMinutes(tour), [tour])
 
     return (
         <div className="flex min-h-0 h-full flex-col">

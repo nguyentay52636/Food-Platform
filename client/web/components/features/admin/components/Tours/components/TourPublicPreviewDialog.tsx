@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
 import { getTourCoverImage } from "./tour-helpers"
-import { formatTourDurationVi, getMockTourDurationMinutes } from "./tour-format"
+import { formatTourDurationVi, getTourDurationMinutes } from "./tour-format"
 
 interface TourPublicPreviewDialogProps {
   tour: Tour | null
@@ -40,7 +40,7 @@ export function TourPublicPreviewDialog({
 
   const coverUrl = getTourCoverImage(tour, allPois)
   const ordered = sortTourPois(tour.pois)
-  const durationMin = getMockTourDurationMinutes(tour)
+  const durationMin = getTourDurationMinutes(tour)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
