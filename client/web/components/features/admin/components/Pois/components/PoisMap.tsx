@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useCallback, useState } from "react"
 import type { POI } from "@/lib/types"
+import type { LanguageCode } from "@/lib/client-types"
+import { SUPPORTED_LANGUAGES } from "@/lib/client-types"
 import { Navigation } from "lucide-react"
 
 interface POIMapProps {
@@ -12,8 +14,8 @@ interface POIMapProps {
     pickerMode?: boolean
     pickerLat?: number
     pickerLng?: number
-    uiLanguage: "vi" | "en" | "zh"
-    onUiLanguageChange: (language: "vi" | "en" | "zh") => void
+    uiLanguage: LanguageCode
+    onUiLanguageChange: (language: LanguageCode) => void
     className?: string
 }
 
@@ -50,6 +52,12 @@ const MAP_TEXT = {
     },
 } as const
 
+type MapUiStrings = (typeof MAP_TEXT)[keyof typeof MAP_TEXT]
+
+function mapLabels(lang: LanguageCode): MapUiStrings {
+    return MAP_TEXT[lang as keyof typeof MAP_TEXT] ?? MAP_TEXT.en
+}
+
 export function PoisMap({
     pois,
     selectedPoi,
@@ -62,7 +70,7 @@ export function PoisMap({
     onUiLanguageChange,
     className = "",
 }: POIMapProps) {
-    const t = MAP_TEXT[uiLanguage]
+    const t = mapLabels(uiLanguage)
     const mapRef = useRef<HTMLDivElement>(null)
     const mapInstanceRef = useRef<L.Map | null>(null)
     const markersRef = useRef<L.Marker[]>([])
@@ -312,15 +320,18 @@ export function PoisMap({
     return (
         <div className={`relative ${className}`}>
             <div ref={mapRef} className="h-full w-full rounded-lg" />
-            <div className="absolute left-14 top-3 z-[1000]">
+            <div className="absolute right-3 top-3 z-[1000]">
                 <select
                     value={uiLanguage}
-                    onChange={(e) => onUiLanguageChange(e.target.value as "vi" | "en" | "zh")}
-                    className="h-8 rounded-md border border-border bg-background/95 px-2 text-xs text-foreground shadow-md backdrop-blur-sm"
+                    onChange={(e) => onUiLanguageChange(e.target.value as LanguageCode)}
+                    className="h-8 min-w-[10.5rem] max-w-[min(100vw-1.5rem,16rem)] rounded-md border border-border bg-background/95 px-2 text-xs text-foreground shadow-md backdrop-blur-sm"
+                    aria-label="UI language"
                 >
-                    <option value="vi">Tiếng Việt</option>
-                    <option value="en">English</option>
-                    <option value="zh">中文</option>
+                    {SUPPORTED_LANGUAGES.map((lang) => (
+                        <option key={lang.code} value={lang.code}>
+                            {lang.flag} {lang.nativeName}
+                        </option>
+                    ))}
                 </select>
             </div>
             <button

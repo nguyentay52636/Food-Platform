@@ -8,11 +8,12 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { getSubCategoryLabel } from "@/lib/poi-utils"
+import type { LanguageCode } from "@/lib/client-types"
 
 interface POICardsStripProps {
     pois: POI[]
     selectedPoi?: POI | null
-    uiLanguage: "vi" | "en" | "zh"
+    uiLanguage: LanguageCode
     onSelect: (poi: POI) => void
 }
 
@@ -21,6 +22,10 @@ const STRIP_TEXT = {
     en: { title: "Nearby Locations", found: "locations found", primary: "Primary point" },
     zh: { title: "附近地点", found: "个地点", primary: "主要点位" },
 } as const
+
+function stripLabels(lang: LanguageCode) {
+    return STRIP_TEXT[lang as keyof typeof STRIP_TEXT] ?? STRIP_TEXT.en
+}
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 6371 // Earth's radius in km
@@ -44,7 +49,7 @@ function formatDistance(km: number): string {
 }
 
 export function PoisCardStrip({ pois, selectedPoi, uiLanguage, onSelect }: POICardsStripProps) {
-    const t = STRIP_TEXT[uiLanguage]
+    const t = stripLabels(uiLanguage)
     const scrollRef = useRef<HTMLDivElement>(null)
     const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map())
     const isDraggingRef = useRef(false)

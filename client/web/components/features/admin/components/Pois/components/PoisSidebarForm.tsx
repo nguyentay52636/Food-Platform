@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Plus } from "lucide-react"
 import { createOwner, fetchOwners } from "@/lib/api"
+import type { LanguageCode } from "@/lib/client-types"
 
 const SUB_CATEGORIES: { value: MinorSubCategory; label: string }[] = [
   { value: "wc", label: "Restroom (WC)" },
@@ -31,7 +32,7 @@ interface PoisSidebarFormProps {
   pickerLat?: number
   pickerLng?: number
   pickerMode: boolean
-  uiLanguage: "vi" | "en" | "zh"
+  uiLanguage: LanguageCode
   onTogglePicker: () => void
   onResetForm: () => void
   onSubmit: (data: CreatePOIPayload) => Promise<void>
@@ -130,6 +131,10 @@ const FORM_TEXT = {
   },
 } as const
 
+function formLabels(lang: LanguageCode) {
+  return FORM_TEXT[lang as keyof typeof FORM_TEXT] ?? FORM_TEXT.en
+}
+
 export function PoisSidebarForm({
   poi,
   pickerLat,
@@ -140,7 +145,7 @@ export function PoisSidebarForm({
   onResetForm,
   onSubmit,
 }: PoisSidebarFormProps) {
-  const t = FORM_TEXT[uiLanguage]
+  const t = formLabels(uiLanguage)
   const isEdit = !!poi
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")

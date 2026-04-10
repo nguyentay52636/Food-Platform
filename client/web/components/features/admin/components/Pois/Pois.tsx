@@ -12,12 +12,12 @@ import { PoisMap } from "./components/PoisMap"
 import { PoisDeleteDialog } from "./components/Dialog/PoisDeleteDialog"
 import { PoisCardStrip } from "./components/PoisCardStrip"
 import { PoisSidebarForm } from "./components/PoisSidebarForm"
+import type { LanguageCode } from "@/lib/client-types"
 
 type NarrationLanguage = "vi-VN" | "en-US" | "zh-CN"
-type AdminUiLanguage = "vi" | "en" | "zh"
 
 const UI_TEXT: Record<
-    AdminUiLanguage,
+    "vi" | "en" | "zh",
     {
         audioGuide: string
         language: string
@@ -61,6 +61,10 @@ const UI_TEXT: Record<
     },
 }
 
+function getAdminUiLabels(lang: LanguageCode) {
+    return UI_TEXT[lang as keyof typeof UI_TEXT] ?? UI_TEXT.en
+}
+
 export default function Pois() {
     const {
         pois,
@@ -76,14 +80,14 @@ export default function Pois() {
 
     // CRUD actions
     const { handleCreate, handleUpdate, handleDelete } = usePOIActions(loadPOIs, clearSelection)
-    const [uiLanguage, setUiLanguage] = useState<AdminUiLanguage>("vi")
+    const [uiLanguage, setUiLanguage] = useState<LanguageCode>("vi")
     const [narrationLanguage, setNarrationLanguage] = useState<NarrationLanguage>("vi-VN")
     const [isSpeaking, setIsSpeaking] = useState(false)
     const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
 
     const narrationText = useMemo(() => {
         if (!selectedPoi) return ""
-        const labels = UI_TEXT[uiLanguage]
+        const labels = getAdminUiLabels(uiLanguage)
         const addressText = selectedPoi.address ? `${labels.addressLabel}: ${selectedPoi.address}.` : ""
         switch (narrationLanguage) {
             case "en-US":
@@ -260,11 +264,11 @@ export default function Pois() {
 
             {selectedPoi && (
                 <div className="fixed bottom-4 right-4 z-[70] w-[360px] rounded-xl border border-border bg-background/95 p-4 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/85">
-                    <p className="text-sm font-semibold">{UI_TEXT[uiLanguage].audioGuide}</p>
+                    <p className="text-sm font-semibold">{getAdminUiLabels(uiLanguage).audioGuide}</p>
                     <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{selectedPoi.name}</p>
 
                     <div className="mt-3 flex items-center gap-2">
-                        <label className="text-xs text-muted-foreground">{UI_TEXT[uiLanguage].language}</label>
+                        <label className="text-xs text-muted-foreground">{getAdminUiLabels(uiLanguage).language}</label>
                         <select
                             value={narrationLanguage}
                             onChange={(e) => setNarrationLanguage(e.target.value as NarrationLanguage)}
@@ -282,17 +286,17 @@ export default function Pois() {
                             onClick={speakNarration}
                             className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
                         >
-                            {UI_TEXT[uiLanguage].playAudio}
+                            {getAdminUiLabels(uiLanguage).playAudio}
                         </button>
                         <button
                             type="button"
                             onClick={stopNarration}
                             className="rounded-md border border-input px-3 py-1.5 text-xs font-medium hover:bg-accent"
                         >
-                            {UI_TEXT[uiLanguage].stop}
+                            {getAdminUiLabels(uiLanguage).stop}
                         </button>
                         <span className="self-center text-xs text-muted-foreground">
-                            {isSpeaking ? UI_TEXT[uiLanguage].playing : UI_TEXT[uiLanguage].ready}
+                            {isSpeaking ? getAdminUiLabels(uiLanguage).playing : getAdminUiLabels(uiLanguage).ready}
                         </span>
                     </div>
                 </div>
