@@ -317,40 +317,29 @@ export function PoisSidebarForm({
 
     setIsSubmitting(true)
     try {
-      if (isEdit) {
-        // If editing is still handled by the parent onSubmit
-        await onSubmit({
-          name: name.trim(),
-          description: description.trim(),
-          category,
-          subCategory: category === "minor" ? (subCategory as MinorSubCategory) : undefined,
-          latitude: lat,
-          longitude: lng,
-          imageUrl: imageUrl.trim() || imagePreviews[0] || undefined,
-          narrationLanguages: [narrationLanguage],
-          ownerId: ownerId || undefined,
-          rangeTrigger: parseInt(rangeTrigger, 10) || 50,
-          address: address.trim() || undefined,
-        })
-      } else {
-        await createPoi({
-          tenPOI: name.trim(),
-          loaiPOI: category,
-          moTa: description.trim(),
-          latitude: lat,
-          longitude: lng,
-          rangeTrigger: parseInt(rangeTrigger, 10) || 50,
-          thumbnail: imageUrl.trim() || imagePreviews[0] || "",
-          images: imagePreviews,
-          address: address.trim(),
-        })
+      const payload: CreatePOIPayload = {
+        name: name.trim(),
+        description: description.trim(),
+        category,
+        subCategory: category === "minor" ? (subCategory as MinorSubCategory) : undefined,
+        latitude: lat,
+        longitude: lng,
+        imageUrl: imageUrl.trim() || imagePreviews[0] || undefined,
+        images: imagePreviews,
+        narrationLanguages: [narrationLanguage],
+        ownerId: ownerId || undefined,
+        rangeTrigger: parseInt(rangeTrigger, 10) || 50,
+        address: address.trim() || undefined,
+      }
 
-        toast.success("Thêm địa điểm thành công!")
-        onResetForm() // Reset after success
+      await onSubmit(payload)
+
+      if (!isEdit) {
+        onResetForm()
       }
     } catch (err: any) {
       setError(err?.response?.data?.message || "Failed to save POI. Please try again.")
-      toast.error("Có lỗi xảy ra khi thêm địa điểm.")
+      toast.error("Có lỗi xảy ra khi lưu địa điểm.")
     } finally {
       setIsSubmitting(false)
     }

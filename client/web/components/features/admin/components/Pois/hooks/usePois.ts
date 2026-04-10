@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useMemo } from "react"
 import { toast } from "sonner"
 import type { POI, POICategory, CreatePOIPayload } from "@/lib/types"
 import { fetchPOIs, createPOI, updatePOI, deletePOI } from "@/lib/api"
-import { getAllPois } from "@/apis/poisApi"
+import { getAllPois, createPoi, updatePoi, deletePoiById } from "@/apis/poisApi"
 import { filterPoisBySearch, filterPoisByCategory, countByCategory } from "@/lib/poi-utils"
 
 export type POIFilterCategory = POICategory | "all"
@@ -134,7 +134,17 @@ export function usePOIPicker() {
 export function usePOIActions(loadPOIs: () => Promise<void>, clearSelection: () => void) {
   const handleCreate = useCallback(
     async (data: CreatePOIPayload) => {
-      await createPOI(data)
+      await createPoi({
+        tenPOI: data.name,
+        loaiPOI: data.category,
+        moTa: data.description,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        rangeTrigger: data.rangeTrigger ?? 50,
+        thumbnail: data.imageUrl || "",
+        images: data.images || [],
+        address: data.address || "",
+      })
       toast.success(`"${data.name}" created successfully`)
       await loadPOIs()
     },
@@ -143,7 +153,17 @@ export function usePOIActions(loadPOIs: () => Promise<void>, clearSelection: () 
 
   const handleUpdate = useCallback(
     async (poiId: string, data: CreatePOIPayload) => {
-      await updatePOI(poiId, data)
+      await updatePoi(poiId, {
+        tenPOI: data.name,
+        loaiPOI: data.category,
+        moTa: data.description,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        rangeTrigger: data.rangeTrigger ?? 50,
+        thumbnail: data.imageUrl || "",
+        images: data.images || [],
+        address: data.address || "",
+      })
       toast.success(`"${data.name}" updated successfully`)
       await loadPOIs()
     },
@@ -153,7 +173,7 @@ export function usePOIActions(loadPOIs: () => Promise<void>, clearSelection: () 
   const handleDelete = useCallback(
     async (poi: POI) => {
       try {
-        await deletePOI(poi.id)
+        await deletePoiById(poi.id)
         toast.success(`"${poi.name}" deleted`)
         clearSelection()
         await loadPOIs()

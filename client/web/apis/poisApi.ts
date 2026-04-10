@@ -44,3 +44,31 @@ export const getAllPois = async () => {
         throw error
     }
 }
+export const deletePoiById = async (id: string) => {
+    try {
+        const response = await baseApi.delete(`/poi/${id}`)
+        return response.data
+    } catch (error: any) {
+        throw error
+    }
+}
+
+export const updatePoi = async (id: string, { tenPOI, loaiPOI, moTa, latitude, longitude, rangeTrigger, thumbnail, images, address }: IPOI) => {
+    const updatedPoi = {
+        tenPOI,
+        loaiPOI,
+        moTa,
+        latitude,
+        longitude,
+        rangeTrigger,
+        thumbnail,
+        images,
+        address
+    }
+    try {
+        const response = await baseApi.put(`/poi/${id}`, updatedPoi)
+        return response.data
+    } catch (error: any) {
+        throw error
+    }
+}

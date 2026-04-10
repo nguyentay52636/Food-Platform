@@ -53,6 +53,11 @@ export interface AdminPoisUi {
         create: string
         saving: string
         cancel: string
+        address: string
+        rangeTrigger: string
+        images: string
+        addImages: string
+        ownerEmail: string
     }
     errors: {
         nameRequired: string
@@ -85,6 +90,18 @@ export interface AdminPoisUi {
         dock: string
     }
     minorFallback: string
+    audioDetail: {
+        title: string
+        masterAudio: string
+        masterAudioDesc: string
+        noAudio: string
+        narrations: string
+        langCol: string
+        contentCol: string
+        actionCol: string
+        viewFull: string
+        helperText: string
+    }
 }
 
 const EN: AdminPoisUi = {
@@ -139,6 +156,11 @@ const EN: AdminPoisUi = {
         create: "Create",
         saving: "Saving...",
         cancel: "Cancel",
+        address: "Address",
+        rangeTrigger: "Range trigger (m)",
+        images: "Image gallery",
+        addImages: "Add images",
+        ownerEmail: "Email",
     },
     errors: {
         nameRequired: "Name is required.",
@@ -168,6 +190,18 @@ const EN: AdminPoisUi = {
         dock: "Dock",
     },
     minorFallback: "Minor point",
+    audioDetail: {
+        title: "Audio & Narration Content",
+        masterAudio: "Master Audio File",
+        masterAudioDesc: "This is the pre-recorded audio file assigned to this POI.",
+        noAudio: "No pre-recorded audio available",
+        narrations: "Multi-language Narrations",
+        langCol: "Language",
+        contentCol: "Narration Content",
+        actionCol: "Preview",
+        viewFull: "View full text",
+        helperText: "The narration text is automatically generated based on the POI name, description, and metadata to be used by the text-to-speech system in the mobile app.",
+    },
 }
 
 const VI: AdminPoisUi = {
@@ -222,6 +256,11 @@ const VI: AdminPoisUi = {
         create: "Thêm mới",
         saving: "Đang lưu...",
         cancel: "Hủy",
+        address: "Địa chỉ",
+        rangeTrigger: "Phạm vi kích hoạt (m)",
+        images: "Danh sách hình ảnh",
+        addImages: "Thêm hình ảnh",
+        ownerEmail: "Email",
     },
     errors: {
         nameRequired: "Vui lòng nhập tên.",
@@ -251,6 +290,18 @@ const VI: AdminPoisUi = {
         dock: "Bến tàu",
     },
     minorFallback: "Điểm phụ",
+    audioDetail: {
+        title: "Nội dung Audio & Thuyết minh",
+        masterAudio: "Tập tin Audio gốc",
+        masterAudioDesc: "Đây là tập tin âm thanh đã được ghi âm sẵn cho điểm đến này.",
+        noAudio: "Không có bản ghi âm sẵn",
+        narrations: "Nội dung thuyết minh đa ngôn ngữ",
+        langCol: "Ngôn ngữ",
+        contentCol: "Nội dung thuyết minh",
+        actionCol: "Nghe thử",
+        viewFull: "Xem toàn bộ văn bản",
+        helperText: "Nội dung thuyết minh được tự động tạo dựa trên tên, mô tả và thông tin của điểm đến để sử dụng cho hệ thống chuyển văn bản thành giọng nói trên ứng dụng di động.",
+    },
 }
 
 const ZH: AdminPoisUi = {
@@ -305,6 +356,11 @@ const ZH: AdminPoisUi = {
         create: "新增",
         saving: "保存中...",
         cancel: "取消",
+        address: "地址",
+        rangeTrigger: "触发范围 (米)",
+        images: "详情图片",
+        addImages: "添加图片",
+        ownerEmail: "Email",
     },
     errors: {
         nameRequired: "请填写名称。",
@@ -334,6 +390,18 @@ const ZH: AdminPoisUi = {
         dock: "码头",
     },
     minorFallback: "次要点",
+    audioDetail: {
+        title: "音频与讲解内容",
+        masterAudio: "主音频文件",
+        masterAudioDesc: "这是为此兴趣点分配的预录音频文件。",
+        noAudio: "无预录音频",
+        narrations: "多语言讲解",
+        langCol: "语言",
+        contentCol: "讲解内容",
+        actionCol: "预览",
+        viewFull: "查看全文",
+        helperText: "讲解文本是根据点位名称、描述和元数据自动生成的，用于移动应用中的文字转语音系统。",
+    },
 }
 
 const JA: AdminPoisUi = {
@@ -388,6 +456,11 @@ const JA: AdminPoisUi = {
         create: "作成",
         saving: "保存中...",
         cancel: "キャンセル",
+        address: "住所",
+        rangeTrigger: "トリガー範囲 (m)",
+        images: "ギャラリー画像",
+        addImages: "画像を追加",
+        ownerEmail: "Email",
     },
     errors: {
         nameRequired: "名前を入力してください。",
@@ -471,6 +544,11 @@ const KO: AdminPoisUi = {
         create: "만들기",
         saving: "저장 중...",
         cancel: "취소",
+        address: "주소",
+        rangeTrigger: "트리거 범위 (m)",
+        images: "이미지 갤러리",
+        addImages: "이미지 추가",
+        ownerEmail: "Email",
     },
     errors: {
         nameRequired: "이름을 입력하세요.",
@@ -556,6 +634,11 @@ const FR: AdminPoisUi = {
         create: "Créer",
         saving: "Enregistrement...",
         cancel: "Annuler",
+        address: "Adresse",
+        rangeTrigger: "Portée (m)",
+        images: "Images",
+        addImages: "Ajouter des images",
+        ownerEmail: "Email",
     },
     errors: {
         nameRequired: "Le nom est obligatoire.",
@@ -641,6 +724,11 @@ const DE: AdminPoisUi = {
         create: "Erstellen",
         saving: "Speichern...",
         cancel: "Abbrechen",
+        address: "Adresse",
+        rangeTrigger: "Reichweite (m)",
+        images: "Bilder",
+        addImages: "Bilder hinzufügen",
+        ownerEmail: "Email",
     },
     errors: {
         nameRequired: "Name ist erforderlich.",
@@ -726,6 +814,11 @@ const ES: AdminPoisUi = {
         create: "Crear",
         saving: "Guardando...",
         cancel: "Cancelar",
+        address: "Dirección",
+        rangeTrigger: "Rango de activación (m)",
+        images: "Imágenes",
+        addImages: "Agregar imágenes",
+        ownerEmail: "Email",
     },
     errors: {
         nameRequired: "El nombre es obligatorio.",
@@ -811,6 +904,11 @@ const IT: AdminPoisUi = {
         create: "Crea",
         saving: "Salvataggio...",
         cancel: "Annulla",
+        address: "Indirizzo",
+        rangeTrigger: "Raggio di attivazione (m)",
+        images: "Immagini",
+        addImages: "Aggiungi immagini",
+        ownerEmail: "Email",
     },
     errors: {
         nameRequired: "Il nome è obbligatorio.",

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
     Table,
     TableBody,
@@ -8,18 +8,23 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Edit2, Trash2, MapPin } from "lucide-react"
+import { Edit2, Trash2, MapPin, Mic } from "lucide-react"
 import type { POI } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
+import type { AdminPoisUi } from "@/lib/admin-pois-i18n"
+import DialogDetailAudio from "../PoisCardStrip/Dialog/DialogDetailAudio"
 
 interface TablePoisProps {
     pois: POI[]
+    adminUi: AdminPoisUi
     onEdit: (poi: POI) => void
     onDelete: (poi: POI) => void
     onViewOnMap: (poi: POI) => void
 }
 
-export default function TablePois({ pois, onEdit, onDelete, onViewOnMap }: TablePoisProps) {
+export default function TablePois({ pois, adminUi, onEdit, onDelete, onViewOnMap }: TablePoisProps) {
+    const [audioPoi, setAudioPoi] = useState<POI | null>(null)
+
     return (
         <div className="rounded-md border bg-background h-full overflow-hidden flex flex-col">
             <div className="flex-1 overflow-auto">
@@ -29,6 +34,7 @@ export default function TablePois({ pois, onEdit, onDelete, onViewOnMap }: Table
                             <TableHead className="w-[80px]">Ảnh</TableHead>
                             <TableHead>Tên địa điểm</TableHead>
                             <TableHead>Loại</TableHead>
+                            <TableHead className="hidden lg:table-cell">Phạm vi</TableHead>
                             <TableHead className="hidden md:table-cell">Địa chỉ</TableHead>
                             <TableHead className="text-right">Thao tác</TableHead>
                         </TableRow>
@@ -36,7 +42,7 @@ export default function TablePois({ pois, onEdit, onDelete, onViewOnMap }: Table
                     <TableBody>
                         {pois.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                                     Không có dữ liệu địa điểm.
                                 </TableCell>
                             </TableRow>
@@ -71,11 +77,22 @@ export default function TablePois({ pois, onEdit, onDelete, onViewOnMap }: Table
                                             {poi.category === "major" ? "Chính" : "Phụ"}
                                         </Badge>
                                     </TableCell>
+                                    <TableCell className="hidden lg:table-cell">
+                                        <span className="text-sm">{poi.rangeTrigger ?? 50}m</span>
+                                    </TableCell>
                                     <TableCell className="hidden md:table-cell max-w-[200px] truncate">
                                         {poi.address || "Chưa có địa chỉ"}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => setAudioPoi(poi)}
+                                                title="Nghe mô tả"
+                                            >
+                                                <Mic className="h-4 w-4" />
+                                            </Button>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
@@ -109,6 +126,15 @@ export default function TablePois({ pois, onEdit, onDelete, onViewOnMap }: Table
                     </TableBody>
                 </Table>
             </div>
+
+            {audioPoi && (
+                <DialogDetailAudio 
+                    open={!!audioPoi}
+                    onOpenChange={(open) => !open && setAudioPoi(null)}
+                    poi={audioPoi}
+                    adminUi={adminUi}
+                />
+            )}
         </div>
     )
 }

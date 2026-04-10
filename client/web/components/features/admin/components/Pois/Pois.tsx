@@ -256,6 +256,7 @@ export default function Pois() {
                                     pickerLng={pickerState.lng}
                                     uiLanguage={uiLanguage}
                                     onUiLanguageChange={setUiLanguage}
+                                    mapUi={adminUi.map}
                                     className="h-full w-full"
                                 />
                             </div>
@@ -275,6 +276,7 @@ export default function Pois() {
                     ) : (
                         <TablePois
                             pois={pois}
+                            adminUi={adminUi}
                             onEdit={handleEditClick}
                             onDelete={setDeleteTarget}
                             onViewOnMap={handleViewOnMap}
@@ -302,20 +304,18 @@ export default function Pois() {
                     </div>
 
                     <div className="mt-3 flex gap-2">
-                        <button
-                            type="button"
+                        <Button
                             onClick={speakNarration}
                             className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
                         >
                             {adminUi.panel.playAudio}
-                        </button>
-                        <button
-                            type="button"
+                        </Button>
+                        <Button
                             onClick={stopNarration}
                             className="rounded-md border border-input px-3 py-1.5 text-xs font-medium hover:bg-accent"
                         >
                             {adminUi.panel.stop}
-                        </button>
+                        </Button>
                         <span className="self-center text-xs text-muted-foreground">
                             {isSpeaking ? adminUi.panel.playing : adminUi.panel.ready}
                         </span>
