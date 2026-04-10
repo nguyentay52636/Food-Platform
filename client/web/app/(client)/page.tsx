@@ -230,15 +230,18 @@ export default function ExplorePage() {
                             </p>
                             <div className="space-y-2">
                                 <div className="flex items-center gap-2.5 text-sm font-medium">
-                                    <span className="h-3.5 w-3.5 rounded-full bg-emerald-500 shadow-sm" />
+                                    <span className="relative inline-flex h-3.5 w-3.5">
+                                        <span className="absolute inset-[-4px] rounded-full bg-emerald-500/25" />
+                                        <span className="relative h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500 shadow-sm" />
+                                    </span>
                                     <span>Đang chọn</span>
                                 </div>
                                 <div className="flex items-center gap-2.5 text-sm font-medium">
-                                    <span className="h-3.5 w-3.5 rounded-full bg-blue-500 shadow-sm" />
+                                    <span className="h-3.5 w-3.5 rounded-full bg-emerald-500 shadow-sm" />
                                     <span>Điểm chính</span>
                                 </div>
                                 <div className="flex items-center gap-2.5 text-sm font-medium">
-                                    <span className="h-3.5 w-3.5 rounded-full bg-orange-500 shadow-sm" />
+                                    <span className="h-3.5 w-3.5 rounded-full bg-slate-500 shadow-sm" />
                                     <span>Điểm phụ</span>
                                 </div>
                             </div>
@@ -247,7 +250,7 @@ export default function ExplorePage() {
 
                     {/* Selected POI Quick View (on map) */}
                     {selectedPoi && !previewOpen && (
-                        <div className="absolute bottom-4 left-4 right-4 animate-in slide-in-from-bottom-4 duration-300">
+                        <div className="absolute bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-4 right-4 z-[60] animate-in slide-in-from-bottom-4 duration-300">
                             <Card className="overflow-hidden shadow-xl">
                                 {/* ... Content remains the same ... */}
                                 <div className="flex">
