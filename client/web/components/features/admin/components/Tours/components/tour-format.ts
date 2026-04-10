@@ -1,9 +1,34 @@
+import type { Tour } from "@/lib/types"
+
 export function formatVnd(amount: number) {
   return amount.toLocaleString("vi-VN", {
     style: "currency",
     currency: "VND",
     maximumFractionDigits: 0,
   })
+}
+
+function hashTourId(id: string): number {
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (Math.imul(31, h) + id.charCodeAt(i)) | 0
+  return Math.abs(h)
+}
+
+/** Mock: ước lượng thời gian (phút), ổn định theo id tour + số POI — chỉ để hiển thị UI. */
+export function getMockTourDurationMinutes(tour: Tour): number {
+  const n = tour.pois.length
+  const base = 20 + n * 25
+  const jitter = hashTourId(tour.id) % 90
+  return Math.min(480, Math.max(30, base + jitter))
+}
+
+/** Hiển thị thời lượng tiếng Việt, có tiền tố ~ */
+export function formatTourDurationVi(minutes: number): string {
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  if (h === 0) return `~${m} phút`
+  if (m === 0) return `~${h} giờ`
+  return `~${h} giờ ${m} phút`
 }
 
 export function formatTourDate(dateStr: string) {

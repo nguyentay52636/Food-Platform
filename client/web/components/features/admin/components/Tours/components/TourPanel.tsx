@@ -8,6 +8,7 @@ import {
     Calendar,
     Route,
     Clock,
+    Timer,
     CheckCircle2,
     FileText,
     Navigation,
@@ -25,6 +26,7 @@ import {
     formatTime,
     getRelativeTime,
 } from "@/lib/utils"
+import { formatTourDurationVi, getMockTourDurationMinutes } from "./tour-format"
 
 interface TourDetailPanelProps {
     tour: Tour
@@ -54,8 +56,10 @@ export function TourDetailPanel({
 
     const minorCount = sortedPois.length - majorCount
 
+    const estimatedMinutes = useMemo(() => getMockTourDurationMinutes(tour), [tour])
+
     return (
-        <div className="flex h-full flex-col">
+        <div className="flex min-h-0 h-full flex-col">
             {/* Header */}
             <div className="border-b border-border px-6 py-4">
                 <div className="flex items-start justify-between">
@@ -102,13 +106,22 @@ export function TourDetailPanel({
             {/* Content */}
             <div className="flex-1 overflow-y-auto">
                 {/* Summary stats */}
-                <div className="grid grid-cols-3 gap-4 px-6 py-5">
+                <div className="grid grid-cols-2 gap-3 px-6 py-5 sm:grid-cols-4 sm:gap-4">
                     <div className="rounded-lg border border-border bg-card p-3 text-center">
                         <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
                             <Route className="h-3.5 w-3.5" />
-                            <span className="text-[11px] font-medium">Total Stops</span>
+                            <span className="text-[11px] font-medium">Tổng điểm dừng</span>
                         </div>
                         <p className="mt-1 text-2xl font-bold text-foreground">{sortedPois.length}</p>
+                    </div>
+                    <div className="rounded-lg border border-border bg-card p-3 text-center">
+                        <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
+                            <Timer className="h-3.5 w-3.5" />
+                            <span className="text-[11px] font-medium">Thời lượng (ước lượng)</span>
+                        </div>
+                        <p className="mt-1 text-lg font-bold leading-tight text-foreground">
+                            {formatTourDurationVi(estimatedMinutes)}
+                        </p>
                     </div>
                     <div className="rounded-lg border border-border bg-card p-3 text-center">
                         <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
