@@ -128,13 +128,15 @@ export function PoisMap({
             const isMajor = poi.category === "major"
             const isSelected = selectedPoi?.id === poi.id
 
+            const markerColor = isSelected ? "#22c55e" : isMajor ? "#3b82f6" : "#f59e0b"
+
             const icon = L.divIcon({
                 className: "custom-marker",
                 html: `<div style="
           width: ${isSelected ? "22px" : "18px"};
           height: ${isSelected ? "22px" : "18px"};
           border-radius: 50%;
-          background: ${isMajor ? "#3b82f6" : "#f59e0b"};
+          background: ${markerColor};
           border: 2px solid ${isSelected ? "#fff" : "rgba(255,255,255,0.5)"};
           box-shadow: 0 2px 6px rgba(0,0,0,0.3);
           transition: all 0.2s;
@@ -144,7 +146,7 @@ export function PoisMap({
         ">
           <svg width="${isSelected ? "12" : "10"}" height="${isSelected ? "12" : "10"}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" fill="white" fill-opacity="0.95"/>
-            <circle cx="12" cy="10" r="2.5" fill="${isMajor ? "#3b82f6" : "#f59e0b"}"/>
+            <circle cx="12" cy="10" r="2.5" fill="${markerColor}"/>
           </svg>
         </div>`,
                 iconSize: [isSelected ? 22 : 18, isSelected ? 22 : 18],
@@ -319,7 +321,9 @@ export function PoisMap({
                 <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{t.legend}</p>
                 <div className="space-y-1.5 text-xs text-foreground">
                     <div className="flex items-center gap-2">
-                        <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                        <span className="relative inline-flex h-2.5 w-2.5 items-center justify-center rounded-full border-2 border-white bg-green-500 shadow-sm">
+                            <span className="h-1.5 w-1.5 rounded-full bg-white/80" />
+                        </span>
                         <span>{t.selected}</span>
                     </div>
                     <div className="flex items-center gap-2">

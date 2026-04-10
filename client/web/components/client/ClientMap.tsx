@@ -112,7 +112,11 @@ export function ClientMap({
                 const isSelected = selectedPoi?.id === poi.id
                 const hasAudio = !!poi.audio[language]
 
-                const markerColor = isMajor ? "#10b981" : "#64748b"
+                // Color system (shared with admin maps):
+                // - primary (major): blue
+                // - secondary (minor): orange
+                // - selected: green (ping)
+                const markerColor = isSelected ? "#22c55e" : isMajor ? "#3b82f6" : "#f59e0b"
                 const markerSize = isSelected ? 28 : isMajor ? 18 : 14
 
                 const icon = L.default.divIcon({
@@ -251,13 +255,15 @@ export function ClientMap({
     }, [isReady, focusFilterSignal, pois])
 
     return (
-        <div
-            ref={containerRef}
-            id={`map-${uniqueId}`}
-            className={`w-full h-full ${className}`}
-        >
+        <div className={`relative w-full h-full ${className}`}>
+            <div
+                ref={containerRef}
+                id={`map-${uniqueId}`}
+                className="absolute inset-0"
+            />
+
             {!isReady && (
-                <div className="flex h-full w-full items-center justify-center bg-muted">
+                <div className="absolute inset-0 flex h-full w-full items-center justify-center bg-muted">
                     <div className="text-sm text-muted-foreground">{loadingMapText}</div>
                 </div>
             )}
