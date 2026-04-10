@@ -7,24 +7,19 @@ import type { POI } from "@/lib/types"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { getSubCategoryLabel } from "@/lib/poi-utils"
-import type { LanguageCode } from "@/lib/client-types"
+import type { AdminPoisUi } from "@/lib/admin-pois-i18n"
 
 interface POICardsStripProps {
     pois: POI[]
     selectedPoi?: POI | null
-    uiLanguage: LanguageCode
+    adminUi: AdminPoisUi
     onSelect: (poi: POI) => void
 }
 
-const STRIP_TEXT = {
-    vi: { title: "Nearby Locations", found: "locations found", primary: "Điểm chính" },
-    en: { title: "Nearby Locations", found: "locations found", primary: "Primary point" },
-    zh: { title: "附近地点", found: "个地点", primary: "主要点位" },
-} as const
-
-function stripLabels(lang: LanguageCode) {
-    return STRIP_TEXT[lang as keyof typeof STRIP_TEXT] ?? STRIP_TEXT.en
+function subCategoryLabel(adminUi: AdminPoisUi, subCategory: string | undefined): string {
+    if (!subCategory) return adminUi.minorFallback
+    const key = subCategory as keyof AdminPoisUi["sub"]
+    return adminUi.sub[key] ?? adminUi.minorFallback
 }
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -48,8 +43,10 @@ function formatDistance(km: number): string {
     return `${km.toFixed(1)}km`
 }
 
-export function PoisCardStrip({ pois, selectedPoi, uiLanguage, onSelect }: POICardsStripProps) {
-    const t = stripLabels(uiLanguage)
+export function PoisCardStrip({ pois, selectedPoi, adminUi, onSelect }: POICardsStripProps) {
+    const t = adminUi.strip
+    const foundLine =
+        t.foundCountStyle === "suffix" ? `${pois.length}${t.found}` : `${pois.length} ${t.found}`
     const scrollRef = useRef<HTMLDivElement>(null)
     const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map())
     const isDraggingRef = useRef(false)
@@ -101,7 +98,7 @@ export function PoisCardStrip({ pois, selectedPoi, uiLanguage, onSelect }: POICa
             <div className="px-4 py-3 border-b border-border/50">
                 <h3 className="text-sm font-semibold text-foreground">{t.title}</h3>
                 <p className="text-xs text-muted-foreground">
-                    {uiLanguage === "zh" ? `${pois.length}${t.found}` : `${pois.length} ${t.found}`}
+                    {foundLine}
                 </p>
             </div>
             <div
@@ -156,7 +153,7 @@ export function PoisCardStrip({ pois, selectedPoi, uiLanguage, onSelect }: POICa
                                         variant={poi.category === "major" ? "default" : "secondary"}
                                         className="absolute left-2 top-2 text-[10px] shadow-sm"
                                     >
-                                        {poi.category === "major" ? t.primary : getSubCategoryLabel(poi.subCategory)}
+                                        {poi.category === "major" ? t.primary : subCategoryLabel(adminUi, poi.subCategory)}
                                     </Badge>
                                     {/* Distance badge */}
                                     <div className="absolute right-2 top-2 rounded-md bg-background/90 px-1.5 py-0.5 text-[10px] font-medium shadow-sm backdrop-blur-sm">
@@ -186,6 +183,20 @@ export function PoisCardStrip({ pois, selectedPoi, uiLanguage, onSelect }: POICa
                                             <span className="line-clamp-1 whitespace-normal">{poi.address}</span>
                                         </div>
                                     )}
+                                    <div className="mt-2 space-y-0.5 border-t border-border/50 pt-2 text-[10px] tabular-nums">
+                                        <div className="flex justify-between gap-2">
+                                            <span className="shrink-0 text-muted-foreground">{t.latLabel}</span>
+                                            <span className="min-w-0 truncate text-right font-mono text-foreground">
+                                                {poi.latitude.toFixed(6)}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between gap-2">
+                                            <span className="shrink-0 text-muted-foreground">{t.lngLabel}</span>
+                                            <span className="min-w-0 truncate text-right font-mono text-foreground">
+                                                {poi.longitude.toFixed(6)}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </Card>
                         )

@@ -1,6 +1,8 @@
 "use client"
 
 import type { POI } from "@/lib/types"
+import type { AdminPoisUi } from "@/lib/admin-pois-i18n"
+import { formatDeleteMessage } from "@/lib/admin-pois-i18n"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,27 +16,28 @@ import {
 
 interface PoisDeleteDialogProps {
   poi: POI | null
+  deleteUi: AdminPoisUi["delete"]
   onClose: () => void
   onConfirm: () => Promise<void>
 }
 
-export function PoisDeleteDialog({ poi, onClose, onConfirm }: PoisDeleteDialogProps) {
+export function PoisDeleteDialog({ poi, deleteUi, onClose, onConfirm }: PoisDeleteDialogProps) {
   return (
     <AlertDialog open={!!poi} onOpenChange={(open) => !open && onClose()}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Xóa điểm POI</AlertDialogTitle>
+          <AlertDialogTitle>{deleteUi.title}</AlertDialogTitle>
           <AlertDialogDescription>
-            Bạn có chắc chắn muốn xóa &quot;{poi?.name}&quot;? Hành động này không thể hoàn tác.
+            {poi ? formatDeleteMessage(deleteUi.message, poi.name) : ""}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Hủy</AlertDialogCancel>
+          <AlertDialogCancel>{deleteUi.cancel}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            Xóa
+            {deleteUi.confirm}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
