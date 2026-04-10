@@ -74,8 +74,8 @@ export class PoiContentResponseDto {
   images?: string[];
 
   @ApiPropertyOptional()
-  address?: string;
+  maOwner?: string;
 
-  @ApiProperty({ type: PoiNgonNguDto })
-  poiNgonNgu: PoiNgonNguDto;
+  @ApiPropertyOptional({ type: PoiNgonNguDto })
+  poiNgonNgu?: PoiNgonNguDto;
 }

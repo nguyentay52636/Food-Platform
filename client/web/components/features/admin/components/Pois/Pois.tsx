@@ -10,8 +10,12 @@ import {
 } from "@/components/features/admin/components/Pois/hooks/usePois"
 import { PoisMap } from "./components/PoisMap"
 import { PoisDeleteDialog } from "./components/Dialog/PoisDeleteDialog"
-import { PoisCardStrip } from "./components/PoisCardStrip"
 import { PoisSidebarForm } from "./components/PoisSidebarForm"
+<<<<<<< HEAD
+import TablePois from "./components/TablePois/TablePois"
+import { LayoutList, Map as MapIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { PoisCardStrip } from "./components/PoisCardStrip/PoisCardStrip"
 import type { LanguageCode } from "@/lib/client-types"
 import { getAdminPoisUi } from "@/lib/admin-pois-i18n"
 import { fetchTours } from "@/lib/api"
@@ -34,6 +38,7 @@ export default function Pois() {
 
     // CRUD actions
     const { handleCreate, handleUpdate, handleDelete } = usePOIActions(loadPOIs, clearSelection)
+    const [viewMode, setViewMode] = useState<"map" | "table">("map")
     const [uiLanguage, setUiLanguage] = useState<LanguageCode>("vi")
     const [narrationLanguage, setNarrationLanguage] = useState<NarrationLanguage>("vi-VN")
     const [isSpeaking, setIsSpeaking] = useState(false)
@@ -130,6 +135,11 @@ export default function Pois() {
         deactivatePicker()
     }, [clearSelection, deactivatePicker])
 
+    const handleViewOnMap = useCallback((poi: POI) => {
+        selectPoi(poi)
+        setViewMode("map")
+    }, [selectPoi])
+
     const stopNarration = useCallback(() => {
         if (typeof window === "undefined" || !window.speechSynthesis) return
         window.speechSynthesis.cancel()
@@ -192,6 +202,32 @@ export default function Pois() {
             </div>
 
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                <div className="flex items-center justify-between border-b border-border bg-background px-4 py-2">
+                    <h2 className="text-sm font-semibold text-muted-foreground">
+                        {viewMode === "map" ? "Chế độ bản đồ" : "Quản lý danh sách"}
+                    </h2>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant={viewMode === "map" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setViewMode("map")}
+                            className="h-8 gap-1.5"
+                        >
+                            <MapIcon className="h-4 w-4" />
+                            Bản đồ
+                        </Button>
+                        <Button
+                            variant={viewMode === "table" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setViewMode("table")}
+                            className="h-8 gap-1.5"
+                        >
+                            <LayoutList className="h-4 w-4" />
+                            Danh sách
+                        </Button>
+                    </div>
+                </div>
+
                 <div className="border-b border-border lg:hidden">
                     <PoisSidebarForm
                         poi={editingPoi}
@@ -206,32 +242,45 @@ export default function Pois() {
                     />
                 </div>
 
-                {/* Map (upper) */}
-                <div className="relative min-h-[420px] flex-1 overflow-hidden">
-                    <PoisMap
-                        pois={pois}
-                        selectedPoi={selectedPoi}
-                        onMapClick={handleMapClick}
-                        onMarkerClick={handleMarkerClick}
-                        pickerMode={pickerState.isActive}
-                        pickerLat={pickerState.lat}
-                        pickerLng={pickerState.lng}
-                        uiLanguage={uiLanguage}
-                        onUiLanguageChange={setUiLanguage}
-                        mapUi={adminUi.map}
-                        className="h-full w-full"
-                    />
+                {/* Main Content Area */}
+                <div className="relative flex-1 overflow-hidden p-4 lg:p-6">
+                    {viewMode === "map" ? (
+                        <div className="flex h-full flex-col gap-4">
+                            <div className="relative min-h-[420px] flex-1 overflow-hidden rounded-xl border border-border shadow-sm">
+                                <PoisMap
+                                    pois={pois}
+                                    selectedPoi={selectedPoi}
+                                    onMapClick={handleMapClick}
+                                    onMarkerClick={handleMarkerClick}
+                                    pickerMode={pickerState.isActive}
+                                    pickerLat={pickerState.lat}
+                                    pickerLng={pickerState.lng}
+                                    uiLanguage={uiLanguage}
+                                    onUiLanguageChange={setUiLanguage}
+                                    className="h-full w-full"
+                                />
+                            </div>
 
-                </div>
-
-                {/* Nearby Locations strip (lower) */}
-                <div className="shrink-0 border-t border-border">
-                    <PoisCardStrip
-                        pois={pois}
-                        selectedPoi={selectedPoi}
-                        adminUi={adminUi}
-                        onRequestDelete={handleRequestDeleteFromCard}
-                    />
+                            {/* Nearby Locations strip (lower) */}
+                            <div className="shrink-0">
+                                <PoisCardStrip
+                                    pois={pois}
+                                    selectedPoi={selectedPoi}
+                                    adminUi={adminUi}
+                                    uiLanguage={uiLanguage}
+                                    onRequestDelete={handleRequestDeleteFromCard}
+                                    onSelect={handleEditClick}
+                                />
+                            </div>
+                        </div>
+                    ) : (
+                        <TablePois
+                            pois={pois}
+                            onEdit={handleEditClick}
+                            onDelete={setDeleteTarget}
+                            onViewOnMap={handleViewOnMap}
+                        />
+                    )}
                 </div>
             </div>
 

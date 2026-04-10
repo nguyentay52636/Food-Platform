@@ -1,19 +1,23 @@
 "use client"
 
 import { useRef, useEffect, type MouseEvent } from "react"
-import Image from "next/image"
-import { MapPin, Star, Image as ImageIcon } from "lucide-react"
+import { Image as ImageIcon } from "lucide-react"
 import type { POI } from "@/lib/types"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import type { AdminPoisUi } from "@/lib/admin-pois-i18n"
+import { getSubCategoryLabel } from "@/lib/poi-utils"
+import ActionCardScrip from "./ActionCardScrip"
+
 
 interface POICardsStripProps {
     pois: POI[]
     selectedPoi?: POI | null
     adminUi: AdminPoisUi
+    uiLanguage: string
     onRequestDelete: (poi: POI) => void
+    onSelect: (poi: POI) => void
 }
 
 function subCategoryLabel(adminUi: AdminPoisUi, subCategory: string | undefined): string {
@@ -43,7 +47,7 @@ function formatDistance(km: number): string {
     return `${km.toFixed(1)}km`
 }
 
-export function PoisCardStrip({ pois, selectedPoi, adminUi, onRequestDelete }: POICardsStripProps) {
+                                export function PoisCardStrip({ pois, selectedPoi, adminUi, uiLanguage, onRequestDelete, onSelect }: POICardsStripProps) {
     const t = adminUi.strip
     const foundLine =
         t.foundCountStyle === "suffix" ? `${pois.length}${t.found}` : `${pois.length} ${t.found}`
@@ -87,7 +91,6 @@ export function PoisCardStrip({ pois, selectedPoi, adminUi, onRequestDelete }: P
 
     const handleMouseUp = () => {
         isDraggingRef.current = false
-        // Reset shortly after mouseup so click event can be suppressed if drag happened
         window.setTimeout(() => {
             movedRef.current = false
         }, 0)
@@ -130,74 +133,16 @@ export function PoisCardStrip({ pois, selectedPoi, adminUi, onRequestDelete }: P
                                 )}
                                 onClick={() => {
                                     if (movedRef.current) return
-                                    onRequestDelete(poi)
+                                    onSelect(poi)
                                 }}
                             >
-                                {/* Thumbnail */}
-                                <div className="relative h-32 w-full bg-muted">
-                                    {poi.imageUrl ? (
-                                        <Image
-                                            src={poi.imageUrl}
-                                            alt={poi.name}
-                                            fill
-                                            className="object-cover"
-                                            sizes="256px"
-                                        />
-                                    ) : (
-                                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
-                                            <ImageIcon className="h-8 w-8 text-muted-foreground/30" />
-                                        </div>
-                                    )}
-                                    {/* Category badge */}
-                                    <Badge
-                                        variant={poi.category === "major" ? "default" : "secondary"}
-                                        className="absolute left-2 top-2 text-[10px] shadow-sm"
-                                    >
-                                        {poi.category === "major" ? t.primary : subCategoryLabel(adminUi, poi.subCategory)}
-                                    </Badge>
-                                    {/* Distance badge */}
-                                    <div className="absolute right-2 top-2 rounded-md bg-background/90 px-1.5 py-0.5 text-[10px] font-medium shadow-sm backdrop-blur-sm">
-                                        {formatDistance(distance)}
-                                    </div>
-                                </div>
-
-                                {/* Content */}
-                                <div className="p-3">
-                                    <div className="flex items-start justify-between gap-2">
-                                        <h4 className="font-medium text-sm text-foreground line-clamp-1">{poi.name}</h4>
-                                        {poi.rating && (
-                                            <div className="flex shrink-0 items-center gap-0.5">
-                                                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                                                <span className="text-xs font-medium">{poi.rating}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    {poi.description && (
-                                        <p className="mt-1 text-xs text-muted-foreground line-clamp-2 whitespace-normal">
-                                            {poi.description}
-                                        </p>
-                                    )}
-                                    {poi.address && (
-                                        <div className="mt-2 flex items-center gap-1 text-[10px] text-muted-foreground">
-                                            <MapPin className="h-3 w-3 shrink-0" />
-                                            <span className="line-clamp-1 whitespace-normal">{poi.address}</span>
-                                        </div>
-                                    )}
-                                    <div className="mt-2 space-y-0.5 border-t border-border/50 pt-2 text-[10px] tabular-nums">
-                                        <div className="flex justify-between gap-2">
-                                            <span className="shrink-0 text-muted-foreground">{t.latLabel}</span>
-                                            <span className="min-w-0 truncate text-right font-mono text-foreground">
-                                                {poi.latitude.toFixed(6)}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between gap-2">
-                                            <span className="shrink-0 text-muted-foreground">{t.lngLabel}</span>
-                                            <span className="min-w-0 truncate text-right font-mono text-foreground">
-                                                {poi.longitude.toFixed(6)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
+                                <ActionCardScrip 
+                                    poi={poi} 
+                                    adminUi={adminUi} 
+                                    uiLanguage={uiLanguage} 
+                                    distance={distance}
+                                    onDelete={() => onRequestDelete(poi)}
+                                />
                             </Card>
                         )
                     })}

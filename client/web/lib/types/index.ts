@@ -12,6 +12,8 @@ export interface POI {
   longitude: number
   imageUrl?: string
   audioUrl?: string
+  images?: string[]
+  rangeTrigger?: number
   narrationLanguages?: string[]
   ownerId?: string
   address?: string
@@ -30,6 +32,8 @@ export interface CreatePOIPayload {
   longitude: number
   imageUrl?: string
   audioUrl?: string
+  images?: string[]
+  rangeTrigger?: number
   narrationLanguages?: string[]
   ownerId?: string
   address?: string

@@ -49,7 +49,7 @@ export class ResponsePoiDto {
     images?: string[];
 
     @ApiPropertyOptional()
-    address?: string;
+    maOwner?: string;
 
     @ApiPropertyOptional()
     createdAt?: Date;

@@ -170,7 +170,7 @@ export function ClientMap({
             if (selectedPoi) {
                 // Avoid fighting with locate-to-user: only auto-center when POI actually changes.
                 if (lastCenteredPoiIdRef.current !== selectedPoi.id) {
-                    map.setView([selectedPoi.latitude, selectedPoi.longitude], 17, {
+                    map.setView([selectedPoi.latitude, selectedPoi.longitude], 15, {
                         animate: true,
                     })
                     lastCenteredPoiIdRef.current = selectedPoi.id

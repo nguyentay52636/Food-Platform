@@ -7,6 +7,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { PoiTranslationService } from '../language/poi-translation.service';
+import { PoiTranslationDocument } from '../language/schema/poi-translation.schema';
 import { Poi, PoiDocument } from './schema/poi.schema';
 import { CreatePoiDto } from './dto/create-poi.dto';
 import { PatchPoiTranslationDto } from './dto/patch-poi-translation.dto';
@@ -24,8 +25,8 @@ export type PoiContentByLanguageResult = {
   thumbnail?: string;
   ngayTao?: Date;
   images?: string[];
-  address?: string;
-  poiNgonNgu: {
+  maOwner?: string;
+  poiNgonNgu?: {
     _id: string;
     maPOI: string;
     ngonNgu: {
@@ -57,27 +58,42 @@ export class PoiService {
     preferredLanguageId?: string,
   ): Promise<PoiContentByLanguageResult> {
     const poiId = String(poi._id);
-    const defaultLanguageId = String(poi.NgonNguPOI);
-    const requestedLanguageId = preferredLanguageId ?? defaultLanguageId;
+    const requestedLanguageId = preferredLanguageId;
 
-    const exact = await this.poiTranslationService.findByPoiAndLanguage(
-      poiId,
-      requestedLanguageId,
-    );
+    let exact: PoiTranslationDocument | null = null;
+    if (requestedLanguageId) {
+      exact = await this.poiTranslationService.findByPoiAndLanguage(
+        poiId,
+        requestedLanguageId,
+      );
+    }
 
-    let chosen = exact;
+    let chosen: PoiTranslationDocument | null = exact;
     let usedFallback = false;
 
-    if (!chosen && requestedLanguageId !== defaultLanguageId) {
-      chosen = await this.poiTranslationService.findByPoiAndLanguage(
-        poiId,
-        defaultLanguageId,
-      );
-      usedFallback = true;
+    if (!chosen) {
+      // Pick the first available translation if no specific language was requested/found
+      const allTranslations = await this.poiTranslationService.findAll(poiId);
+      if (allTranslations.length > 0) {
+        chosen = allTranslations[0];
+        usedFallback = true;
+      }
     }
 
     if (!chosen) {
-      throw new NotFoundException(`POI ${poiId} chưa có bản dịch khả dụng`);
+      return {
+        _id: poiId,
+        tenPOI: String(poi.tenPOI),
+        loaiPOI: String(poi.loaiPOI),
+        latitude: Number(poi.latitude),
+        longitude: Number(poi.longitude),
+        rangeTrigger: poi.rangeTrigger as number | undefined,
+        thumbnail: poi.thumbnail as string | undefined,
+        ngayTao: poi.ngayTao as Date | undefined,
+        images: poi.images as string[] | undefined,
+        maOwner: poi.maOwner ? String(poi.maOwner) : undefined,
+        reviews: poi.reviews as any[],
+      };
     }
 
     const languageObj = chosen.maNgonNgu as unknown as Record<string, unknown>;
@@ -102,7 +118,7 @@ export class PoiService {
       thumbnail: poi.thumbnail as string | undefined,
       ngayTao: poi.ngayTao as Date | undefined,
       images: poi.images as string[] | undefined,
-      address: poi.address as string | undefined,
+      maOwner: poi.maOwner ? String(poi.maOwner) : undefined,
       poiNgonNgu: {
         _id: String(chosen._id),
         maPOI: maPOIValue,
@@ -124,51 +140,7 @@ export class PoiService {
     };
   }
 
-  async create(
-    createPoiDto: CreatePoiDto,
-    maNgonNgu?: string,
-  ): Promise<CreatePoiResult> {
-    const { translations: translationIds, ...poiPayload } = createPoiDto;
-    const createdPoi = new this.poiModel(poiPayload);
-    await createdPoi.save();
 
-    const maNgonNguIds = [
-      ...new Set([...(translationIds ?? []), String(createPoiDto.NgonNguPOI)]),
-    ];
-    if (maNgonNguIds.length) {
-      const tieuDe = createPoiDto.tenPOI.trim();
-      try {
-        for (const maNgonNgu of maNgonNguIds) {
-          try {
-            await this.poiTranslationService.create({
-              maPOI: createdPoi._id.toString(),
-              maNgonNgu,
-              tieuDe,
-            });
-          } catch (err) {
-            if (err instanceof ConflictException) {
-              const existed = await this.poiTranslationService.findByPoiAndLanguage(
-                createdPoi._id.toString(),
-                maNgonNgu,
-              );
-              if (existed) {
-                continue;
-              }
-            }
-            throw err;
-          }
-        }
-      } catch (err) {
-        await this.poiModel.findByIdAndDelete(createdPoi._id).exec();
-        throw err;
-      }
-    }
-
-    return this.buildPoiResponse(
-      createdPoi.toObject() as unknown as Record<string, unknown>,
-      maNgonNgu,
-    );
-  }
 
   async findAll(maNgonNgu?: string): Promise<PoiContentByLanguageResult[]> {
     const rows = await this.poiModel
@@ -268,5 +240,27 @@ export class PoiService {
     }
 
     return this.findOne(poiId, dto.maNgonNgu);
+  }
+  async create(
+    createPoiDto: CreatePoiDto,
+    maNgonNgu?: string,
+  ): Promise<CreatePoiResult> {
+    try {
+      const createdPoi = new this.poiModel(createPoiDto);
+      await createdPoi.save();
+
+      return this.buildPoiResponse(
+        createdPoi.toObject() as unknown as Record<string, unknown>,
+        maNgonNgu,
+      );
+    } catch (err: any) {
+      if (err.code === 11000) {
+        throw new ConflictException('Tên POI đã tồn tại, vui lòng chọn tên khác');
+      }
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
+        throw new BadRequestException('Dữ liệu không hợp lệ: ' + err.message);
+      }
+      throw err;
+    }
   }
 }

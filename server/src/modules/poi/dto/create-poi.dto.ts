@@ -1,12 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsString,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsArray,
-  IsDateString,
-  IsMongoId,
+    IsString,
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsArray,
+    IsDateString,
+    IsMongoId,
 } from 'class-validator';
 
 export class CreatePoiDto {
@@ -20,10 +20,11 @@ export class CreatePoiDto {
     @IsNotEmpty()
     loaiPOI: string;
 
-    @ApiProperty({ description: 'Language ID of the POI' })
-    @IsString()
-    @IsNotEmpty()
-    NgonNguPOI: string;
+
+    @ApiPropertyOptional({ description: 'Owner User ID' })
+    @IsMongoId()
+    @IsOptional()
+    maOwner?: string;
 
     @ApiProperty({ description: 'Latitude coordinate' })
     @IsNumber()
@@ -54,19 +55,4 @@ export class CreatePoiDto {
     @IsOptional()
     images?: string[];
 
-    @ApiPropertyOptional({ description: 'Physical address of the POI' })
-    @IsString()
-    @IsOptional()
-    address?: string;
-
-    @ApiPropertyOptional({
-        type: [String],
-        description:
-            'Danh sách ObjectId ngôn ngữ (Tbl_NgonNgu). Mỗi ID tạo một bản ghi Tbl_POI_NgonNgu với tieuDe = tenPOI (có thể chỉnh sau qua PATCH /poi-translations).',
-        example: ['507f1f77bcf86cd799439012'],
-    })
-    @IsOptional()
-    @IsArray()
-    @IsMongoId({ each: true })
-    translations?: string[];
 }

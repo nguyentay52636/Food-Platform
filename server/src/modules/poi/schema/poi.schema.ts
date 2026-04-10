@@ -4,7 +4,7 @@ import { Document, Types } from 'mongoose';
 
 export type PoiDocument = Poi & Document;
 
-@Schema({ 
+@Schema({
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
@@ -15,13 +15,6 @@ export class Poi {
 
     @Prop({ required: true })
     loaiPOI: string;
-
-    @Prop({
-        type: Types.ObjectId,
-        ref: 'Language',
-        required: true
-    })
-    NgonNguPOI: Types.ObjectId;
 
     @Prop({ required: true })
     latitude: number;
@@ -37,12 +30,16 @@ export class Poi {
 
     @Prop()
     ngayTao?: Date;
-    
+
     @Prop([String])
     images?: string[];
 
-    @Prop()
-    address?: string;
+
+    @Prop({
+        type: Types.ObjectId,
+        ref: 'User',
+    })
+    maOwner: Types.ObjectId;
 }
 
 export const PoiSchema = SchemaFactory.createForClass(Poi);

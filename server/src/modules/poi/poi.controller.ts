@@ -19,27 +19,23 @@ export class PoiController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new POI' })
-  @ApiQuery({ name: 'maNgonNgu', required: false, description: 'Language ID for response' })
   @ApiResponse({ status: 201, description: 'POI successfully created', type: PoiContentResponseDto })
   async create(
     @Body() createPoiDto: CreatePoiDto,
-    @Query('maNgonNgu') maNgonNgu?: string,
   ) {
-    return this.poiService.create(createPoiDto, maNgonNgu);
+    return this.poiService.create(createPoiDto);
   }
 
   @Get()
   @ApiOperation({ summary: 'Get all POIs' })
-  @ApiQuery({ name: 'maNgonNgu', required: false, description: 'Language ID for response' })
   @ApiResponse({ status: 200, description: 'Returns all POIs', type: [PoiContentResponseDto] })
-  async findAll(@Query('maNgonNgu') maNgonNgu?: string) {
-    return this.poiService.findAll(maNgonNgu);
+  async findAll() {
+    return this.poiService.findAll();
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a POI by ID' })
   @ApiParam({ name: 'id', description: 'POI unique ID' })
-  @ApiQuery({ name: 'maNgonNgu', required: false, description: 'Language ID for response' })
   @ApiResponse({ status: 200, type: PoiContentResponseDto })
   @ApiResponse({ status: 404, description: 'POI not found' })
   async findOne(
@@ -68,7 +64,6 @@ export class PoiController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update a POI' })
   @ApiParam({ name: 'id', description: 'POI unique ID' })
-  @ApiQuery({ name: 'maNgonNgu', required: false, description: 'Language ID for response' })
   @ApiResponse({ status: 200, type: PoiContentResponseDto })
   @ApiResponse({ status: 404, description: 'POI not found' })
   async update(

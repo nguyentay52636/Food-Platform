@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useMemo } from "react"
 import { toast } from "sonner"
 import type { POI, POICategory, CreatePOIPayload } from "@/lib/types"
 import { fetchPOIs, createPOI, updatePOI, deletePOI } from "@/lib/api"
+import { getAllPois } from "@/apis/poisApi"
 import { filterPoisBySearch, filterPoisByCategory, countByCategory } from "@/lib/poi-utils"
 
 export type POIFilterCategory = POICategory | "all"
@@ -20,6 +21,20 @@ export interface POIPickerState {
   lng?: number
 }
 
+const mapApiPoiToUiPoi = (apiPoi: any): POI => ({
+  id: apiPoi._id || apiPoi.id,
+  name: apiPoi.tenPOI || apiPoi.name,
+  description: apiPoi.moTa || apiPoi.description,
+  category: (apiPoi.loaiPOI || apiPoi.category) as POICategory,
+  latitude: apiPoi.latitude,
+  longitude: apiPoi.longitude,
+  imageUrl: apiPoi.thumbnail || apiPoi.imageUrl,
+  rangeTrigger: apiPoi.rangeTrigger,
+  address: apiPoi.address,
+  createdAt: apiPoi.ngayTao || apiPoi.createdAt,
+  updatedAt: apiPoi.updatedAt || apiPoi.ngayTao,
+})
+
 export function usePOIs() {
   const [pois, setPois] = useState<POI[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -29,8 +44,10 @@ export function usePOIs() {
   const loadPOIs = useCallback(async () => {
     setIsLoading(true)
     try {
-      const data = await fetchPOIs()
-      setPois(data)
+      const data = await getAllPois()
+      // Map API data (IPOI) to UI data (POI)
+      const mappedData = (data || []).map(mapApiPoiToUiPoi)
+      setPois(mappedData)
     } catch {
       toast.error("Failed to load POIs")
     } finally {
