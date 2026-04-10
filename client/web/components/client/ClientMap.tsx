@@ -123,16 +123,14 @@ export function ClientMap({
                     className: "custom-marker",
                     html: `
             <div style="position: relative; width: ${markerSize}px; height: ${markerSize}px;">
-              ${isSelected ? `
-                <div style="
-                  position: absolute;
-                  inset: -8px;
-                  border-radius: 50%;
-                  background: ${markerColor};
-                  opacity: 0.2;
-                  animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
-                "></div>
-              ` : ""}
+              <div style="
+                position: absolute;
+                inset: ${isSelected ? "-8px" : "-6px"};
+                border-radius: 50%;
+                background: ${markerColor};
+                opacity: ${isSelected ? "0.26" : "0.14"};
+                animation: ping ${isSelected ? "1.5s" : "2.2s"} cubic-bezier(0, 0, 0.2, 1) infinite;
+              "></div>
               <div style="
                 position: absolute;
                 inset: 0;

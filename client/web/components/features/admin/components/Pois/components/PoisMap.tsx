@@ -133,21 +133,35 @@ export function PoisMap({
             const icon = L.divIcon({
                 className: "custom-marker",
                 html: `<div style="
+          position: relative;
           width: ${isSelected ? "22px" : "18px"};
           height: ${isSelected ? "22px" : "18px"};
-          border-radius: 50%;
-          background: ${markerColor};
-          border: 2px solid ${isSelected ? "#fff" : "rgba(255,255,255,0.5)"};
-          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-          transition: all 0.2s;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+        ">
+          <div style="
+            position: absolute;
+            inset: ${isSelected ? "-8px" : "-6px"};
+            border-radius: 50%;
+            background: ${markerColor};
+            opacity: ${isSelected ? "0.24" : "0.14"};
+            animation: ping ${isSelected ? "1.5s" : "2.2s"} cubic-bezier(0, 0, 0.2, 1) infinite;
+          "></div>
+          <div style="
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: ${markerColor};
+            border: 2px solid ${isSelected ? "#fff" : "rgba(255,255,255,0.5)"};
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         ">
           <svg width="${isSelected ? "12" : "10"}" height="${isSelected ? "12" : "10"}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" fill="white" fill-opacity="0.95"/>
             <circle cx="12" cy="10" r="2.5" fill="${markerColor}"/>
           </svg>
+          </div>
         </div>`,
                 iconSize: [isSelected ? 22 : 18, isSelected ? 22 : 18],
                 iconAnchor: [isSelected ? 11 : 9, isSelected ? 11 : 9],
