@@ -13,6 +13,9 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Plus } from "lucide-react"
 import { createOwner, fetchOwners } from "@/lib/api"
 import type { AdminPoisUi } from "@/lib/admin-pois-i18n"
+import type { LanguageCode } from "@/lib/client-types"
+import { SUPPORTED_LANGUAGES } from "@/lib/client-types"
+import { getLanguageLabel } from "@/lib/language-labels"
 
 const SUB_CATEGORY_KEYS: { value: MinorSubCategory; subKey: keyof AdminPoisUi["sub"] }[] = [
   { value: "wc", subKey: "wc" },
@@ -21,17 +24,35 @@ const SUB_CATEGORY_KEYS: { value: MinorSubCategory; subKey: keyof AdminPoisUi["s
   { value: "dock", subKey: "dock" },
 ]
 
-const LANGUAGE_OPTIONS = [
-  { value: "vi-VN", label: "Tiếng Việt" },
-  { value: "en-US", label: "English" },
-  { value: "zh-CN", label: "中文" },
-] as const
+const NARRATION_LANGUAGE_MAP: Record<LanguageCode, string> = {
+  vi: "vi-VN",
+  en: "en-US",
+  zh: "zh-CN",
+  ja: "ja-JP",
+  ko: "ko-KR",
+  fr: "fr-FR",
+  de: "de-DE",
+  es: "es-ES",
+  it: "it-IT",
+  pt: "pt-PT",
+  ru: "ru-RU",
+  ar: "ar-SA",
+  hi: "hi-IN",
+  th: "th-TH",
+  id: "id-ID",
+  ms: "ms-MY",
+  tr: "tr-TR",
+  nl: "nl-NL",
+  pl: "pl-PL",
+  sv: "sv-SE",
+}
 
 interface PoisSidebarFormProps {
   poi: POI | null
   pickerLat?: number
   pickerLng?: number
   pickerMode: boolean
+  uiLanguage: LanguageCode
   adminUi: AdminPoisUi
   onTogglePicker: () => void
   onResetForm: () => void
@@ -43,6 +64,7 @@ export function PoisSidebarForm({
   pickerLat,
   pickerLng,
   pickerMode,
+  uiLanguage,
   adminUi,
   onTogglePicker,
   onResetForm,
@@ -309,10 +331,10 @@ export function PoisSidebarForm({
               <SelectTrigger>
                 <SelectValue placeholder={t.languagePlaceholder} />
               </SelectTrigger>
-              <SelectContent>
-                {LANGUAGE_OPTIONS.map((language) => (
-                  <SelectItem key={language.value} value={language.value}>
-                    {language.label}
+              <SelectContent className="max-h-56 overflow-y-scroll pr-1">
+                {SUPPORTED_LANGUAGES.map((language) => (
+                  <SelectItem key={language.code} value={NARRATION_LANGUAGE_MAP[language.code]}>
+                    {language.flag} {getLanguageLabel(language.code, uiLanguage)}
                   </SelectItem>
                 ))}
               </SelectContent>
