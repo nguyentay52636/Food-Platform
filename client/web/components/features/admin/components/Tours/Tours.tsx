@@ -21,21 +21,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { TourFormDialog } from "@/components/features/admin/components/Tours/components/TourFormDialog"
-import { TourDetailPanel } from "@/components/features/admin/components/Tours/components/TourPanel"
 import { TourEmptyState } from "@/components/features/admin/components/Tours/components/TourEmptyState"
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
-import { TourPaywallDialog } from "@/components/features/admin/components/Tours/components/TourPaywallDialog"
 import { TourDeleteDialog } from "@/components/features/admin/components/Tours/components/TourDeleteDialog"
 import { TourGridCard } from "@/components/features/admin/components/Tours/components/TourGridCard"
 import { TourListRow } from "@/components/features/admin/components/Tours/components/TourListRow"
 import { ToursInsightsSection } from "@/components/features/admin/components/Tours/components/ToursInsightsSection"
-import {
-  TOUR_PACKAGES,
-  TOUR_WALLET_BALANCE_KEY,
-  TOUR_PACKAGE_EXPIRY_KEY,
-  type TourPackageId,
-} from "@/components/features/admin/components/Tours/components/tour-packages"
-import { formatVnd, getTourRelativeTime } from "@/components/features/admin/components/Tours/components/tour-format"
+import { TourPublicPreviewDialog } from "@/components/features/admin/components/Tours/components/TourPublicPreviewDialog"
+import { getTourRelativeTime } from "@/components/features/admin/components/Tours/components/tour-format"
 
 type ViewMode = "grid" | "list"
 type FilterStatus = "all" | "draft" | "published"
@@ -47,18 +39,14 @@ export default function Tours() {
   const [search, setSearch] = useState("")
   const [viewMode, setViewMode] = useState<ViewMode>("grid")
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all")
-  const [walletBalance, setWalletBalance] = useState(0)
-  const [depositInput, setDepositInput] = useState("100000")
-  const [selectedPackage, setSelectedPackage] = useState<TourPackageId>("monthly")
-  const [packageExpiry, setPackageExpiry] = useState<string | null>(null)
-  const [paywallTarget, setPaywallTarget] = useState<Tour | null>(null)
 
   const [formOpen, setFormOpen] = useState(false)
   const [editingTour, setEditingTour] = useState<Tour | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Tour | null>(null)
-  const [viewingTour, setViewingTour] = useState<Tour | null>(null)
   /** Tour đang hiển thị lộ trình trên bản đồ (cập nhật mỗi khi bấm vào một tour). */
   const [routePreviewTour, setRoutePreviewTour] = useState<Tour | null>(null)
+  /** Xem chi tiết dạng khách (chỉ đọc). */
+  const [previewTour, setPreviewTour] = useState<Tour | null>(null)
 
   const loadData = useCallback(async () => {
     setIsLoading(true)
@@ -76,33 +64,6 @@ export default function Tours() {
   useEffect(() => {
     loadData()
   }, [loadData])
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    const savedBalance = window.localStorage.getItem(TOUR_WALLET_BALANCE_KEY)
-    const savedExpiry = window.localStorage.getItem(TOUR_PACKAGE_EXPIRY_KEY)
-    if (savedBalance) setWalletBalance(Number(savedBalance) || 0)
-    if (savedExpiry) setPackageExpiry(savedExpiry)
-  }, [])
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    window.localStorage.setItem(TOUR_WALLET_BALANCE_KEY, String(walletBalance))
-  }, [walletBalance])
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    if (packageExpiry) {
-      window.localStorage.setItem(TOUR_PACKAGE_EXPIRY_KEY, packageExpiry)
-    } else {
-      window.localStorage.removeItem(TOUR_PACKAGE_EXPIRY_KEY)
-    }
-  }, [packageExpiry])
-
-  const hasValidPackage = useMemo(() => {
-    if (!packageExpiry) return false
-    return new Date(packageExpiry).getTime() > Date.now()
-  }, [packageExpiry])
 
   const filteredTours = useMemo(() => {
     return tours.filter((t) => {
@@ -156,49 +117,9 @@ export default function Tours() {
     return allPois.find((p) => p.id === poiId)?.name ?? "Unknown"
   }
 
-  function handleDeposit() {
-    const amount = Number(depositInput)
-    if (!Number.isFinite(amount) || amount < 10000) {
-      toast.error("Số tiền nạp tối thiểu là 10.000 VND")
-      return
-    }
-    setWalletBalance((prev) => prev + amount)
-    toast.success(`Đã nạp ${formatVnd(amount)} vào ví`)
-  }
-
-  function purchaseSelectedPackage() {
-    const pkg = TOUR_PACKAGES[selectedPackage]
-    if (walletBalance < pkg.price) {
-      toast.error("Số dư không đủ. Vui lòng nạp tiền để mua gói.")
-      return false
-    }
-    const expiry = new Date(Date.now() + pkg.days * 24 * 60 * 60 * 1000).toISOString()
-    setWalletBalance((prev) => prev - pkg.price)
-    setPackageExpiry(expiry)
-    toast.success(`Mua ${pkg.name} thành công. Hạn dùng đến ${new Date(expiry).toLocaleDateString("vi-VN")}.`)
-    return true
-  }
-
-  function handlePurchasePackage() {
-    purchaseSelectedPackage()
-  }
-
-  function handleViewTour(tour: Tour) {
+  function openTourPreview(tour: Tour) {
     setRoutePreviewTour(tour)
-    if (!hasValidPackage) {
-      setPaywallTarget(tour)
-      return
-    }
-    setViewingTour(tour)
-  }
-
-  function handleUnlockAndOpenTour() {
-    if (!paywallTarget) return
-    const target = paywallTarget
-    const ok = purchaseSelectedPackage()
-    if (!ok) return
-    setPaywallTarget(null)
-    setViewingTour(target)
+    setPreviewTour(tour)
   }
 
   function handleCreate() {
@@ -218,6 +139,7 @@ export default function Tours() {
         description: tour.description,
         pois: tour.pois,
         status: "draft",
+        ...(tour.coverImage ? { coverImage: tour.coverImage } : {}),
       })
       toast.success(`Đã nhân bản "${tour.name}"`)
       await loadData()
@@ -230,8 +152,11 @@ export default function Tours() {
     if (editingTour) {
       const updated = await updateTour(editingTour.id, data)
       toast.success(`"${data.name}" đã được cập nhật`)
-      if (viewingTour?.id === editingTour.id) {
-        setViewingTour(updated)
+      if (previewTour?.id === editingTour.id) {
+        setPreviewTour(updated)
+      }
+      if (routePreviewTour?.id === editingTour.id) {
+        setRoutePreviewTour(updated)
       }
     } else {
       await createTour(data)
@@ -245,7 +170,7 @@ export default function Tours() {
     try {
       await deleteTour(deleteTarget.id)
       toast.success(`"${deleteTarget.name}" đã được xóa`)
-      if (viewingTour?.id === deleteTarget.id) setViewingTour(null)
+      if (previewTour?.id === deleteTarget.id) setPreviewTour(null)
       await loadData()
     } catch {
       toast.error("Failed to delete tour")
@@ -338,11 +263,11 @@ export default function Tours() {
                     key={tour.id}
                     tour={tour}
                     isSelected={
-                      routePreviewTour?.id === tour.id || viewingTour?.id === tour.id
+                      routePreviewTour?.id === tour.id || previewTour?.id === tour.id
                     }
                     allPois={allPois}
                     getPoiName={getPoiName}
-                    onClick={() => handleViewTour(tour)}
+                    onClick={() => openTourPreview(tour)}
                     onEdit={() => handleEdit(tour)}
                     onDuplicate={() => handleDuplicate(tour)}
                     onDelete={() => setDeleteTarget(tour)}
@@ -426,11 +351,11 @@ export default function Tours() {
                     key={tour.id}
                     tour={tour}
                     isSelected={
-                      routePreviewTour?.id === tour.id || viewingTour?.id === tour.id
+                      routePreviewTour?.id === tour.id || previewTour?.id === tour.id
                     }
                     getRelativeTime={getTourRelativeTime}
                     isLast={idx === filteredTours.length - 1}
-                    onClick={() => handleViewTour(tour)}
+                    onClick={() => openTourPreview(tour)}
                     onEdit={() => handleEdit(tour)}
                     onDuplicate={() => handleDuplicate(tour)}
                     onDelete={() => setDeleteTarget(tour)}
@@ -454,33 +379,16 @@ export default function Tours() {
         </div>
       </section>
 
-      <Sheet
-        open={!!viewingTour}
+      <TourPublicPreviewDialog
+        tour={previewTour}
+        open={!!previewTour}
         onOpenChange={(open) => {
-          if (!open) setViewingTour(null)
+          if (!open) setPreviewTour(null)
         }}
-      >
-        <SheetContent
-          side="right"
-          showCloseButton={false}
-          className="flex h-full w-full max-w-full flex-col gap-0 overflow-hidden border-l p-0 sm:max-w-2xl lg:max-w-3xl"
-        >
-          {viewingTour && (
-            <>
-              <SheetTitle className="sr-only">Chi tiết tour: {viewingTour.name}</SheetTitle>
-              <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                <TourDetailPanel
-                  tour={viewingTour}
-                  allPois={allPois}
-                  getPoiName={getPoiName}
-                  onEdit={() => handleEdit(viewingTour)}
-                  onClose={() => setViewingTour(null)}
-                />
-              </div>
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
+        allPois={allPois}
+        getPoiName={getPoiName}
+        onEdit={handleEdit}
+      />
 
       <TourFormDialog
         open={formOpen}
@@ -497,15 +405,6 @@ export default function Tours() {
         tour={deleteTarget}
         onOpenChange={(o) => !o && setDeleteTarget(null)}
         onConfirm={handleDelete}
-      />
-
-      <TourPaywallDialog
-        open={!!paywallTarget}
-        onOpenChange={(o) => !o && setPaywallTarget(null)}
-        targetTour={paywallTarget}
-        selectedPackage={selectedPackage}
-        walletBalance={walletBalance}
-        onConfirmPay={handleUnlockAndOpenTour}
       />
     </div>
   )

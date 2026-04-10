@@ -51,6 +51,8 @@ export interface Tour {
   status: "draft" | "published"
   createdAt: string
   updatedAt: string
+  /** Ảnh bìa tour (URL). Nếu thiếu, UI có thể fallback ảnh POI. */
+  coverImage?: string
 }
 
 export interface CreateTourPayload {
@@ -58,6 +60,7 @@ export interface CreateTourPayload {
   description: string
   pois: TourPOI[]
   status?: "draft" | "published"
+  coverImage?: string
 }
 
 export type UpdateTourPayload = Partial<CreateTourPayload>

@@ -115,6 +115,7 @@ export async function createTour(payload: CreateTourPayload): Promise<Tour> {
     status: payload.status ?? "draft",
     createdAt: now,
     updatedAt: now,
+    ...(payload.coverImage ? { coverImage: payload.coverImage } : {}),
   }
   tours = [...tours, newTour]
   return newTour

@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import {
   Route,
   Pencil,
@@ -30,6 +31,7 @@ import {
   getMockTourDurationMinutes,
   getTourRelativeTime,
 } from "./tour-format"
+import { getTourCoverImage } from "./tour-helpers"
 
 interface TourGridCardProps {
   tour: Tour
@@ -61,14 +63,31 @@ export function TourGridCard({
     return poi?.category === "minor"
   })
 
+  const coverUrl = getTourCoverImage(tour, allPois)
+
   return (
     <Card
-      className={`group flex h-full cursor-pointer flex-col transition-all hover:shadow-md ${
+      className={`group flex h-full cursor-pointer flex-col overflow-hidden transition-all hover:shadow-md ${
         isSelected ? "ring-2 ring-primary shadow-md" : "hover:border-primary/30"
       }`}
       onClick={onClick}
     >
       <CardContent className="p-0">
+        <div className="relative aspect-[21/9] w-full bg-muted">
+          {coverUrl ? (
+            <Image
+              src={coverUrl}
+              alt=""
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-muted/60">
+              <Route className="h-10 w-10 text-muted-foreground/35 sm:h-12 sm:w-12" />
+            </div>
+          )}
+        </div>
         <div className="flex items-center justify-between px-4 pt-4 pb-3">
           <div className="flex min-w-0 items-center gap-2.5">
             <div
