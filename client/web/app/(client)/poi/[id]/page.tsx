@@ -29,6 +29,7 @@ import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
+import { Textarea } from "@/components/ui/textarea"
 import { Slider } from "@/components/ui/slider"
 import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -98,6 +99,32 @@ function RelatedPOITile({ relatedPoi, language }: { relatedPoi: ClientPOI; langu
     )
 }
 
+function getMockReviews(poiName: string) {
+    return [
+        {
+            id: "r1",
+            author: "Minh Anh",
+            rating: 5,
+            date: "2 ngày trước",
+            comment: `Món ăn ở ${poiName} rất ngon, phục vụ nhanh và không gian sạch sẽ.`,
+        },
+        {
+            id: "r2",
+            author: "David L.",
+            rating: 4,
+            date: "1 tuần trước",
+            comment: "Good flavor and fair price. The place gets busy at night but still worth trying.",
+        },
+        {
+            id: "r3",
+            author: "Yuki",
+            rating: 5,
+            date: "2 tuần trước",
+            comment: "Excellent local food experience. Staff were friendly and portions were generous.",
+        },
+    ]
+}
+
 export default function POIDetailPage({ params }: POIDetailPageProps) {
     const { id } = use(params)
     const { language, setLanguage } = useLanguage()
@@ -105,8 +132,16 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
     const visitor = useVisitorSession()
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
     const [showFullDescription, setShowFullDescription] = useState(false)
+    const [narrationLanguage, setNarrationLanguage] = useState<LanguageCode>(language)
+    const [selectedReviewStars, setSelectedReviewStars] = useState<number>(5)
+    const [reviewCommentInput, setReviewCommentInput] = useState("")
+    const [sessionRated, setSessionRated] = useState(false)
+    const [userReviews, setUserReviews] = useState<
+        { id: string; author: string; rating: number; date: string; comment: string }[]
+    >([])
     const favoriteIds = usePoiFavoriteIds()
     const galleryRef = useRef<HTMLDivElement>(null)
+    const narrationCacheRef = useRef<Record<string, string>>({})
 
     const poi = getClientPOIById(id)
 
@@ -138,7 +173,25 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
     const audioLanguageLabel = useTranslatedUiText("Ngôn ngữ audio", language)
     const directionsLabel = useTranslatedUiText("Chỉ đường", language)
     const relatedLabel = useTranslatedUiText("Quán ăn liên quan", language)
+    const ratingAndCommentsLabel = useTranslatedUiText("Đánh giá và bình luận", language)
+    const ratingOverviewLabel = useTranslatedUiText("Tổng quan đánh giá", language)
+    const recentCommentsLabel = useTranslatedUiText("Bình luận gần đây", language)
+    const rateNowLabel = useTranslatedUiText("Đánh giá ngay", language)
+    const yourRatingLabel = useTranslatedUiText("Đánh giá của bạn", language)
+    const yourCommentLabel = useTranslatedUiText("Bình luận của bạn", language)
+    const submitReviewLabel = useTranslatedUiText("Gửi đánh giá", language)
+    const thanksReviewLabel = useTranslatedUiText("Bạn đã đánh giá POI này trong phiên hiện tại.", language)
     const images = poi.images.length > 0 ? poi.images : []
+    const reviews = [...userReviews, ...getMockReviews(name)]
+    const totalReviews = (poi.reviewCount || getMockReviews(name).length) + userReviews.length
+    const ratingValue = poi.rating || 4.5
+    const ratingPercentages = [
+        { star: 5, value: 62 },
+        { star: 4, value: 24 },
+        { star: 3, value: 9 },
+        { star: 2, value: 3 },
+        { star: 1, value: 2 },
+    ]
 
     // Get related POIs (same category, excluding current)
     const relatedPois = CLIENT_MOCK_POIS.filter(
@@ -151,19 +204,83 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
     const availableLanguages = SUPPORTED_LANGUAGES.filter((lang) => poi.audio[lang.code])
     const progress = isCurrentPOI && audio.duration > 0 ? audio.currentTime : 0
     const totalDuration = isCurrentPOI ? audio.duration : (audioContent?.duration || 0)
-    const narrationText = `${name}. ${description}`
+    React.useEffect(() => {
+        setNarrationLanguage(language)
+    }, [language])
+
+    React.useEffect(() => {
+        const reviewSessionKey = `poi-review-session:${poi.id}`
+        if (typeof window !== "undefined") {
+            setSessionRated(window.sessionStorage.getItem(reviewSessionKey) === "1")
+        }
+    }, [poi.id])
+
+    const sourceName = poi.name.vi || poi.name.en
+    const sourceDescription = poi.description.vi || poi.description.en
+    const sourceLanguage: LanguageCode = poi.name.vi || poi.description.vi ? "vi" : "en"
+
+    const getNarrationTextForLanguage = async (langCode: LanguageCode): Promise<string> => {
+        const cacheKey = `${poi.id}:${langCode}`
+        if (narrationCacheRef.current[cacheKey]) {
+            return narrationCacheRef.current[cacheKey]
+        }
+
+        const nativeName = poi.name[langCode]
+        const nativeDescription = poi.description[langCode]
+        if (nativeName && nativeDescription) {
+            const directText = `${nativeName}. ${nativeDescription}`
+            narrationCacheRef.current[cacheKey] = directText
+            return directText
+        }
+
+        const baseText = `${sourceName}. ${sourceDescription}`
+        if (langCode === sourceLanguage) {
+            narrationCacheRef.current[cacheKey] = baseText
+            return baseText
+        }
+
+        try {
+            const params = new URLSearchParams({
+                client: "gtx",
+                sl: sourceLanguage,
+                tl: langCode,
+                dt: "t",
+                q: baseText,
+            })
+            const response = await fetch(
+                `https://translate.googleapis.com/translate_a/single?${params.toString()}`
+            )
+            if (!response.ok) throw new Error("Translate request failed")
+            const data = (await response.json()) as unknown[]
+            const translated = Array.isArray(data?.[0])
+                ? (data[0] as unknown[])
+                    .map((chunk) => (Array.isArray(chunk) ? String(chunk[0] ?? "") : ""))
+                    .join("")
+                : baseText
+            const finalText = translated || baseText
+            narrationCacheRef.current[cacheKey] = finalText
+            return finalText
+        } catch {
+            narrationCacheRef.current[cacheKey] = baseText
+            return baseText
+        }
+    }
+
+    const startNarrationForLanguage = async (langCode: LanguageCode) => {
+        const narrationText = await getNarrationTextForLanguage(langCode)
+        audio.play(poi, langCode, narrationText)
+        audioTracking.onPlay()
+    }
 
     const handlePlayPause = () => {
-        const isSameLanguage = audio.currentLanguage === language
+        const isSameLanguage = audio.currentLanguage === narrationLanguage
 
         if (isCurrentPOI && audio.isPlaying && isSameLanguage) {
             audio.pause()
         } else if (isCurrentPOI && isSameLanguage) {
             audio.resume()
         } else {
-            audio.play(poi, language, narrationText)
-            // Track audio play for anonymous visitor session
-            audioTracking.onPlay()
+            void startNarrationForLanguage(narrationLanguage)
         }
     }
 
@@ -187,8 +304,33 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
     }, [isCurrentPOI, audio.currentTime, audio.duration, audioTracking])
 
     const handleLanguageChange = (langCode: LanguageCode) => {
-        setLanguage(langCode)
-        audio.play(poi, langCode, narrationText)
+        setNarrationLanguage(langCode)
+        if (langCode !== language) {
+            setLanguage(langCode)
+        }
+        void startNarrationForLanguage(langCode)
+    }
+
+    const handleSubmitReview = () => {
+        if (sessionRated) return
+        const comment = reviewCommentInput.trim()
+        if (!comment) return
+
+        const newReview = {
+            id: `u-${Date.now()}`,
+            author: "Bạn",
+            rating: selectedReviewStars,
+            date: "Vừa xong",
+            comment,
+        }
+
+        setUserReviews((prev) => [newReview, ...prev])
+        setReviewCommentInput("")
+        setSessionRated(true)
+
+        if (typeof window !== "undefined") {
+            window.sessionStorage.setItem(`poi-review-session:${poi.id}`, "1")
+        }
     }
 
     const handleOpenMaps = () => {
@@ -437,7 +579,7 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
                             {availableLanguages.length > 0 && (
                                 <div className="flex flex-wrap items-center gap-2 mb-5">
                                     <span className="text-sm text-muted-foreground">{audioLanguageLabel}:</span>
-                                    <Select value={language} onValueChange={(value) => handleLanguageChange(value as LanguageCode)}>
+                                    <Select value={narrationLanguage} onValueChange={(value) => handleLanguageChange(value as LanguageCode)}>
                                         <SelectTrigger className="h-9 min-w-[180px]">
                                             <SelectValue />
                                         </SelectTrigger>
@@ -586,6 +728,125 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
                             </div>
                         </div>
                     )}
+
+                    <Separator />
+
+                    {/* Ratings and Comments */}
+                    <section>
+                        <h2 className="text-lg font-semibold mb-4">{ratingAndCommentsLabel}</h2>
+
+                        <Card className="p-4 sm:p-5 border-border/70 bg-card/70 backdrop-blur-sm mb-4">
+                            <p className="text-sm text-muted-foreground mb-3">{ratingOverviewLabel}</p>
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="text-3xl font-bold">{ratingValue.toFixed(1)}</div>
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-1 mb-1">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <Star
+                                                key={star}
+                                                className={`h-4 w-4 ${star <= Math.round(ratingValue)
+                                                    ? "fill-amber-400 text-amber-400"
+                                                    : "text-gray-300"
+                                                    }`}
+                                            />
+                                        ))}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {totalReviews.toLocaleString()} {reviewsLabel}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                {ratingPercentages.map((item) => (
+                                    <div key={item.star} className="flex items-center gap-2">
+                                        <span className="text-xs w-5">{item.star}</span>
+                                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-amber-400 rounded-full"
+                                                style={{ width: `${item.value}%` }}
+                                            />
+                                        </div>
+                                        <span className="text-xs text-muted-foreground w-8 text-right">
+                                            {item.value}%
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </Card>
+
+                        <div>
+                            <p className="text-sm text-muted-foreground mb-3">{recentCommentsLabel}</p>
+                            <div className="space-y-3">
+                                {reviews.map((review) => (
+                                    <Card key={review.id} className="p-4 border-border/70">
+                                        <div className="flex items-start justify-between gap-3 mb-1.5">
+                                            <div>
+                                                <p className="font-medium text-sm">{review.author}</p>
+                                                <p className="text-xs text-muted-foreground">{review.date}</p>
+                                            </div>
+                                            <div className="flex items-center gap-1 text-amber-500">
+                                                <Star className="h-3.5 w-3.5 fill-current" />
+                                                <span className="text-sm font-medium">{review.rating}</span>
+                                            </div>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground leading-relaxed">
+                                            {review.comment}
+                                        </p>
+                                    </Card>
+                                ))}
+                            </div>
+                        </div>
+
+                        <Card className="mt-4 p-4 border-border/70 bg-card/80">
+                            <h3 className="font-semibold text-sm mb-3">{rateNowLabel}</h3>
+
+                            {sessionRated ? (
+                                <p className="text-sm text-muted-foreground">{thanksReviewLabel}</p>
+                            ) : (
+                                <div className="space-y-3">
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-1.5">{yourRatingLabel}</p>
+                                        <div className="flex items-center gap-1">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <button
+                                                    key={star}
+                                                    type="button"
+                                                    onClick={() => setSelectedReviewStars(star)}
+                                                    className="p-0.5"
+                                                >
+                                                    <Star
+                                                        className={`h-5 w-5 ${star <= selectedReviewStars
+                                                            ? "fill-amber-400 text-amber-400"
+                                                            : "text-gray-300"
+                                                            }`}
+                                                    />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-1.5">{yourCommentLabel}</p>
+                                        <Textarea
+                                            value={reviewCommentInput}
+                                            onChange={(e) => setReviewCommentInput(e.target.value)}
+                                            placeholder="Chia sẻ trải nghiệm của bạn..."
+                                            className="min-h-[88px]"
+                                        />
+                                    </div>
+
+                                    <Button
+                                        className="w-full bg-orange-500 hover:bg-orange-600"
+                                        onClick={handleSubmitReview}
+                                        disabled={!reviewCommentInput.trim()}
+                                    >
+                                        {submitReviewLabel}
+                                    </Button>
+                                </div>
+                            )}
+                        </Card>
+                    </section>
                 </div>
             </div>
 

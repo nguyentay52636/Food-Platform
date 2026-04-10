@@ -41,6 +41,9 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     const [currentPOI, setCurrentPOI] = useState<ClientPOI | null>(null)
     const [currentLanguage, setCurrentLanguage] = useState<LanguageCode>("vi")
     const lastNarrationTextRef = useRef<string | null>(null)
+    const currentPOIRef = useRef<ClientPOI | null>(null)
+    const currentLanguageRef = useRef<LanguageCode>("vi")
+    const [voicesLoaded, setVoicesLoaded] = useState(false)
 
     // Handle simulated time for SpeechSynthesis
     const synthTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -71,13 +74,47 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         return langMap[lang] || "en-US"
     }, [])
 
+    const pickVoiceForLanguage = useCallback((langTag: string): SpeechSynthesisVoice | null => {
+        if (typeof window === "undefined" || !("speechSynthesis" in window)) return null
+        const voices = window.speechSynthesis.getVoices()
+        if (!voices.length) return null
+
+        const normalizedLangTag = langTag.toLowerCase()
+        const langPrefix = normalizedLangTag.slice(0, 2)
+
+        // Prefer exact locale first, then same language family.
+        // Do NOT fallback to default voice from another language (causes wrong pronunciation).
+        return (
+            voices.find((v) => v.lang.toLowerCase() === normalizedLangTag)
+            || voices.find((v) => v.lang.toLowerCase().startsWith(langPrefix))
+            || null
+        )
+    }, [])
+
+    useEffect(() => {
+        if (typeof window === "undefined" || !("speechSynthesis" in window)) return
+        const synth = window.speechSynthesis
+
+        const loadVoices = () => {
+            const voices = synth.getVoices()
+            if (voices.length > 0) setVoicesLoaded(true)
+        }
+
+        loadVoices()
+        synth.addEventListener("voiceschanged", loadVoices)
+        return () => synth.removeEventListener("voiceschanged", loadVoices)
+    }, [])
+
     const speakText = useCallback((text: string, language: LanguageCode) => {
         if (typeof window === "undefined" || !("speechSynthesis" in window) || !text) return
         window.speechSynthesis.cancel()
         clearSynthTimer()
 
         const utterance = new SpeechSynthesisUtterance(text)
-        utterance.lang = getLangTag(language)
+        const langTag = getLangTag(language)
+        utterance.lang = langTag
+        const preferredVoice = pickVoiceForLanguage(langTag)
+        if (preferredVoice) utterance.voice = preferredVoice
         utterance.rate = playbackRate
 
         const estDuration = Math.ceil(text.length / 14)
@@ -94,12 +131,21 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             clearSynthTimer()
         }
         utterance.onerror = () => {
+            // Some browsers throw benign "interrupted/canceled" while switching utterances.
             setIsPlaying(false)
             clearSynthTimer()
         }
 
         window.speechSynthesis.speak(utterance)
-    }, [getLangTag, playbackRate])
+    }, [getLangTag, pickVoiceForLanguage, playbackRate, voicesLoaded])
+
+    useEffect(() => {
+        currentPOIRef.current = currentPOI
+    }, [currentPOI])
+
+    useEffect(() => {
+        currentLanguageRef.current = currentLanguage
+    }, [currentLanguage])
 
     useEffect(() => {
         audioRef.current = new Audio()
@@ -122,14 +168,14 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         audio.addEventListener("error", () => {
             // Avoid crashing overlay and gracefully fallback to TTS for current language.
             const fallback = lastNarrationTextRef.current
-                || currentPOI?.audio[currentLanguage]?.transcript
-                || currentPOI?.description[currentLanguage]
-                || currentPOI?.description.en
+                || currentPOIRef.current?.audio[currentLanguageRef.current]?.transcript
+                || currentPOIRef.current?.description[currentLanguageRef.current]
+                || currentPOIRef.current?.description.en
                 || ""
             setIsLoading(false)
             setIsPlaying(false)
             if (fallback) {
-                speakText(fallback, currentLanguage)
+                speakText(fallback, currentLanguageRef.current)
             }
         })
 
@@ -141,7 +187,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
                 window.speechSynthesis.cancel()
             }
         }
-    }, [currentLanguage, currentPOI, speakText])
+    }, [speakText])
 
     const clearSynthTimer = () => {
         if (synthTimerRef.current) {
@@ -182,7 +228,10 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             clearSynthTimer()
 
             const utterance = new SpeechSynthesisUtterance(ttsText)
-            utterance.lang = getLangTag(language)
+            const langTag = getLangTag(language)
+            utterance.lang = langTag
+            const preferredVoice = pickVoiceForLanguage(langTag)
+            if (preferredVoice) utterance.voice = preferredVoice
             utterance.rate = playbackRate
             
             // Artificial duration estimation (roughly 14 chars per second)
@@ -198,8 +247,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
                 setCurrentTime(0)
                 clearSynthTimer()
             }
-            utterance.onerror = (e) => {
-                console.error("SpeechSynthesis error:", e)
+            utterance.onerror = () => {
+                // Fail softly to avoid red error overlay on transient synthesis errors.
                 setIsPlaying(false)
                 clearSynthTimer()
             }
@@ -217,11 +266,10 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         
         audio.src = audioContent.audioUrl
         audio.playbackRate = playbackRate
-        audio.play().catch(e => {
-            console.error("Audio API playback error:", e)
+        audio.play().catch(() => {
             setIsPlaying(false)
         })
-    }, [getLangTag, playbackRate])
+    }, [getLangTag, pickVoiceForLanguage, playbackRate, voicesLoaded])
 
     const pause = useCallback(() => {
         if (typeof window !== "undefined" && window.speechSynthesis && window.speechSynthesis.speaking) {
@@ -239,7 +287,9 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             setIsPlaying(true)
             startSynthTimer(duration) // Resumes timer roughly
         } else {
-            audioRef.current?.play().catch(console.error)
+            audioRef.current?.play().catch(() => {
+                setIsPlaying(false)
+            })
         }
     }, [duration])
 

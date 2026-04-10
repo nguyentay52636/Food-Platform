@@ -32,6 +32,7 @@ export default function ExplorePage() {
     const [filter, setFilter] = useState<"all" | "major" | "minor">("all")
     const [sheetOpen, setSheetOpen] = useState(false)
     const [locateSignal, setLocateSignal] = useState(0)
+    const [focusFilterSignal, setFocusFilterSignal] = useState(0)
     const [listTab, setListTab] = useState<"nearby" | "favorites">("nearby")
     const favoriteIds = usePoiFavoriteIds()
     const selectedPoiName = useTranslatedText(selectedPoi?.name ?? { en: "" }, language)
@@ -182,6 +183,7 @@ export default function ExplorePage() {
                         className="h-full"
                         userLocation={userLocation}
                         locateSignal={locateSignal}
+                        focusFilterSignal={focusFilterSignal}
                     />
 
                     {/* Filter chips - floating */}
@@ -193,7 +195,10 @@ export default function ExplorePage() {
                                     variant={filter === f ? "default" : "secondary"}
                                     size="sm"
                                     className="h-8 rounded-full shadow-md"
-                                    onClick={() => setFilter(f)}
+                                    onClick={() => {
+                                        setFilter(f)
+                                        setFocusFilterSignal((s) => s + 1)
+                                    }}
                                 >
                                     {f === "all" ? allLabel : f === "major" ? majorLabel : minorLabel}
                                 </Button>
@@ -215,6 +220,29 @@ export default function ExplorePage() {
                         >
                             <Navigation className={`h-5 w-5 ${userLocation ? 'fill-primary animate-pulse' : ''}`} />
                         </Button>
+                    </div>
+
+                    {/* Map Legend */}
+                    <div className="absolute top-3 right-16 z-20 pointer-events-none">
+                        <Card className="px-4 py-3 bg-background/95 backdrop-blur-md border-border/70 shadow-lg rounded-2xl min-w-[150px]">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                                Chú thích
+                            </p>
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2.5 text-sm font-medium">
+                                    <span className="h-3.5 w-3.5 rounded-full bg-emerald-500 shadow-sm" />
+                                    <span>Đang chọn</span>
+                                </div>
+                                <div className="flex items-center gap-2.5 text-sm font-medium">
+                                    <span className="h-3.5 w-3.5 rounded-full bg-blue-500 shadow-sm" />
+                                    <span>Điểm chính</span>
+                                </div>
+                                <div className="flex items-center gap-2.5 text-sm font-medium">
+                                    <span className="h-3.5 w-3.5 rounded-full bg-orange-500 shadow-sm" />
+                                    <span>Điểm phụ</span>
+                                </div>
+                            </div>
+                        </Card>
                     </div>
 
                     {/* Selected POI Quick View (on map) */}
