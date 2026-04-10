@@ -7,11 +7,13 @@ import {
   MapPin,
   Eye,
   Clock,
+  Timer,
   MoreHorizontal,
   Copy,
   ChevronRight,
 } from "lucide-react"
 import type { Tour } from "@/lib/types"
+import { formatTourDurationVi, getMockTourDurationMinutes } from "./tour-format"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -69,14 +71,18 @@ export function TourListRow({
             {tour.status}
           </Badge>
         </div>
-        <div className="mt-0.5 flex items-center gap-3 text-[11px] text-muted-foreground">
+        <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
           <span className="flex items-center gap-1">
-            <MapPin className="h-3 w-3" />
+            <MapPin className="h-3 w-3 shrink-0" />
             {tour.pois.length} điểm dừng
           </span>
+          <span className="flex items-center gap-1 text-foreground/90">
+            <Timer className="h-3 w-3 shrink-0" />
+            {formatTourDurationVi(getMockTourDurationMinutes(tour))}
+          </span>
           <span className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            {getRelativeTime(tour.updatedAt)}
+            <Clock className="h-3 w-3 shrink-0" />
+            Cập nhật {getRelativeTime(tour.updatedAt)}
           </span>
         </div>
       </div>

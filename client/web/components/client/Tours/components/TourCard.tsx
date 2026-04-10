@@ -6,21 +6,13 @@ import { Route, Clock, MapPin, ChevronRight } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { ClientTour, LanguageCode } from "@/lib/client-types"
+import { formatClientTourDuration } from "@/lib/client-tour-duration"
 import { useTranslatedText, useTranslatedUiText } from "@/lib/translation-utils"
 
 interface TourCardProps {
     tour: ClientTour
     language: LanguageCode
     compact?: boolean
-}
-
-function formatDuration(minutes: number, lang: LanguageCode): string {
-    const hours = Math.floor(minutes / 60)
-    const mins = minutes % 60
-    if (lang === "vi") {
-        return hours > 0 ? `${hours} giờ ${mins > 0 ? `${mins} phút` : ""}` : `${mins} phút`
-    }
-    return hours > 0 ? `${hours}h ${mins > 0 ? `${mins}m` : ""}` : `${mins}m`
 }
 
 export function TourCard({ tour, language, compact = false }: TourCardProps) {
@@ -62,7 +54,7 @@ export function TourCard({ tour, language, compact = false }: TourCardProps) {
                                 </span>
                                 <span className="flex items-center gap-1">
                                     <Clock className="h-3 w-3" />
-                                    {formatDuration(tour.estimatedDuration, language)}
+                                    {formatClientTourDuration(tour.estimatedDuration, language)}
                                 </span>
                             </div>
                         </div>
@@ -107,7 +99,7 @@ export function TourCard({ tour, language, compact = false }: TourCardProps) {
                             </span>
                             <span className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
-                                {formatDuration(tour.estimatedDuration, language)}
+                                {formatClientTourDuration(tour.estimatedDuration, language)}
                             </span>
                         </div>
                         {tour.distance && (

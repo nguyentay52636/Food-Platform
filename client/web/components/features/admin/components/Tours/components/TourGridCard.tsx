@@ -6,7 +6,8 @@ import {
   Trash2,
   MapPin,
   Eye,
-  Clock,
+  Timer,
+  Calendar,
   MoreHorizontal,
   Copy,
   ChevronRight,
@@ -23,7 +24,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { formatTourDate, getTourRelativeTime } from "./tour-format"
+import {
+  formatTourDate,
+  formatTourDurationVi,
+  getMockTourDurationMinutes,
+  getTourRelativeTime,
+} from "./tour-format"
 
 interface TourGridCardProps {
   tour: Tour
@@ -145,17 +151,25 @@ export function TourGridCard({
 
         <Separator className="mt-3" />
 
-        <div className="flex items-center justify-between px-4 py-2.5">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-2 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
             <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <MapPin className="h-3 w-3" />
+              <MapPin className="h-3 w-3 shrink-0" />
               <span>
-                {majorPois.length} điểm chính, {minorPois.length} điểm phụ
+                <span className="font-medium text-foreground">{tour.pois.length} điểm</span>
+                <span className="text-muted-foreground/80">
+                  {" "}
+                  ({majorPois.length} chính, {minorPois.length} phụ)
+                </span>
               </span>
             </div>
+            <div className="flex items-center gap-1.5 text-[11px] font-medium text-foreground">
+              <Timer className="h-3 w-3 shrink-0 text-primary" />
+              <span>{formatTourDurationVi(getMockTourDurationMinutes(tour))}</span>
+            </div>
             <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <Clock className="h-3 w-3" />
-              <span>{formatTourDate(tour.createdAt)}</span>
+              <Calendar className="h-3 w-3 shrink-0" />
+              <span>Tạo {formatTourDate(tour.createdAt)}</span>
             </div>
           </div>
           <Button
