@@ -482,30 +482,32 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
             </div>
 
             {/* Content */}
-            <div className="relative -mt-6 bg-background rounded-t-3xl">
-                <div className="p-5 sm:p-6 space-y-6">
+            <div className="relative -mt-8 bg-background rounded-t-[2rem] shadow-[0_-20px_60px_rgba(0,0,0,0.06)]">
+                <div className="p-5 sm:p-6 space-y-7 max-w-5xl mx-auto">
                     {/* Title Section */}
                     <div>
                         <div className="flex items-start gap-2 mb-2">
                             <Badge
                                 variant={poi.category === "major" ? "default" : "secondary"}
-                                className="shrink-0 bg-orange-500 hover:bg-orange-600"
+                                className="shrink-0 bg-orange-500 hover:bg-orange-600 shadow-sm"
                             >
                                 <Utensils className="h-3 w-3 mr-1" />
                                 {poi.category === "major" ? featuredLabel : poi.subCategory || restaurantLabel}
                             </Badge>
                             {poi.rating && poi.rating >= 4.5 && (
-                                <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50">
+                                <Badge variant="outline" className="text-amber-700 border-amber-200 bg-amber-50/70">
                                     {topRatedLabel}
                                 </Badge>
                             )}
                         </div>
 
-                        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{name}</h1>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-2">
+                            {name}
+                        </h1>
 
                         {/* Rating */}
                         {poi.rating && (
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
                                 <div className="flex items-center gap-1">
                                     {[1, 2, 3, 4, 5].map((star) => (
                                         <Star
@@ -517,7 +519,7 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
                                         />
                                     ))}
                                 </div>
-                                <span className="font-semibold text-lg">{poi.rating}</span>
+                                <span className="font-semibold text-lg tabular-nums">{poi.rating}</span>
                                 {poi.reviewCount && (
                                     <span className="text-muted-foreground">
                                         ({poi.reviewCount.toLocaleString()} {reviewsLabel})
@@ -528,26 +530,44 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
                     </div>
 
                     {/* Quick Info Cards */}
-                    <div className="grid grid-cols-3 gap-3">
-                        <Card className="p-3 text-center bg-orange-50 border-orange-100">
-                            <Clock className="h-5 w-5 mx-auto text-orange-500 mb-1" />
-                            <p className="text-xs text-muted-foreground">{openHoursLabel}</p>
-                            <p className="text-sm font-medium">16:00 - 23:00</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <Card className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 border-orange-100/70">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
+                                    <Clock className="h-5 w-5 text-orange-600" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-xs text-muted-foreground">{openHoursLabel}</p>
+                                    <p className="text-sm font-semibold tracking-tight">16:00 - 23:00</p>
+                                </div>
+                            </div>
                         </Card>
-                        <Card className="p-3 text-center bg-green-50 border-green-100">
-                            <DollarSign className="h-5 w-5 mx-auto text-green-500 mb-1" />
-                            <p className="text-xs text-muted-foreground">{priceLabel}</p>
-                            <p className="text-sm font-medium">50-200k</p>
+                        <Card className="p-4 bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-100/70">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                                    <DollarSign className="h-5 w-5 text-emerald-600" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-xs text-muted-foreground">{priceLabel}</p>
+                                    <p className="text-sm font-semibold tracking-tight">50-200k</p>
+                                </div>
+                            </div>
                         </Card>
-                        <Card className="p-3 text-center bg-blue-50 border-blue-100">
-                            <Phone className="h-5 w-5 mx-auto text-blue-500 mb-1" />
-                            <p className="text-xs text-muted-foreground">{contactLabel}</p>
-                            <p className="text-sm font-medium">090.xxx.xxx</p>
+                        <Card className="p-4 bg-gradient-to-br from-sky-50 to-blue-50 border-sky-100/70">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-xl bg-sky-500/10 flex items-center justify-center">
+                                    <Phone className="h-5 w-5 text-sky-600" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-xs text-muted-foreground">{contactLabel}</p>
+                                    <p className="text-sm font-semibold tracking-tight">090.xxx.xxx</p>
+                                </div>
+                            </div>
                         </Card>
                     </div>
 
                     {/* Address */}
-                    <Card className="p-4">
+                    <Card className="p-4 hover:shadow-sm transition-shadow">
                         <button
                             onClick={handleOpenMaps}
                             className="flex items-start gap-3 w-full text-left group"
@@ -556,7 +576,9 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
                                 <MapPin className="h-5 w-5 text-primary" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="font-medium group-hover:text-primary transition-colors">{poi.address}</p>
+                                <p className="font-semibold group-hover:text-primary transition-colors line-clamp-1">
+                                    {poi.address}
+                                </p>
                                 <p className="text-sm text-muted-foreground mt-0.5">
                                     {poi.latitude.toFixed(6)}, {poi.longitude.toFixed(6)}
                                 </p>

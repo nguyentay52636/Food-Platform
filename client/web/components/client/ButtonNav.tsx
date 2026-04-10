@@ -18,7 +18,7 @@ export function BottomNav() {
     const { language } = useLanguage()
     const labels = {
         explore: useTranslatedUiText("Khám phá", language),
-        tours: useTranslatedUiText("Tours", language, "en"),
+        tours: "Tour",
         settings: useTranslatedUiText("Cài đặt", language),
     }
 
