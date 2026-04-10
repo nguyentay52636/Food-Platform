@@ -122,7 +122,6 @@ export function TourDetailPanel({
                         <p className="mt-1 text-lg font-bold leading-tight text-foreground">
                             {formatTourDurationVi(estimatedMinutes)}
                         </p>
-                        <p className="mt-1 text-[10px] text-muted-foreground">Demo — chưa gắn API</p>
                     </div>
                     <div className="rounded-lg border border-border bg-card p-3 text-center">
                         <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
