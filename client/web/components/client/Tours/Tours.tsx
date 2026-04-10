@@ -12,9 +12,10 @@ import { TourCard } from "@/components/client/Tours/components/TourCard"
 import { MiniPlayer } from "@/components/client/MiniPlayer"
 import { useLanguage } from "@/lib/context/language-context"
 import { useAudio } from "@/lib/context/audio-context"
-import { CLIENT_MOCK_TOURS, CLIENT_MOCK_POIS } from "@/lib/client-mock-data"
+import { CLIENT_MOCK_TOURS } from "@/lib/client-mock-data"
 import { LanguageCode } from "@/lib/client-types"
 import { useVisitorSession } from "@/lib/context/visitor-session"
+import { formatClientTourDuration } from "@/lib/client-tour-duration"
 import { useTranslatedText, useTranslatedUiText } from "@/lib/translation-utils"
 
 const LABELS: Partial<Record<LanguageCode, {
@@ -62,15 +63,6 @@ const LABELS: Partial<Record<LanguageCode, {
         stops: "stops",
         duration: "Duration",
     },
-}
-
-function formatDuration(minutes: number, lang: LanguageCode): string {
-    const hours = Math.floor(minutes / 60)
-    const mins = minutes % 60
-    if (lang === "vi") {
-        return hours > 0 ? `${hours} giờ ${mins > 0 ? `${mins} phút` : ""}` : `${mins} phút`
-    }
-    return hours > 0 ? `${hours}h ${mins > 0 ? `${mins}m` : ""}` : `${mins}m`
 }
 
 export default function Tours() {
@@ -170,7 +162,7 @@ export default function Tours() {
                                                 </div>
                                                 <div className="flex items-center gap-1.5 bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
                                                     <Clock className="h-4 w-4" />
-                                                    {formatDuration(featuredTour.estimatedDuration, language)}
+                                                    {formatClientTourDuration(featuredTour.estimatedDuration, language)}
                                                 </div>
                                             </div>
                                             {featuredTour.distance && (
