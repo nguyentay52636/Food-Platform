@@ -6,6 +6,7 @@ import type { LanguageCode } from "@/lib/client-types"
 import { SUPPORTED_LANGUAGES } from "@/lib/client-types"
 import type { AdminPoisUi } from "@/lib/admin-pois-i18n"
 import { Navigation } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const LANGUAGE_LABELS: Partial<Record<LanguageCode, Partial<Record<LanguageCode, string>>>> = {
     vi: {
@@ -421,18 +422,24 @@ export function PoisMap({
         <div className={`relative ${className}`}>
             <div ref={mapRef} className="h-full w-full rounded-lg" />
             <div className="absolute right-3 top-3 z-[1000]">
-                <select
+                <Select
                     value={uiLanguage}
-                    onChange={(e) => onUiLanguageChange(e.target.value as LanguageCode)}
-                    className="h-8 min-w-[10.5rem] max-w-[min(100vw-1.5rem,16rem)] rounded-md border border-border bg-background/95 px-2 text-xs text-foreground shadow-md backdrop-blur-sm"
-                    aria-label={t.uiLanguageSelect}
+                    onValueChange={(value) => onUiLanguageChange(value as LanguageCode)}
                 >
-                    {SUPPORTED_LANGUAGES.map((lang) => (
-                        <option key={lang.code} value={lang.code}>
-                            {lang.flag} {getLanguageLabel(lang.code, uiLanguage)}
-                        </option>
-                    ))}
-                </select>
+                    <SelectTrigger
+                        className="h-8 min-w-[10.5rem] max-w-[min(100vw-1.5rem,16rem)] border-border bg-background/95 px-2 text-xs text-foreground shadow-md backdrop-blur-sm"
+                        aria-label={t.uiLanguageSelect}
+                    >
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent align="end" className="z-[2200] max-h-56 overflow-y-scroll pr-1">
+                        {SUPPORTED_LANGUAGES.map((lang) => (
+                            <SelectItem key={lang.code} value={lang.code} className="text-xs">
+                                {lang.flag} {getLanguageLabel(lang.code, uiLanguage)}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
             <button
                 type="button"
@@ -453,7 +460,7 @@ export function PoisMap({
                     {locationError}
                 </div>
             )}
-            <div className="absolute bottom-3 right-3 z-[1000] rounded-md border border-border bg-background/95 px-3 py-2 shadow-md backdrop-blur-sm">
+            <div className="absolute bottom-3 right-3 z-[900] rounded-md border border-border bg-background/95 px-3 py-2 shadow-md backdrop-blur-sm">
                 <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{t.legend}</p>
                 <div className="space-y-1.5 text-xs text-foreground">
                     <div className="flex items-center gap-2">
