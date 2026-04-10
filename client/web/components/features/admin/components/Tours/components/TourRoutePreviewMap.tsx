@@ -11,7 +11,7 @@ interface TourRoutePreviewMapProps {
   className?: string
 }
 
-const DEFAULT_CENTER: [number, number] = [16.047, 108.206]
+const DEFAULT_CENTER: [number, number] = [10.7579, 106.7005]
 
 /** Bản đồ Leaflet: polyline nối các POI theo thứ tự tour. */
 export function TourRoutePreviewMap({ tour, allPois, className = "" }: TourRoutePreviewMapProps) {

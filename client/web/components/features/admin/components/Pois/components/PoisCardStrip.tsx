@@ -57,9 +57,9 @@ export function PoisCardStrip({ pois, selectedPoi, uiLanguage, onSelect }: POICa
     const dragStartScrollLeftRef = useRef(0)
     const movedRef = useRef(false)
 
-    // Center position (Da Nang city center)
-    const centerLat = 16.047
-    const centerLng = 108.206
+    // Center position (Vinh Khanh food street)
+    const centerLat = 10.7579
+    const centerLng = 106.7005
 
     // Auto-scroll to selected card
     useEffect(() => {

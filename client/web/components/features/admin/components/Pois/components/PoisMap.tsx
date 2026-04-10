@@ -61,7 +61,7 @@ export function PoisMap({
             if (!isMounted || !mapRef.current) return
 
             mapInstance = L.map(mapRef.current, {
-                center: [16.047, 108.206],
+                center: [10.7579, 106.7005],
                 zoom: 13,
                 zoomControl: true,
             })

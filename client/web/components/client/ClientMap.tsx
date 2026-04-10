@@ -57,7 +57,7 @@ export function ClientMap({
             }
 
             const map = L.map(containerRef.current, {
-                center: [16.047, 108.206],
+                center: [10.7579, 106.7005],
                 zoom: 13,
                 zoomControl: false,
             })
