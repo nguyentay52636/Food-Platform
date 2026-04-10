@@ -47,7 +47,7 @@ function formatDistance(km: number): string {
     return `${km.toFixed(1)}km`
 }
 
-                                export function PoisCardStrip({ pois, selectedPoi, adminUi, uiLanguage, onRequestDelete, onSelect }: POICardsStripProps) {
+export function PoisCardStrip({ pois, selectedPoi, adminUi, uiLanguage, onRequestDelete, onSelect }: POICardsStripProps) {
     const t = adminUi.strip
     const foundLine =
         t.foundCountStyle === "suffix" ? `${pois.length}${t.found}` : `${pois.length} ${t.found}`

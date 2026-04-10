@@ -11,7 +11,6 @@ import {
 import { PoisMap } from "./components/PoisMap"
 import { PoisDeleteDialog } from "./components/Dialog/PoisDeleteDialog"
 import { PoisSidebarForm } from "./components/PoisSidebarForm"
-<<<<<<< HEAD
 import TablePois from "./components/TablePois/TablePois"
 import { LayoutList, Map as MapIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
