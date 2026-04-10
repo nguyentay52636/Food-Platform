@@ -14,6 +14,7 @@ import { PoisCardStrip } from "./components/PoisCardStrip"
 import { PoisSidebarForm } from "./components/PoisSidebarForm"
 import type { LanguageCode } from "@/lib/client-types"
 import { getAdminPoisUi } from "@/lib/admin-pois-i18n"
+import { fetchTours } from "@/lib/api"
 
 type NarrationLanguage = "vi-VN" | "en-US" | "zh-CN"
 
@@ -29,6 +30,7 @@ export default function Pois() {
 
     const [editingPoi, setEditingPoi] = useState<POI | null>(null)
     const [deleteTarget, setDeleteTarget] = useState<POI | null>(null)
+    const [deleteTourNames, setDeleteTourNames] = useState<string[]>([])
 
     // CRUD actions
     const { handleCreate, handleUpdate, handleDelete } = usePOIActions(loadPOIs, clearSelection)
@@ -102,11 +104,25 @@ export default function Pois() {
         if (deleteTarget) {
             await handleDelete(deleteTarget)
             setDeleteTarget(null)
+            setDeleteTourNames([])
             if (editingPoi?.id === deleteTarget.id) {
                 setEditingPoi(null)
             }
         }
     }, [deleteTarget, handleDelete, editingPoi])
+
+    const handleRequestDeleteFromCard = useCallback(async (poi: POI) => {
+        setDeleteTarget(poi)
+        try {
+            const tours = await fetchTours()
+            const relatedTourNames = tours
+                .filter((tour) => tour.pois.some((tourPoi) => tourPoi.poiId === poi.id))
+                .map((tour) => tour.name)
+            setDeleteTourNames(relatedTourNames)
+        } catch {
+            setDeleteTourNames([])
+        }
+    }, [])
 
     const handleResetForm = useCallback(() => {
         setEditingPoi(null)
@@ -212,7 +228,7 @@ export default function Pois() {
                         pois={pois}
                         selectedPoi={selectedPoi}
                         adminUi={adminUi}
-                        onSelect={handleEditClick}
+                        onRequestDelete={handleRequestDeleteFromCard}
                     />
                 </div>
             </div>
@@ -260,7 +276,18 @@ export default function Pois() {
             <PoisDeleteDialog
                 poi={deleteTarget}
                 deleteUi={adminUi.delete}
-                onClose={() => setDeleteTarget(null)}
+                warningMessage={
+                    deleteTourNames.length > 0
+                        ? uiLanguage === "vi"
+                            ? `Cảnh báo: địa điểm này đang thuộc ${deleteTourNames.length} tour (${deleteTourNames.join(", ")}). Xóa địa điểm có thể làm tour bị thiếu điểm.`
+                            : `Warning: this location belongs to ${deleteTourNames.length} tour(s) (${deleteTourNames.join(", ")}). Deleting it may leave those tours incomplete.`
+                        : undefined
+                }
+                backLabel={uiLanguage === "vi" ? "Quay lại" : "Back"}
+                onClose={() => {
+                    setDeleteTarget(null)
+                    setDeleteTourNames([])
+                }}
                 onConfirm={handleDeleteConfirm}
             />
         </div>
