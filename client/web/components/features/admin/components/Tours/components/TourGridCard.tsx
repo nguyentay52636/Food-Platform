@@ -63,7 +63,7 @@ export function TourGridCard({
 
   return (
     <Card
-      className={`group cursor-pointer transition-all hover:shadow-md ${
+      className={`group flex h-full cursor-pointer flex-col transition-all hover:shadow-md ${
         isSelected ? "ring-2 ring-primary shadow-md" : "hover:border-primary/30"
       }`}
       onClick={onClick}

@@ -59,7 +59,7 @@ export function TourDetailPanel({
     const estimatedMinutes = useMemo(() => getMockTourDurationMinutes(tour), [tour])
 
     return (
-        <div className="flex h-full flex-col">
+        <div className="flex min-h-0 h-full flex-col">
             {/* Header */}
             <div className="border-b border-border px-6 py-4">
                 <div className="flex items-start justify-between">

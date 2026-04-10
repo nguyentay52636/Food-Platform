@@ -18,7 +18,8 @@ import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { TourFormDialog } from "@/components/features/admin/components/Tours/components/TourFormDialog"
 import { TourDetailPanel } from "@/components/features/admin/components/Tours/components/TourPanel"
-import { TourDetailEmptyState, TourEmptyState } from "@/components/features/admin/components/Tours/components/TourEmptyState"
+import { TourEmptyState } from "@/components/features/admin/components/Tours/components/TourEmptyState"
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { TourPaywallDialog } from "@/components/features/admin/components/Tours/components/TourPaywallDialog"
 import { TourDeleteDialog } from "@/components/features/admin/components/Tours/components/TourDeleteDialog"
 import { TourGridCard } from "@/components/features/admin/components/Tours/components/TourGridCard"
@@ -217,17 +218,17 @@ export default function Tours() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden bg-background lg:flex-row">
-      <section className="flex w-full flex-col overflow-hidden border-b border-border lg:w-[520px] lg:shrink-0 lg:border-b-0 lg:border-r">
+    <div className="flex h-full w-full flex-col overflow-hidden bg-background">
+      <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
         <div className="shrink-0 border-b border-border px-5 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h1 className="text-lg font-semibold text-foreground">Quản lý tour</h1>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                Danh sách tour ẩm thực - chọn tour để sử dụng
+                Danh sách tour ẩm thực — nhấn vào một tour để xem lộ trình và các điểm dừng.
               </p>
             </div>
-            <Button size="sm" onClick={handleCreate} className="gap-1.5">
+            <Button size="sm" onClick={handleCreate} className="gap-1.5 shrink-0">
               <Plus className="h-4 w-4" /> Tour mới
             </Button>
           </div>
@@ -293,7 +294,7 @@ export default function Tours() {
           ) : filteredTours.length === 0 ? (
             <TourEmptyState search={search} filterStatus={filterStatus} onCreateClick={handleCreate} />
           ) : viewMode === "grid" ? (
-            <div className="flex flex-col gap-3 p-4">
+            <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
               {filteredTours.map((tour) => (
                 <TourGridCard
                   key={tour.id}
@@ -328,21 +329,33 @@ export default function Tours() {
         </div>
       </section>
 
-      <aside className="min-w-0 flex-1 overflow-hidden">
-        <div className="h-full overflow-y-auto">
-          {viewingTour ? (
-            <TourDetailPanel
-              tour={viewingTour}
-              allPois={allPois}
-              getPoiName={getPoiName}
-              onEdit={() => handleEdit(viewingTour)}
-              onClose={() => setViewingTour(null)}
-            />
-          ) : (
-            <TourDetailEmptyState />
+      <Sheet
+        open={!!viewingTour}
+        onOpenChange={(open) => {
+          if (!open) setViewingTour(null)
+        }}
+      >
+        <SheetContent
+          side="right"
+          showCloseButton={false}
+          className="flex h-full w-full max-w-full flex-col gap-0 overflow-hidden border-l p-0 sm:max-w-2xl lg:max-w-3xl"
+        >
+          {viewingTour && (
+            <>
+              <SheetTitle className="sr-only">Chi tiết tour: {viewingTour.name}</SheetTitle>
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                <TourDetailPanel
+                  tour={viewingTour}
+                  allPois={allPois}
+                  getPoiName={getPoiName}
+                  onEdit={() => handleEdit(viewingTour)}
+                  onClose={() => setViewingTour(null)}
+                />
+              </div>
+            </>
           )}
-        </div>
-      </aside>
+        </SheetContent>
+      </Sheet>
 
       <TourFormDialog
         open={formOpen}
