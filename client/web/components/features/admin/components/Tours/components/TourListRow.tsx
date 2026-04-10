@@ -28,7 +28,8 @@ interface TourListRowProps {
   isSelected: boolean
   getRelativeTime: (d: string) => string
   isLast: boolean
-  onClick: () => void
+  onPurchaseClick: () => void
+  onDetailsClick: () => void
   onEdit: () => void
   onDuplicate: () => void
   onDelete: () => void
@@ -39,7 +40,8 @@ export function TourListRow({
   isSelected,
   getRelativeTime,
   isLast,
-  onClick,
+  onPurchaseClick,
+  onDetailsClick,
   onEdit,
   onDuplicate,
   onDelete,
@@ -49,7 +51,7 @@ export function TourListRow({
       className={`group flex cursor-pointer items-center gap-4 px-5 py-3.5 transition-colors ${
         isSelected ? "border-l-2 border-l-primary bg-primary/5" : "hover:bg-muted/50"
       } ${!isLast ? "border-b border-border" : ""}`}
-      onClick={onClick}
+      onClick={onPurchaseClick}
     >
       <div
         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
@@ -107,7 +109,7 @@ export function TourListRow({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-            <DropdownMenuItem onClick={onClick}>
+            <DropdownMenuItem onClick={onDetailsClick}>
               <Eye className="mr-2 h-3.5 w-3.5" /> Xem chi tiết
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onDuplicate}>

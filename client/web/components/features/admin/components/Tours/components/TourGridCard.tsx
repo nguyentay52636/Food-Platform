@@ -38,7 +38,8 @@ interface TourGridCardProps {
   isSelected: boolean
   allPois: POI[]
   getPoiName: (id: string) => string
-  onClick: () => void
+  onPurchaseClick: () => void
+  onDetailsClick: () => void
   onEdit: () => void
   onDuplicate: () => void
   onDelete: () => void
@@ -49,7 +50,8 @@ export function TourGridCard({
   isSelected,
   allPois,
   getPoiName,
-  onClick,
+  onPurchaseClick,
+  onDetailsClick,
   onEdit,
   onDuplicate,
   onDelete,
@@ -70,7 +72,7 @@ export function TourGridCard({
       className={`group flex h-full cursor-pointer flex-col overflow-hidden transition-all hover:shadow-md ${
         isSelected ? "ring-2 ring-primary shadow-md" : "hover:border-primary/30"
       }`}
-      onClick={onClick}
+      onClick={onPurchaseClick}
     >
       <CardContent className="p-0">
         <div className="relative aspect-[21/9] w-full bg-muted">
@@ -128,7 +130,7 @@ export function TourGridCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-              <DropdownMenuItem onClick={onClick}>
+              <DropdownMenuItem onClick={onDetailsClick}>
                 <Eye className="mr-2 h-3.5 w-3.5" /> Xem chi tiết
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onEdit}>
@@ -197,7 +199,7 @@ export function TourGridCard({
             className="h-7 gap-1 px-2 text-xs text-primary hover:text-primary"
             onClick={(e) => {
               e.stopPropagation()
-              onClick()
+              onDetailsClick()
             }}
           >
             Chi tiết <ChevronRight className="h-3 w-3" />

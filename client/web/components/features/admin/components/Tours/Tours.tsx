@@ -27,6 +27,7 @@ import { TourGridCard } from "@/components/features/admin/components/Tours/compo
 import { TourListRow } from "@/components/features/admin/components/Tours/components/TourListRow"
 import { ToursInsightsSection } from "@/components/features/admin/components/Tours/components/ToursInsightsSection"
 import { TourPublicPreviewDialog } from "@/components/features/admin/components/Tours/components/TourPublicPreviewDialog"
+import { TourPaywallDialog } from "@/components/features/admin/components/Tours/components/TourPaywallDialog"
 import { getTourRelativeTime } from "@/components/features/admin/components/Tours/components/tour-format"
 
 type ViewMode = "grid" | "list"
@@ -47,6 +48,8 @@ export default function Tours() {
   const [routePreviewTour, setRoutePreviewTour] = useState<Tour | null>(null)
   /** Xem chi tiết dạng khách (chỉ đọc). */
   const [previewTour, setPreviewTour] = useState<Tour | null>(null)
+  /** Tour vừa được chọn (mở paywall). */
+  const [paywallTour, setPaywallTour] = useState<Tour | null>(null)
 
   const loadData = useCallback(async () => {
     setIsLoading(true)
@@ -120,6 +123,11 @@ export default function Tours() {
   function openTourPreview(tour: Tour) {
     setRoutePreviewTour(tour)
     setPreviewTour(tour)
+  }
+
+  function openPaywall(tour: Tour) {
+    setRoutePreviewTour(tour)
+    setPaywallTour(tour)
   }
 
   function handleCreate() {
@@ -270,7 +278,8 @@ export default function Tours() {
                     }
                     allPois={allPois}
                     getPoiName={getPoiName}
-                    onClick={() => openTourPreview(tour)}
+                    onPurchaseClick={() => openPaywall(tour)}
+                    onDetailsClick={() => openTourPreview(tour)}
                     onEdit={() => handleEdit(tour)}
                     onDuplicate={() => handleDuplicate(tour)}
                     onDelete={() => setDeleteTarget(tour)}
@@ -358,7 +367,8 @@ export default function Tours() {
                     }
                     getRelativeTime={getTourRelativeTime}
                     isLast={idx === filteredTours.length - 1}
-                    onClick={() => openTourPreview(tour)}
+                    onPurchaseClick={() => openPaywall(tour)}
+                    onDetailsClick={() => openTourPreview(tour)}
                     onEdit={() => handleEdit(tour)}
                     onDuplicate={() => handleDuplicate(tour)}
                     onDelete={() => setDeleteTarget(tour)}
@@ -391,6 +401,18 @@ export default function Tours() {
         allPois={allPois}
         getPoiName={getPoiName}
         onEdit={handleEdit}
+      />
+
+      <TourPaywallDialog
+        open={!!paywallTour}
+        onOpenChange={(open) => {
+          if (!open) setPaywallTour(null)
+        }}
+        targetTour={paywallTour}
+        onConfirmPay={() => {
+          setPaywallTour(null)
+          toast.info("Chức năng thanh toán sẽ được phát triển trong tương lai.")
+        }}
       />
 
       <TourFormDialog

@@ -11,7 +11,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import type { TourPackageId } from "./tour-packages"
 import { TOUR_PACKAGES } from "./tour-packages"
 import { formatVnd } from "./tour-format"
 
@@ -19,8 +18,8 @@ interface TourPaywallDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   targetTour: Tour | null
-  selectedPackage: TourPackageId
-  walletBalance: number
+  /** Gói mặc định hiển thị. */
+  selectedPackageId?: keyof typeof TOUR_PACKAGES
   onConfirmPay: () => void
 }
 
@@ -28,10 +27,10 @@ export function TourPaywallDialog({
   open,
   onOpenChange,
   targetTour,
-  selectedPackage,
-  walletBalance,
+  selectedPackageId = "monthly",
   onConfirmPay,
 }: TourPaywallDialogProps) {
+  const pkg = TOUR_PACKAGES[selectedPackageId]
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -39,9 +38,7 @@ export function TourPaywallDialog({
           <AlertDialogTitle>Mua gói để mở tour</AlertDialogTitle>
           <AlertDialogDescription>
             Bạn đang chọn tour &quot;{targetTour?.name}&quot;. Để sử dụng tour này, bạn cần mua gói
-            dịch vụ. Gói hiện chọn: <strong>{TOUR_PACKAGES[selectedPackage].name}</strong> (
-            {formatVnd(TOUR_PACKAGES[selectedPackage].price)}). Số dư hiện tại:{" "}
-            <strong>{formatVnd(walletBalance)}</strong>.
+            dịch vụ. Gói hiện chọn: <strong>{pkg.name}</strong> ({formatVnd(pkg.price)}).
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
