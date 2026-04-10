@@ -183,6 +183,7 @@ export default function Pois() {
                     pickerLat={pickerState.lat}
                     pickerLng={pickerState.lng}
                     pickerMode={pickerState.isActive}
+                    uiLanguage={uiLanguage}
                     adminUi={adminUi}
                     onTogglePicker={() => (pickerState.isActive ? deactivatePicker() : activatePicker())}
                     onResetForm={handleResetForm}
@@ -197,6 +198,7 @@ export default function Pois() {
                         pickerLat={pickerState.lat}
                         pickerLng={pickerState.lng}
                         pickerMode={pickerState.isActive}
+                        uiLanguage={uiLanguage}
                         adminUi={adminUi}
                         onTogglePicker={() => (pickerState.isActive ? deactivatePicker() : activatePicker())}
                         onResetForm={handleResetForm}
