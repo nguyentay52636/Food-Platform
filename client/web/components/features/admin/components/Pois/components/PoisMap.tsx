@@ -4,8 +4,128 @@ import { useEffect, useRef, useCallback, useState } from "react"
 import type { POI } from "@/lib/types"
 import type { LanguageCode } from "@/lib/client-types"
 import { SUPPORTED_LANGUAGES } from "@/lib/client-types"
-import { getAdminPoisBundle, getUiLanguageSelectAria } from "@/lib/i18n/admin-pois-i18n"
+import type { AdminPoisUi } from "@/lib/admin-pois-i18n"
 import { Navigation } from "lucide-react"
+
+const LANGUAGE_LABELS: Partial<Record<LanguageCode, Partial<Record<LanguageCode, string>>>> = {
+    vi: {
+        vi: "Tiếng Việt",
+        en: "Tiếng Anh",
+        zh: "Tiếng Trung",
+        ja: "Tiếng Nhật",
+        ko: "Tiếng Hàn",
+        fr: "Tiếng Pháp",
+        de: "Tiếng Đức",
+        es: "Tiếng Tây Ban Nha",
+        it: "Tiếng Ý",
+        pt: "Tiếng Bồ Đào Nha",
+        ru: "Tiếng Nga",
+        ar: "Tiếng Ả Rập",
+        hi: "Tiếng Hindi",
+        th: "Tiếng Thái",
+        id: "Tiếng Indonesia",
+        ms: "Tiếng Malaysia",
+        tr: "Tiếng Thổ Nhĩ Kỳ",
+        nl: "Tiếng Hà Lan",
+        pl: "Tiếng Ba Lan",
+        sv: "Tiếng Thụy Điển",
+    },
+    en: {
+        vi: "Vietnamese",
+        en: "English",
+        zh: "Chinese",
+        ja: "Japanese",
+        ko: "Korean",
+        fr: "French",
+        de: "German",
+        es: "Spanish",
+        it: "Italian",
+        pt: "Portuguese",
+        ru: "Russian",
+        ar: "Arabic",
+        hi: "Hindi",
+        th: "Thai",
+        id: "Indonesian",
+        ms: "Malay",
+        tr: "Turkish",
+        nl: "Dutch",
+        pl: "Polish",
+        sv: "Swedish",
+    },
+    ko: {
+        vi: "베트남어",
+        en: "영어",
+        zh: "중국어",
+        ja: "일본어",
+        ko: "한국어",
+        fr: "프랑스어",
+        de: "독일어",
+        es: "스페인어",
+        it: "이탈리아어",
+        pt: "포르투갈어",
+        ru: "러시아어",
+        ar: "아랍어",
+        hi: "힌디어",
+        th: "태국어",
+        id: "인도네시아어",
+        ms: "말레이어",
+        tr: "터키어",
+        nl: "네덜란드어",
+        pl: "폴란드어",
+        sv: "스웨덴어",
+    },
+    ja: {
+        vi: "ベトナム語",
+        en: "英語",
+        zh: "中国語",
+        ja: "日本語",
+        ko: "韓国語",
+        fr: "フランス語",
+        de: "ドイツ語",
+        es: "スペイン語",
+        it: "イタリア語",
+        pt: "ポルトガル語",
+        ru: "ロシア語",
+        ar: "アラビア語",
+        hi: "ヒンディー語",
+        th: "タイ語",
+        id: "インドネシア語",
+        ms: "マレー語",
+        tr: "トルコ語",
+        nl: "オランダ語",
+        pl: "ポーランド語",
+        sv: "スウェーデン語",
+    },
+    zh: {
+        vi: "越南语",
+        en: "英语",
+        zh: "中文",
+        ja: "日语",
+        ko: "韩语",
+        fr: "法语",
+        de: "德语",
+        es: "西班牙语",
+        it: "意大利语",
+        pt: "葡萄牙语",
+        ru: "俄语",
+        ar: "阿拉伯语",
+        hi: "印地语",
+        th: "泰语",
+        id: "印尼语",
+        ms: "马来语",
+        tr: "土耳其语",
+        nl: "荷兰语",
+        pl: "波兰语",
+        sv: "瑞典语",
+    },
+}
+
+function getLanguageLabel(code: LanguageCode, uiLanguage: LanguageCode): string {
+    const perUi = LANGUAGE_LABELS[uiLanguage]
+    if (perUi && perUi[code]) return perUi[code] as string
+    const meta = SUPPORTED_LANGUAGES.find((l) => l.code === code)
+    return meta?.nativeName ?? code.toUpperCase()
+}
 
 interface POIMapProps {
     pois: POI[]
@@ -17,6 +137,7 @@ interface POIMapProps {
     pickerLng?: number
     uiLanguage: LanguageCode
     onUiLanguageChange: (language: LanguageCode) => void
+    mapUi: AdminPoisUi["map"]
     className?: string
 }
 
@@ -30,9 +151,10 @@ export function PoisMap({
     pickerLng,
     uiLanguage,
     onUiLanguageChange,
+    mapUi,
     className = "",
 }: POIMapProps) {
-    const t = getAdminPoisBundle(uiLanguage).map
+    const t = mapUi
     const mapRef = useRef<HTMLDivElement>(null)
     const mapInstanceRef = useRef<L.Map | null>(null)
     const markersRef = useRef<L.Marker[]>([])
@@ -303,11 +425,11 @@ export function PoisMap({
                     value={uiLanguage}
                     onChange={(e) => onUiLanguageChange(e.target.value as LanguageCode)}
                     className="h-8 min-w-[10.5rem] max-w-[min(100vw-1.5rem,16rem)] rounded-md border border-border bg-background/95 px-2 text-xs text-foreground shadow-md backdrop-blur-sm"
-                    aria-label={getUiLanguageSelectAria(uiLanguage)}
+                    aria-label={t.uiLanguageSelect}
                 >
                     {SUPPORTED_LANGUAGES.map((lang) => (
                         <option key={lang.code} value={lang.code}>
-                            {lang.flag} {lang.nativeName}
+                            {lang.flag} {getLanguageLabel(lang.code, uiLanguage)}
                         </option>
                     ))}
                 </select>

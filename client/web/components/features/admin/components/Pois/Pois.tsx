@@ -13,7 +13,7 @@ import { PoisDeleteDialog } from "./components/Dialog/PoisDeleteDialog"
 import { PoisCardStrip } from "./components/PoisCardStrip"
 import { PoisSidebarForm } from "./components/PoisSidebarForm"
 import type { LanguageCode } from "@/lib/client-types"
-import { getAdminPoisBundle } from "@/lib/i18n/admin-pois-i18n"
+import { getAdminPoisUi } from "@/lib/admin-pois-i18n"
 
 type NarrationLanguage = "vi-VN" | "en-US" | "zh-CN"
 
@@ -37,11 +37,11 @@ export default function Pois() {
     const [isSpeaking, setIsSpeaking] = useState(false)
     const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
 
-    const adminBundle = useMemo(() => getAdminPoisBundle(uiLanguage), [uiLanguage])
+    const adminUi = useMemo(() => getAdminPoisUi(uiLanguage), [uiLanguage])
 
     const narrationText = useMemo(() => {
         if (!selectedPoi) return ""
-        const labels = adminBundle.panel
+        const labels = adminUi.panel
         const addressText = selectedPoi.address ? `${labels.addressLabel}: ${selectedPoi.address}.` : ""
         switch (narrationLanguage) {
             case "en-US":
@@ -51,7 +51,7 @@ export default function Pois() {
             default:
                 return `${selectedPoi.name}. ${selectedPoi.description}. ${labels.categoryLabel}: ${selectedPoi.category}. ${addressText}`
         }
-    }, [selectedPoi, narrationLanguage, adminBundle])
+    }, [selectedPoi, narrationLanguage, adminUi.panel])
 
     // ─── Event Handlers ─────────────────────────────────────────────────────────
 
@@ -167,7 +167,7 @@ export default function Pois() {
                     pickerLat={pickerState.lat}
                     pickerLng={pickerState.lng}
                     pickerMode={pickerState.isActive}
-                    uiLanguage={uiLanguage}
+                    adminUi={adminUi}
                     onTogglePicker={() => (pickerState.isActive ? deactivatePicker() : activatePicker())}
                     onResetForm={handleResetForm}
                     onSubmit={handleFormSubmit}
@@ -181,7 +181,7 @@ export default function Pois() {
                         pickerLat={pickerState.lat}
                         pickerLng={pickerState.lng}
                         pickerMode={pickerState.isActive}
-                        uiLanguage={uiLanguage}
+                        adminUi={adminUi}
                         onTogglePicker={() => (pickerState.isActive ? deactivatePicker() : activatePicker())}
                         onResetForm={handleResetForm}
                         onSubmit={handleFormSubmit}
@@ -200,6 +200,7 @@ export default function Pois() {
                         pickerLng={pickerState.lng}
                         uiLanguage={uiLanguage}
                         onUiLanguageChange={setUiLanguage}
+                        mapUi={adminUi.map}
                         className="h-full w-full"
                     />
 
@@ -210,7 +211,7 @@ export default function Pois() {
                     <PoisCardStrip
                         pois={pois}
                         selectedPoi={selectedPoi}
-                        uiLanguage={uiLanguage}
+                        adminUi={adminUi}
                         onSelect={handleEditClick}
                     />
                 </div>
@@ -218,11 +219,11 @@ export default function Pois() {
 
             {selectedPoi && (
                 <div className="fixed bottom-4 right-4 z-[70] w-[360px] rounded-xl border border-border bg-background/95 p-4 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/85">
-                    <p className="text-sm font-semibold">{adminBundle.panel.audioGuide}</p>
+                    <p className="text-sm font-semibold">{adminUi.panel.audioGuide}</p>
                     <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{selectedPoi.name}</p>
 
                     <div className="mt-3 flex items-center gap-2">
-                        <label className="text-xs text-muted-foreground">{adminBundle.panel.language}</label>
+                        <label className="text-xs text-muted-foreground">{adminUi.panel.language}</label>
                         <select
                             value={narrationLanguage}
                             onChange={(e) => setNarrationLanguage(e.target.value as NarrationLanguage)}
@@ -240,17 +241,17 @@ export default function Pois() {
                             onClick={speakNarration}
                             className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
                         >
-                            {adminBundle.panel.playAudio}
+                            {adminUi.panel.playAudio}
                         </button>
                         <button
                             type="button"
                             onClick={stopNarration}
                             className="rounded-md border border-input px-3 py-1.5 text-xs font-medium hover:bg-accent"
                         >
-                            {adminBundle.panel.stop}
+                            {adminUi.panel.stop}
                         </button>
                         <span className="self-center text-xs text-muted-foreground">
-                            {isSpeaking ? adminBundle.panel.playing : adminBundle.panel.ready}
+                            {isSpeaking ? adminUi.panel.playing : adminUi.panel.ready}
                         </span>
                     </div>
                 </div>
@@ -258,7 +259,7 @@ export default function Pois() {
 
             <PoisDeleteDialog
                 poi={deleteTarget}
-                uiLanguage={uiLanguage}
+                deleteUi={adminUi.delete}
                 onClose={() => setDeleteTarget(null)}
                 onConfirm={handleDeleteConfirm}
             />

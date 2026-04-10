@@ -12,10 +12,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Plus } from "lucide-react"
 import { createOwner, fetchOwners } from "@/lib/api"
-import type { LanguageCode } from "@/lib/client-types"
-import { getAdminPoisBundle } from "@/lib/i18n/admin-pois-i18n"
+import type { AdminPoisUi } from "@/lib/admin-pois-i18n"
 
-const SUB_CATEGORY_KEYS: MinorSubCategory[] = ["wc", "ticket", "parking", "dock"]
+const SUB_CATEGORY_KEYS: { value: MinorSubCategory; subKey: keyof AdminPoisUi["sub"] }[] = [
+  { value: "wc", subKey: "wc" },
+  { value: "ticket", subKey: "ticket" },
+  { value: "parking", subKey: "parking" },
+  { value: "dock", subKey: "dock" },
+]
 
 const LANGUAGE_OPTIONS = [
   { value: "vi-VN", label: "Tiếng Việt" },
@@ -28,7 +32,7 @@ interface PoisSidebarFormProps {
   pickerLat?: number
   pickerLng?: number
   pickerMode: boolean
-  uiLanguage: LanguageCode
+  adminUi: AdminPoisUi
   onTogglePicker: () => void
   onResetForm: () => void
   onSubmit: (data: CreatePOIPayload) => Promise<void>
@@ -39,14 +43,13 @@ export function PoisSidebarForm({
   pickerLat,
   pickerLng,
   pickerMode,
-  uiLanguage,
+  adminUi,
   onTogglePicker,
   onResetForm,
   onSubmit,
 }: PoisSidebarFormProps) {
-  const bundle = getAdminPoisBundle(uiLanguage)
-  const t = bundle.form
-  const v = bundle.validation
+  const t = adminUi.form
+  const err = adminUi.errors
   const isEdit = !!poi
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
@@ -117,19 +120,19 @@ export function PoisSidebarForm({
     setError("")
 
     if (!name.trim()) {
-      setError(v.nameRequired)
+      setError(err.nameRequired)
       return
     }
 
     const lat = parseFloat(latitude)
     const lng = parseFloat(longitude)
     if (Number.isNaN(lat) || Number.isNaN(lng)) {
-      setError(v.coordsInvalid)
+      setError(err.coordsInvalid)
       return
     }
 
     if (category === "minor" && !subCategory) {
-      setError(v.subCategoryRequired)
+      setError(err.subCategoryRequired)
       return
     }
 
@@ -147,7 +150,7 @@ export function PoisSidebarForm({
         ownerId: ownerId || undefined,
       })
     } catch {
-      setError(v.saveFailed)
+      setError(err.saveFailed)
     } finally {
       setIsSubmitting(false)
     }
@@ -168,7 +171,7 @@ export function PoisSidebarForm({
       setNewOwnerUsername("")
       setNewOwnerPassword("")
     } catch (e) {
-      setError(e instanceof Error ? e.message : v.ownerCreateFailed)
+      setError(e instanceof Error ? e.message : err.createOwnerFailed)
     } finally {
       setIsCreatingOwner(false)
     }
@@ -251,9 +254,9 @@ export function PoisSidebarForm({
                     <SelectValue placeholder={t.subTypePlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
-                    {SUB_CATEGORY_KEYS.map((value) => (
-                      <SelectItem key={value} value={value}>
-                        {bundle.subCategories[value]}
+                    {SUB_CATEGORY_KEYS.map((sc) => (
+                      <SelectItem key={sc.value} value={sc.value}>
+                        {adminUi.sub[sc.subKey]}
                       </SelectItem>
                     ))}
                   </SelectContent>
