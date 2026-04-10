@@ -4,6 +4,7 @@ import { useEffect, useRef, useCallback, useState } from "react"
 import type { POI } from "@/lib/types"
 import type { LanguageCode } from "@/lib/client-types"
 import { SUPPORTED_LANGUAGES } from "@/lib/client-types"
+import { getAdminPoisBundle, getUiLanguageSelectAria } from "@/lib/i18n/admin-pois-i18n"
 import { Navigation } from "lucide-react"
 
 interface POIMapProps {
@@ -19,45 +20,6 @@ interface POIMapProps {
     className?: string
 }
 
-const MAP_TEXT = {
-    vi: {
-        locateTitle: "Xác định vị trí hiện tại",
-        unsupported: "Trình duyệt không hỗ trợ định vị.",
-        locateFailed: "Không thể lấy vị trí hiện tại.",
-        pickerHint: "Click on the map to select a location",
-        legend: "Chú thích",
-        selected: "Đang chọn",
-        primary: "Điểm chính",
-        secondary: "Điểm phụ",
-    },
-    en: {
-        locateTitle: "Locate current position",
-        unsupported: "This browser does not support geolocation.",
-        locateFailed: "Unable to get current position.",
-        pickerHint: "Click on the map to select a location",
-        legend: "Legend",
-        selected: "Selected",
-        primary: "Primary point",
-        secondary: "Secondary point",
-    },
-    zh: {
-        locateTitle: "定位当前位置",
-        unsupported: "浏览器不支持定位。",
-        locateFailed: "无法获取当前位置。",
-        pickerHint: "点击地图选择位置",
-        legend: "图例",
-        selected: "当前选中",
-        primary: "主要点位",
-        secondary: "次要点位",
-    },
-} as const
-
-type MapUiStrings = (typeof MAP_TEXT)[keyof typeof MAP_TEXT]
-
-function mapLabels(lang: LanguageCode): MapUiStrings {
-    return MAP_TEXT[lang as keyof typeof MAP_TEXT] ?? MAP_TEXT.en
-}
-
 export function PoisMap({
     pois,
     selectedPoi,
@@ -70,7 +32,7 @@ export function PoisMap({
     onUiLanguageChange,
     className = "",
 }: POIMapProps) {
-    const t = mapLabels(uiLanguage)
+    const t = getAdminPoisBundle(uiLanguage).map
     const mapRef = useRef<HTMLDivElement>(null)
     const mapInstanceRef = useRef<L.Map | null>(null)
     const markersRef = useRef<L.Marker[]>([])
@@ -325,7 +287,7 @@ export function PoisMap({
                     value={uiLanguage}
                     onChange={(e) => onUiLanguageChange(e.target.value as LanguageCode)}
                     className="h-8 min-w-[10.5rem] max-w-[min(100vw-1.5rem,16rem)] rounded-md border border-border bg-background/95 px-2 text-xs text-foreground shadow-md backdrop-blur-sm"
-                    aria-label="UI language"
+                    aria-label={getUiLanguageSelectAria(uiLanguage)}
                 >
                     {SUPPORTED_LANGUAGES.map((lang) => (
                         <option key={lang.code} value={lang.code}>

@@ -13,13 +13,9 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Plus } from "lucide-react"
 import { createOwner, fetchOwners } from "@/lib/api"
 import type { LanguageCode } from "@/lib/client-types"
+import { getAdminPoisBundle } from "@/lib/i18n/admin-pois-i18n"
 
-const SUB_CATEGORIES: { value: MinorSubCategory; label: string }[] = [
-  { value: "wc", label: "Restroom (WC)" },
-  { value: "ticket", label: "Ticket Booth" },
-  { value: "parking", label: "Parking" },
-  { value: "dock", label: "Dock" },
-]
+const SUB_CATEGORY_KEYS: MinorSubCategory[] = ["wc", "ticket", "parking", "dock"]
 
 const LANGUAGE_OPTIONS = [
   { value: "vi-VN", label: "Tiếng Việt" },
@@ -38,103 +34,6 @@ interface PoisSidebarFormProps {
   onSubmit: (data: CreatePOIPayload) => Promise<void>
 }
 
-const FORM_TEXT = {
-  vi: {
-    title: "Quản lý điểm đến",
-    subtitleEdit: "Đang chỉnh sửa POI đã chọn",
-    subtitleCreate: "Thêm POI mới trực tiếp từ sidebar",
-    latitude: "Latitude",
-    longitude: "Longitude",
-    name: "Tên điểm đến",
-    description: "Mô tả",
-    descriptionPlaceholder: "Mô tả ngắn về địa điểm...",
-    poiType: "Loại điểm",
-    primaryPoint: "Điểm chính",
-    secondaryPoint: "Điểm nhỏ",
-    subType: "Loại phụ",
-    subTypePlaceholder: "Chọn loại...",
-    imageUrl: "Ảnh đại diện (URL)",
-    owner: "Chủ shop",
-    ownerPlaceholder: "Chọn chủ shop...",
-    addOwner: "Tạo chủ shop mới",
-    ownerUsername: "Tài khoản",
-    ownerPassword: "Mật khẩu",
-    ownerCreate: "Tạo",
-    language: "Đa ngôn ngữ",
-    languagePlaceholder: "Chọn ngôn ngữ",
-    mapPickerOn: "Đang chọn trên bản đồ...",
-    mapPickerOff: "Chọn tọa độ từ bản đồ",
-    reset: "Đặt lại",
-    update: "Cập nhật",
-    create: "Thêm mới",
-    saving: "Đang lưu",
-  },
-  en: {
-    title: "POI Management",
-    subtitleEdit: "Editing selected POI",
-    subtitleCreate: "Create POI directly from sidebar",
-    latitude: "Latitude",
-    longitude: "Longitude",
-    name: "POI name",
-    description: "Description",
-    descriptionPlaceholder: "Short description for this location...",
-    poiType: "POI type",
-    primaryPoint: "Primary point",
-    secondaryPoint: "Secondary point",
-    subType: "Sub type",
-    subTypePlaceholder: "Select type...",
-    imageUrl: "Image URL",
-    owner: "Owner",
-    ownerPlaceholder: "Select owner...",
-    addOwner: "Create owner",
-    ownerUsername: "Username",
-    ownerPassword: "Password",
-    ownerCreate: "Create",
-    language: "Language",
-    languagePlaceholder: "Select language",
-    mapPickerOn: "Selecting on map...",
-    mapPickerOff: "Pick coordinates from map",
-    reset: "Reset",
-    update: "Update",
-    create: "Create",
-    saving: "Saving",
-  },
-  zh: {
-    title: "兴趣点管理",
-    subtitleEdit: "正在编辑已选点位",
-    subtitleCreate: "在侧栏直接新增点位",
-    latitude: "纬度",
-    longitude: "经度",
-    name: "点位名称",
-    description: "描述",
-    descriptionPlaceholder: "输入地点简短描述...",
-    poiType: "点位类型",
-    primaryPoint: "主要点位",
-    secondaryPoint: "次要点位",
-    subType: "子类型",
-    subTypePlaceholder: "选择类型...",
-    imageUrl: "图片链接 (URL)",
-    owner: "店主",
-    ownerPlaceholder: "选择店主...",
-    addOwner: "新增店主",
-    ownerUsername: "账号",
-    ownerPassword: "密码",
-    ownerCreate: "新增",
-    language: "语言",
-    languagePlaceholder: "选择语言",
-    mapPickerOn: "地图选点中...",
-    mapPickerOff: "从地图选择坐标",
-    reset: "重置",
-    update: "更新",
-    create: "新增",
-    saving: "保存中",
-  },
-} as const
-
-function formLabels(lang: LanguageCode) {
-  return FORM_TEXT[lang as keyof typeof FORM_TEXT] ?? FORM_TEXT.en
-}
-
 export function PoisSidebarForm({
   poi,
   pickerLat,
@@ -145,7 +44,9 @@ export function PoisSidebarForm({
   onResetForm,
   onSubmit,
 }: PoisSidebarFormProps) {
-  const t = formLabels(uiLanguage)
+  const bundle = getAdminPoisBundle(uiLanguage)
+  const t = bundle.form
+  const v = bundle.validation
   const isEdit = !!poi
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
@@ -216,19 +117,19 @@ export function PoisSidebarForm({
     setError("")
 
     if (!name.trim()) {
-      setError("Name is required.")
+      setError(v.nameRequired)
       return
     }
 
     const lat = parseFloat(latitude)
     const lng = parseFloat(longitude)
     if (Number.isNaN(lat) || Number.isNaN(lng)) {
-      setError("Valid latitude and longitude are required. Click the map to select a location.")
+      setError(v.coordsInvalid)
       return
     }
 
     if (category === "minor" && !subCategory) {
-      setError("Sub-category is required for minor POIs.")
+      setError(v.subCategoryRequired)
       return
     }
 
@@ -246,7 +147,7 @@ export function PoisSidebarForm({
         ownerId: ownerId || undefined,
       })
     } catch {
-      setError("Failed to save POI. Please try again.")
+      setError(v.saveFailed)
     } finally {
       setIsSubmitting(false)
     }
@@ -267,7 +168,7 @@ export function PoisSidebarForm({
       setNewOwnerUsername("")
       setNewOwnerPassword("")
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to create owner.")
+      setError(e instanceof Error ? e.message : v.ownerCreateFailed)
     } finally {
       setIsCreatingOwner(false)
     }
@@ -350,9 +251,9 @@ export function PoisSidebarForm({
                     <SelectValue placeholder={t.subTypePlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
-                    {SUB_CATEGORIES.map((sc) => (
-                      <SelectItem key={sc.value} value={sc.value}>
-                        {sc.label}
+                    {SUB_CATEGORY_KEYS.map((value) => (
+                      <SelectItem key={value} value={value}>
+                        {bundle.subCategories[value]}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -470,7 +371,7 @@ export function PoisSidebarForm({
 
           <DialogFooter className="pt-2">
             <Button type="button" variant="outline" onClick={() => setIsOwnerDialogOpen(false)}>
-              Cancel
+              {t.cancel}
             </Button>
             <Button type="button" onClick={handleCreateOwner} disabled={isCreatingOwner}>
               {isCreatingOwner ? (

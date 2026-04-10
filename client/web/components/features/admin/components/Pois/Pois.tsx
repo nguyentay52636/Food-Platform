@@ -13,57 +13,9 @@ import { PoisDeleteDialog } from "./components/Dialog/PoisDeleteDialog"
 import { PoisCardStrip } from "./components/PoisCardStrip"
 import { PoisSidebarForm } from "./components/PoisSidebarForm"
 import type { LanguageCode } from "@/lib/client-types"
+import { getAdminPoisBundle } from "@/lib/i18n/admin-pois-i18n"
 
 type NarrationLanguage = "vi-VN" | "en-US" | "zh-CN"
-
-const UI_TEXT: Record<
-    "vi" | "en" | "zh",
-    {
-        audioGuide: string
-        language: string
-        playAudio: string
-        stop: string
-        playing: string
-        ready: string
-        categoryLabel: string
-        addressLabel: string
-    }
-> = {
-    vi: {
-        audioGuide: "Audio thuyết minh",
-        language: "Ngôn ngữ:",
-        playAudio: "Phát audio",
-        stop: "Dừng",
-        playing: "Đang phát...",
-        ready: "Sẵn sàng",
-        categoryLabel: "Loại điểm",
-        addressLabel: "Địa chỉ",
-    },
-    en: {
-        audioGuide: "Audio guide",
-        language: "Language:",
-        playAudio: "Play audio",
-        stop: "Stop",
-        playing: "Playing...",
-        ready: "Ready",
-        categoryLabel: "Type",
-        addressLabel: "Address",
-    },
-    zh: {
-        audioGuide: "语音导览",
-        language: "语言：",
-        playAudio: "播放",
-        stop: "停止",
-        playing: "播放中...",
-        ready: "就绪",
-        categoryLabel: "类型",
-        addressLabel: "地址",
-    },
-}
-
-function getAdminUiLabels(lang: LanguageCode) {
-    return UI_TEXT[lang as keyof typeof UI_TEXT] ?? UI_TEXT.en
-}
 
 export default function Pois() {
     const {
@@ -85,9 +37,11 @@ export default function Pois() {
     const [isSpeaking, setIsSpeaking] = useState(false)
     const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
 
+    const adminBundle = useMemo(() => getAdminPoisBundle(uiLanguage), [uiLanguage])
+
     const narrationText = useMemo(() => {
         if (!selectedPoi) return ""
-        const labels = getAdminUiLabels(uiLanguage)
+        const labels = adminBundle.panel
         const addressText = selectedPoi.address ? `${labels.addressLabel}: ${selectedPoi.address}.` : ""
         switch (narrationLanguage) {
             case "en-US":
@@ -97,7 +51,7 @@ export default function Pois() {
             default:
                 return `${selectedPoi.name}. ${selectedPoi.description}. ${labels.categoryLabel}: ${selectedPoi.category}. ${addressText}`
         }
-    }, [selectedPoi, narrationLanguage, uiLanguage])
+    }, [selectedPoi, narrationLanguage, adminBundle])
 
     // ─── Event Handlers ─────────────────────────────────────────────────────────
 
@@ -264,11 +218,11 @@ export default function Pois() {
 
             {selectedPoi && (
                 <div className="fixed bottom-4 right-4 z-[70] w-[360px] rounded-xl border border-border bg-background/95 p-4 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/85">
-                    <p className="text-sm font-semibold">{getAdminUiLabels(uiLanguage).audioGuide}</p>
+                    <p className="text-sm font-semibold">{adminBundle.panel.audioGuide}</p>
                     <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{selectedPoi.name}</p>
 
                     <div className="mt-3 flex items-center gap-2">
-                        <label className="text-xs text-muted-foreground">{getAdminUiLabels(uiLanguage).language}</label>
+                        <label className="text-xs text-muted-foreground">{adminBundle.panel.language}</label>
                         <select
                             value={narrationLanguage}
                             onChange={(e) => setNarrationLanguage(e.target.value as NarrationLanguage)}
@@ -286,17 +240,17 @@ export default function Pois() {
                             onClick={speakNarration}
                             className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
                         >
-                            {getAdminUiLabels(uiLanguage).playAudio}
+                            {adminBundle.panel.playAudio}
                         </button>
                         <button
                             type="button"
                             onClick={stopNarration}
                             className="rounded-md border border-input px-3 py-1.5 text-xs font-medium hover:bg-accent"
                         >
-                            {getAdminUiLabels(uiLanguage).stop}
+                            {adminBundle.panel.stop}
                         </button>
                         <span className="self-center text-xs text-muted-foreground">
-                            {isSpeaking ? getAdminUiLabels(uiLanguage).playing : getAdminUiLabels(uiLanguage).ready}
+                            {isSpeaking ? adminBundle.panel.playing : adminBundle.panel.ready}
                         </span>
                     </div>
                 </div>
@@ -304,6 +258,7 @@ export default function Pois() {
 
             <PoisDeleteDialog
                 poi={deleteTarget}
+                uiLanguage={uiLanguage}
                 onClose={() => setDeleteTarget(null)}
                 onConfirm={handleDeleteConfirm}
             />
