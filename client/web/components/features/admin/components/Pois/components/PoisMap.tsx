@@ -62,7 +62,7 @@ export function PoisMap({
 
             mapInstance = L.map(mapRef.current, {
                 center: [10.7579, 106.7005],
-                zoom: 13,
+                zoom: 16,
                 zoomControl: true,
             })
 
@@ -222,7 +222,7 @@ export function PoisMap({
     // Pan to selected POI
     useEffect(() => {
         if (!mapInstanceRef.current || !selectedPoi || !isReady) return
-        mapInstanceRef.current.setView([selectedPoi.latitude, selectedPoi.longitude], 15, {
+        mapInstanceRef.current.setView([selectedPoi.latitude, selectedPoi.longitude], 17, {
             animate: true,
         })
     }, [selectedPoi, isReady])
@@ -267,7 +267,7 @@ export function PoisMap({
                 })
 
                 userMarkerRef.current = L.marker([latitude, longitude], { icon }).addTo(map)
-                map.setView([latitude, longitude], 16, { animate: true })
+                map.setView([latitude, longitude], 17, { animate: true })
                 setIsLocating(false)
             },
             (error) => {

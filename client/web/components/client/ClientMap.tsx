@@ -58,7 +58,7 @@ export function ClientMap({
 
             const map = L.map(containerRef.current, {
                 center: [10.7579, 106.7005],
-                zoom: 13,
+                zoom: 16,
                 zoomControl: false,
             })
 
@@ -170,7 +170,7 @@ export function ClientMap({
             if (selectedPoi) {
                 // Avoid fighting with locate-to-user: only auto-center when POI actually changes.
                 if (lastCenteredPoiIdRef.current !== selectedPoi.id) {
-                    map.setView([selectedPoi.latitude, selectedPoi.longitude], 15, {
+                    map.setView([selectedPoi.latitude, selectedPoi.longitude], 17, {
                         animate: true,
                     })
                     lastCenteredPoiIdRef.current = selectedPoi.id
@@ -223,7 +223,7 @@ export function ClientMap({
         if (!userLocation) return
         if (!locateSignal) return
 
-        mapInstanceRef.current.setView([userLocation.lat, userLocation.lng], 15, {
+        mapInstanceRef.current.setView([userLocation.lat, userLocation.lng], 17, {
             animate: true,
         })
     }, [isReady, locateSignal, userLocation])
@@ -236,7 +236,7 @@ export function ClientMap({
 
         const map = mapInstanceRef.current
         if (pois.length === 1) {
-            map.setView([pois[0].latitude, pois[0].longitude], 16, { animate: true })
+            map.setView([pois[0].latitude, pois[0].longitude], 17, { animate: true })
             return
         }
 
@@ -246,7 +246,7 @@ export function ClientMap({
             )
             map.fitBounds(bounds, {
                 padding: [60, 60],
-                maxZoom: 16,
+                maxZoom: 17,
                 animate: true,
             })
         })

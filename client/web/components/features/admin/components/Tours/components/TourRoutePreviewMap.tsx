@@ -43,7 +43,7 @@ export function TourRoutePreviewMap({ tour, allPois, className = "" }: TourRoute
 
       const map = L.map(containerRef.current, {
         center: DEFAULT_CENTER,
-        zoom: 13,
+        zoom: 16,
         zoomControl: true,
       })
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -86,7 +86,7 @@ export function TourRoutePreviewMap({ tour, allPois, className = "" }: TourRoute
       layersRef.current = { polyline: null, markers: [] }
 
       if (!tour || tour.pois.length === 0) {
-        map.setView(DEFAULT_CENTER, 12)
+        map.setView(DEFAULT_CENTER, 16)
         return
       }
 
@@ -98,7 +98,7 @@ export function TourRoutePreviewMap({ tour, allPois, className = "" }: TourRoute
       }
 
       if (resolved.length === 0) {
-        map.setView(DEFAULT_CENTER, 12)
+        map.setView(DEFAULT_CENTER, 16)
         return
       }
 
@@ -134,9 +134,9 @@ export function TourRoutePreviewMap({ tour, allPois, className = "" }: TourRoute
       layersRef.current.markers = markers
 
       if (latlngs.length === 1) {
-        map.setView(latlngs[0]!, 15)
+        map.setView(latlngs[0]!, 17)
       } else {
-        map.fitBounds(poly.getBounds(), { padding: [36, 36], maxZoom: 16 })
+        map.fitBounds(poly.getBounds(), { padding: [36, 36], maxZoom: 17 })
       }
 
       setTimeout(() => map.invalidateSize(), 120)

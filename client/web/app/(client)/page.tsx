@@ -34,6 +34,7 @@ export default function ExplorePage() {
     const [locateSignal, setLocateSignal] = useState(0)
     const [focusFilterSignal, setFocusFilterSignal] = useState(0)
     const [listTab, setListTab] = useState<"nearby" | "favorites">("nearby")
+    const [manualUserLocation, setManualUserLocation] = useState<{ lat: number; lng: number } | null>(null)
     const favoriteIds = usePoiFavoriteIds()
     const selectedPoiName = useTranslatedText(selectedPoi?.name ?? { en: "" }, language)
     const selectedPoiDescription = useTranslatedText(selectedPoi?.description ?? { en: "" }, language)
@@ -54,6 +55,7 @@ export default function ExplorePage() {
     // Track page view and geolocation
     const visitor = useVisitorSession()
     const { position: userLocation } = useGeolocation()
+    const effectiveUserLocation = manualUserLocation ?? userLocation
 
     React.useEffect(() => {
         visitor.trackPageView("home", { filter: "all" })
@@ -181,7 +183,7 @@ export default function ExplorePage() {
                         onMarkerClick={handleMarkerClick}
                         language={language}
                         className="h-full"
-                        userLocation={userLocation}
+                        userLocation={effectiveUserLocation}
                         locateSignal={locateSignal}
                         focusFilterSignal={focusFilterSignal}
                     />
@@ -211,14 +213,31 @@ export default function ExplorePage() {
                         <Button
                             variant="secondary"
                             size="icon"
-                            className={`rounded-full shadow-lg h-10 w-10 transition-colors ${userLocation ? 'text-primary' : 'text-muted-foreground'}`}
-                            disabled={!userLocation}
+                            className={`rounded-full shadow-lg h-10 w-10 transition-colors ${effectiveUserLocation ? 'text-primary' : 'text-muted-foreground'}`}
                             onClick={() => {
-                                // Ask the map to move to the user's current position.
-                                setLocateSignal((s) => s + 1)
+                                // If we already have a location, just ask the map to focus it.
+                                if (effectiveUserLocation) {
+                                    setLocateSignal((s) => s + 1)
+                                    return
+                                }
+                                // First-time click: request browser geolocation then focus map.
+                                if (!navigator.geolocation) return
+                                navigator.geolocation.getCurrentPosition(
+                                    (position) => {
+                                        setManualUserLocation({
+                                            lat: position.coords.latitude,
+                                            lng: position.coords.longitude,
+                                        })
+                                        setLocateSignal((s) => s + 1)
+                                    },
+                                    () => {
+                                        // keep silent for now; map button still usable on next attempts
+                                    },
+                                    { enableHighAccuracy: true, timeout: 10000 }
+                                )
                             }}
                         >
-                            <Navigation className={`h-5 w-5 ${userLocation ? 'fill-primary animate-pulse' : ''}`} />
+                            <Navigation className={`h-5 w-5 ${effectiveUserLocation ? 'fill-primary animate-pulse' : ''}`} />
                         </Button>
                     </div>
 
