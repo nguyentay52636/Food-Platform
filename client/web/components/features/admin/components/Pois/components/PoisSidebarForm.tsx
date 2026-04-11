@@ -11,7 +11,8 @@ import { Spinner } from "@/components/ui/spinner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Plus, X, ImagePlus } from "lucide-react"
-import { createOwner, fetchOwners } from "@/lib/api"
+import { createOwner } from "@/lib/api"
+import { useUser } from "@/hooks/useUser"
 import type { AdminPoisUi } from "@/lib/admin-pois-i18n"
 import type { LanguageCode } from "@/lib/client-types"
 import { SUPPORTED_LANGUAGES } from "@/lib/client-types"
@@ -191,7 +192,7 @@ export function PoisSidebarForm({
   const [narrationLanguage, setNarrationLanguage] = useState<string>("vi-VN")
   const [rangeTrigger, setRangeTrigger] = useState("50")
   const [address, setAddress] = useState("")
-  const [owners, setOwners] = useState<OwnerUser[]>([])
+  const { owners, refreshOwners } = useUser()
   const [ownerId, setOwnerId] = useState<string>("")
   const [isOwnerDialogOpen, setIsOwnerDialogOpen] = useState(false)
   const [newOwnerUsername, setNewOwnerUsername] = useState("")
@@ -202,21 +203,6 @@ export function PoisSidebarForm({
   const [error, setError] = useState("")
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
-
-  useEffect(() => {
-    let mounted = true
-    fetchOwners()
-      .then((data) => {
-        if (!mounted) return
-        setOwners(data)
-      })
-      .catch(() => {
-        // ignore for demo
-      })
-    return () => {
-      mounted = false
-    }
-  }, [])
 
   useEffect(() => {
     if (poi) {
@@ -355,18 +341,9 @@ export function PoisSidebarForm({
         password: newOwnerPassword,
       })
       
-      const created = {
-        id: response.user._id,
-        name: response.user.username,
-        username: response.user.username,
-        password: "", // Not stored locally
-        role: "owner" as const,
-        poiIds: []
-      }
+      await refreshOwners()
+      setOwnerId(response.user._id)
       
-      const updated = [created, ...owners]
-      setOwners(updated)
-      setOwnerId(created.id)
       setIsOwnerDialogOpen(false)
       setNewOwnerUsername("")
       setNewOwnerEmail("")
@@ -542,8 +519,8 @@ export function PoisSidebarForm({
               </SelectTrigger>
               <SelectContent>
                 {owners.map((o) => (
-                  <SelectItem key={o.id} value={o.id}>
-                    {o.name}
+                  <SelectItem key={o._id} value={o._id || ""}>
+                    {o.username}
                   </SelectItem>
                 ))}
               </SelectContent>

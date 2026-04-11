@@ -20,6 +20,10 @@ export class CreatePoiDto {
     @IsNotEmpty()
     loaiPOI: string;
 
+    @ApiProperty({ description: 'Title of the POI' })
+    @IsString()
+    @IsNotEmpty()
+    tieuDe: string;
 
     @ApiPropertyOptional({ description: 'Owner User ID' })
     @IsMongoId()
@@ -48,6 +52,11 @@ export class CreatePoiDto {
     @IsDateString()
     @IsOptional()
     ngayTao?: Date;
+
+    @ApiPropertyOptional({ description: 'Description of the POI' })
+    @IsString()
+    @IsOptional()
+    moTa?: string;
 
     @ApiPropertyOptional({ type: [String], description: 'List of image URLs' })
     @IsArray()

@@ -10,6 +10,9 @@ import { ReviewModule } from './modules/review/review.module';
 import { LanguageModule } from './modules/language/language.module';
 import { PoiModule } from './modules/poi/poi.module';
 import { RouterModule } from './modules/router/router.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -28,6 +31,11 @@ import { RouterModule } from './modules/router/router.module';
     LanguageModule,
     PoiModule,
     RouterModule,
+    CommonModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+      serveRoot: '/',
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

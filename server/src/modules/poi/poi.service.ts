@@ -12,6 +12,8 @@ import { Poi, PoiDocument } from './schema/poi.schema';
 import { CreatePoiDto } from './dto/create-poi.dto';
 import { PatchPoiTranslationDto } from './dto/patch-poi-translation.dto';
 import { UpdatePoiDto } from './dto/update-poi.dto';
+import { LanguageService } from '../language/language.service';
+import { TtsService } from '../../common/services/tts.service';
 
 export type CreatePoiResult = PoiContentByLanguageResult;
 
@@ -51,6 +53,8 @@ export class PoiService {
   constructor(
     @InjectModel(Poi.name) private readonly poiModel: Model<PoiDocument>,
     private readonly poiTranslationService: PoiTranslationService,
+    private readonly languageService: LanguageService,
+    private readonly ttsService: TtsService,
   ) { }
 
   private async buildPoiResponse(
@@ -246,8 +250,33 @@ export class PoiService {
     maNgonNgu?: string,
   ): Promise<CreatePoiResult> {
     try {
-      const createdPoi = new this.poiModel(createPoiDto);
+      const { tieuDe, moTa, ...poiData } = createPoiDto;
+
+      const createdPoi = new this.poiModel(poiData);
       await createdPoi.save();
+
+      const languages = await this.languageService.findAll();
+
+      // Automatically create translations for all system languages
+      for (const lang of languages) {
+        const currentLangId = lang._id.toString();
+        const textToSpeak = tieuDe || (poiData as any).tenPOI;
+        const audioFilename = `${createdPoi._id}_${lang.code}.mp3`;
+
+        const audioUrl = await this.ttsService.generateSpeech(
+          textToSpeak,
+          lang.code,
+          audioFilename,
+        );
+
+        await this.poiTranslationService.create({
+          maPOI: String(createdPoi._id),
+          maNgonNgu: currentLangId,
+          tieuDe: textToSpeak,
+          moTa: moTa,
+          audioUrl: audioUrl || undefined,
+        });
+      }
 
       return this.buildPoiResponse(
         createdPoi.toObject() as unknown as Record<string, unknown>,
