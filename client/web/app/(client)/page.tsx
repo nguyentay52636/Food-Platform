@@ -43,6 +43,8 @@ export default function ExplorePage() {
     const allLabel = useTranslatedUiText("All", language, "en")
     const majorLabel = useTranslatedUiText("Điểm chính", language)
     const minorLabel = useTranslatedUiText("Điểm phụ", language)
+    const mapLegendTitleLabel = useTranslatedUiText("Chú thích", language)
+    const mapLegendSelectedLabel = useTranslatedUiText("Đang chọn", language)
     const nearbyLabel = useTranslatedUiText("Quán ăn gần đây", language)
     const favoritesLabel = useTranslatedUiText("Quán ăn yêu thích", language)
     const noFavoritesLabel = useTranslatedUiText(
@@ -253,7 +255,7 @@ export default function ExplorePage() {
                     <div className="absolute top-3 right-16 z-20 pointer-events-none">
                         <Card className="px-4 py-3 bg-background/95 backdrop-blur-md border-border/70 shadow-lg rounded-2xl min-w-[150px]">
                             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-                                Chú thích
+                                {mapLegendTitleLabel}
                             </p>
                             <div className="space-y-2">
                                 <div className="flex items-center gap-2.5 text-sm font-medium">
@@ -261,15 +263,15 @@ export default function ExplorePage() {
                                         <span className="absolute inset-[-4px] rounded-full bg-emerald-500/25" />
                                         <span className="relative h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500 shadow-sm" />
                                     </span>
-                                    <span>Đang chọn</span>
+                                    <span>{mapLegendSelectedLabel}</span>
                                 </div>
                                 <div className="flex items-center gap-2.5 text-sm font-medium">
                                     <span className="h-3.5 w-3.5 rounded-full bg-emerald-500 shadow-sm" />
-                                    <span>Điểm chính</span>
+                                    <span>{majorLabel}</span>
                                 </div>
                                 <div className="flex items-center gap-2.5 text-sm font-medium">
                                     <span className="h-3.5 w-3.5 rounded-full bg-slate-500 shadow-sm" />
-                                    <span>Điểm phụ</span>
+                                    <span>{minorLabel}</span>
                                 </div>
                             </div>
                         </Card>
