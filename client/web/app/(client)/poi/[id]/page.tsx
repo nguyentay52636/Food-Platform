@@ -142,6 +142,7 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
     const favoriteIds = usePoiFavoriteIds()
     const galleryRef = useRef<HTMLDivElement>(null)
     const narrationCacheRef = useRef<Record<string, string>>({})
+    const wasPlayingNarrationRef = useRef(false)
 
     const poi = getClientPOIById(id)
 
@@ -284,31 +285,41 @@ export default function POIDetailPage({ params }: POIDetailPageProps) {
         }
     }
 
-    // Track audio progress periodically
+    // Track audio progress periodically (stable audioTracking from visitor hook)
     React.useEffect(() => {
-        if (isCurrentPOI && audio.isPlaying) {
-            const interval = setInterval(() => {
-                audioTracking.onProgress(audio.currentTime)
-            }, 5000) // Update every 5 seconds
-            return () => clearInterval(interval)
+        if (!isCurrentPOI || !audio.isPlaying) return
+        const interval = setInterval(() => {
+            audioTracking.onProgress(audio.currentTime)
+        }, 5000)
+        return () => clearInterval(interval)
+    }, [isCurrentPOI, audio.isPlaying, audioTracking])
+
+    // Track natural end of narration (avoid time>=duration-1 while TTS still speaking)
+    React.useEffect(() => {
+        if (!isCurrentPOI) {
+            wasPlayingNarrationRef.current = false
+            return
+        }
+        if (audio.isPlaying) {
+            wasPlayingNarrationRef.current = true
+            return
+        }
+        if (wasPlayingNarrationRef.current && audio.currentTime > 0) {
+            wasPlayingNarrationRef.current = false
+            return
+        }
+        if (wasPlayingNarrationRef.current && audio.currentTime === 0) {
+            wasPlayingNarrationRef.current = false
+            audioTracking.onComplete()
         }
     }, [isCurrentPOI, audio.isPlaying, audio.currentTime, audioTracking])
 
-    // Track audio completion
-    React.useEffect(() => {
-        if (isCurrentPOI && audio.currentTime > 0 && audio.duration > 0) {
-            if (audio.currentTime >= audio.duration - 1) {
-                audioTracking.onComplete()
-            }
-        }
-    }, [isCurrentPOI, audio.currentTime, audio.duration, audioTracking])
-
     const handleLanguageChange = (langCode: LanguageCode) => {
         setNarrationLanguage(langCode)
-        if (langCode !== language) {
-            setLanguage(langCode)
+        setLanguage(langCode)
+        if (langCode !== narrationLanguage || langCode !== language) {
+            void startNarrationForLanguage(langCode)
         }
-        void startNarrationForLanguage(langCode)
     }
 
     const handleSubmitReview = () => {

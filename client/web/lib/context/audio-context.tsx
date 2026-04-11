@@ -11,6 +11,21 @@ import {
 } from "react"
 import type { ClientPOI, LanguageCode } from "@/lib/client-types"
 
+/** TTS length estimate: CJK reads slower per character than Latin scripts. */
+function estimateTtsDurationSeconds(text: string, language: LanguageCode): number {
+    const len = text.trim().length
+    if (len < 1) return 12
+    const cjk: LanguageCode[] = ["zh", "ja", "ko"]
+    const cps = cjk.includes(language) ? 3.2 : language === "vi" ? 9 : 10.5
+    return Math.max(12, Math.ceil(len / cps))
+}
+
+function voiceMatchesLangTag(voice: SpeechSynthesisVoice, langTag: string): boolean {
+    const v = voice.lang.toLowerCase().replace(/_/g, "-")
+    const u = langTag.toLowerCase().replace(/_/g, "-")
+    return v === u || v.startsWith(u.slice(0, 2)) || u.startsWith(v.slice(0, 2))
+}
+
 interface AudioContextValue {
     isPlaying: boolean
     isLoading: boolean
@@ -43,7 +58,6 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     const lastNarrationTextRef = useRef<string | null>(null)
     const currentPOIRef = useRef<ClientPOI | null>(null)
     const currentLanguageRef = useRef<LanguageCode>("vi")
-    const [voicesLoaded, setVoicesLoaded] = useState(false)
 
     // Handle simulated time for SpeechSynthesis
     const synthTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -94,15 +108,12 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         if (typeof window === "undefined" || !("speechSynthesis" in window)) return
         const synth = window.speechSynthesis
-
-        const loadVoices = () => {
-            const voices = synth.getVoices()
-            if (voices.length > 0) setVoicesLoaded(true)
+        const primeVoices = () => {
+            synth.getVoices()
         }
-
-        loadVoices()
-        synth.addEventListener("voiceschanged", loadVoices)
-        return () => synth.removeEventListener("voiceschanged", loadVoices)
+        primeVoices()
+        synth.addEventListener("voiceschanged", primeVoices)
+        return () => synth.removeEventListener("voiceschanged", primeVoices)
     }, [])
 
     const speakText = useCallback((text: string, language: LanguageCode) => {
@@ -114,10 +125,12 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         const langTag = getLangTag(language)
         utterance.lang = langTag
         const preferredVoice = pickVoiceForLanguage(langTag)
-        if (preferredVoice) utterance.voice = preferredVoice
+        if (preferredVoice && voiceMatchesLangTag(preferredVoice, langTag)) {
+            utterance.voice = preferredVoice
+        }
         utterance.rate = playbackRate
 
-        const estDuration = Math.ceil(text.length / 14)
+        const estDuration = estimateTtsDurationSeconds(text, language)
         setDuration(estDuration)
         setCurrentTime(0)
 
@@ -130,14 +143,15 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             setCurrentTime(0)
             clearSynthTimer()
         }
-        utterance.onerror = () => {
-            // Some browsers throw benign "interrupted/canceled" while switching utterances.
+        utterance.onerror = (ev) => {
+            const code = (ev as SpeechSynthesisErrorEvent).error
+            if (code === "interrupted" || code === "canceled") return
             setIsPlaying(false)
             clearSynthTimer()
         }
 
         window.speechSynthesis.speak(utterance)
-    }, [getLangTag, pickVoiceForLanguage, playbackRate, voicesLoaded])
+    }, [getLangTag, pickVoiceForLanguage, playbackRate])
 
     useEffect(() => {
         currentPOIRef.current = currentPOI
@@ -199,13 +213,12 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     const startSynthTimer = (totalDuration: number) => {
         clearSynthTimer()
         synthTimerRef.current = setInterval(() => {
-            setCurrentTime(prev => {
-                if (prev >= totalDuration) {
+            setCurrentTime((prev) => {
+                const next = Math.min(prev + 1, totalDuration)
+                if (next >= totalDuration) {
                     clearSynthTimer()
-                    setIsPlaying(false)
-                    return 0
                 }
-                return prev + 1
+                return next
             })
         }, 1000)
     }
@@ -231,13 +244,14 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             const langTag = getLangTag(language)
             utterance.lang = langTag
             const preferredVoice = pickVoiceForLanguage(langTag)
-            if (preferredVoice) utterance.voice = preferredVoice
+            if (preferredVoice && voiceMatchesLangTag(preferredVoice, langTag)) {
+                utterance.voice = preferredVoice
+            }
             utterance.rate = playbackRate
-            
-            // Artificial duration estimation (roughly 14 chars per second)
-            const estDuration = Math.ceil(ttsText.length / 14)
+
+            const estDuration = estimateTtsDurationSeconds(ttsText, language)
             setDuration(estDuration)
-            
+
             utterance.onstart = () => {
                 setIsPlaying(true)
                 startSynthTimer(estDuration)
@@ -247,8 +261,9 @@ export function AudioProvider({ children }: { children: ReactNode }) {
                 setCurrentTime(0)
                 clearSynthTimer()
             }
-            utterance.onerror = () => {
-                // Fail softly to avoid red error overlay on transient synthesis errors.
+            utterance.onerror = (ev) => {
+                const code = (ev as SpeechSynthesisErrorEvent).error
+                if (code === "interrupted" || code === "canceled") return
                 setIsPlaying(false)
                 clearSynthTimer()
             }
@@ -269,7 +284,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         audio.play().catch(() => {
             setIsPlaying(false)
         })
-    }, [getLangTag, pickVoiceForLanguage, playbackRate, voicesLoaded])
+    }, [getLangTag, pickVoiceForLanguage, playbackRate])
 
     const pause = useCallback(() => {
         if (typeof window !== "undefined" && window.speechSynthesis && window.speechSynthesis.speaking) {

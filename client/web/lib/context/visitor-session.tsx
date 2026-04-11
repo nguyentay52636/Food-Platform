@@ -6,6 +6,7 @@ import {
     useEffect,
     useState,
     useCallback,
+    useMemo,
     useRef,
     type ReactNode,
 } from "react"
@@ -912,5 +913,8 @@ export function useAudioTracking(poiId: string | null, languageCode: string) {
         hasStartedRef.current = false
     }, [poiId, trackAudioComplete])
 
-    return { onPlay, onProgress, onComplete }
+    return useMemo(
+        () => ({ onPlay, onProgress, onComplete }),
+        [onPlay, onProgress, onComplete]
+    )
 }
