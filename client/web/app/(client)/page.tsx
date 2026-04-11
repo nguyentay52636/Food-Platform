@@ -1,11 +1,16 @@
 "use client"
 
 import React, { useState, useCallback } from "react"
-import { MapPin, List, ChevronUp, Headphones, Navigation } from "lucide-react"
+import { MapPin, List, ChevronUp, Headphones, Navigation, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { ClientHeader } from "@/components/client/ClientHeader"
 import { ClientMap } from "@/components/client/ClientMap"
 import { POICard } from "@/components/client/Poi/PoiCard"
@@ -23,7 +28,7 @@ import { usePoiFavoriteIds } from "@/lib/poi-favorites-session"
 import { cn } from "@/lib/utils"
 import { useTranslatedText, useTranslatedUiText } from "@/lib/translation-utils"
 import { toast } from "sonner"
-import { acquireCurrentPosition, isGeolocationContextOk } from "@/lib/browser-geolocation"
+import { acquireBestEffortPosition } from "@/lib/browser-geolocation"
 
 export default function ExplorePage() {
     const { language } = useLanguage()
@@ -55,6 +60,10 @@ export default function ExplorePage() {
     const viewDetailLabel = useTranslatedUiText("Xem chi tiết", language)
     const playAudioLabel = useTranslatedUiText("Nghe thuyết minh", language)
     const pauseAudioLabel = useTranslatedUiText("Tạm dừng", language)
+    const locateIpHint = useTranslatedUiText(
+        "Đã dùng vị trí gần đúng theo mạng (~ khu vực). HTTPS + quyền vị trí cho GPS chính xác hơn.",
+        language
+    )
 
     // Track page view and geolocation
     const visitor = useVisitorSession()
@@ -179,8 +188,8 @@ export default function ExplorePage() {
                     </div>
                 </aside>
 
-                {/* Right: map */}
-                <div className="relative flex-1 md:w-[70%] min-h-0">
+                {/* Right: map — min height mobile để flex không thu còn 0px; Leaflet cần kích thước thật */}
+                <div className="relative flex min-h-[36dvh] flex-1 flex-col min-w-0 md:min-h-0 md:w-[70%]">
                     <ClientMap
                         pois={pois}
                         selectedPoi={selectedPoi}
@@ -192,15 +201,15 @@ export default function ExplorePage() {
                         focusFilterSignal={focusFilterSignal}
                     />
 
-                    {/* Filter chips - floating */}
-                    <div className="absolute top-3 left-3 right-3 flex gap-2 pointer-events-none">
-                        <div className="flex gap-2 pointer-events-auto">
+                    {/* Filter chips - floating (mobile: chừa góc phải cho nút định vị) */}
+                    <div className="absolute top-3 left-3 right-14 z-30 flex gap-2 pointer-events-none md:right-3">
+                        <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto pb-0.5 pointer-events-auto scrollbar-hide md:gap-2">
                             {(["all", "major", "minor"] as const).map((f) => (
                                 <Button
                                     key={f}
                                     variant={filter === f ? "default" : "secondary"}
                                     size="sm"
-                                    className="h-8 rounded-full shadow-md"
+                                    className="h-8 shrink-0 rounded-full px-3 text-xs shadow-md md:text-sm"
                                     onClick={() => {
                                         setFilter(f)
                                         setFocusFilterSignal((s) => s + 1)
@@ -212,8 +221,8 @@ export default function ExplorePage() {
                         </div>
                     </div>
 
-                    {/* GPS Status / Locate Me Button */}
-                    <div className="absolute top-20 right-3 z-[1000] pointer-events-auto">
+                    {/* GPS — thấp hơn cụm +/- Leaflet (topright) để không bị đè */}
+                    <div className="absolute top-24 right-3 z-[1000] pointer-events-auto md:top-28">
                         <Button
                             variant="secondary"
                             size="icon"
@@ -223,26 +232,17 @@ export default function ExplorePage() {
                                     setLocateSignal((s) => s + 1)
                                     return
                                 }
-                                if (!navigator.geolocation) {
-                                    toast.error(
-                                        "Trình duyệt không hỗ trợ định vị. Hãy cập nhật hoặc đổi trình duyệt."
-                                    )
-                                    return
-                                }
-                                if (!isGeolocationContextOk()) {
-                                    toast.error(
-                                        "Định vị chỉ hoạt động trên HTTPS hoặc http://localhost. Hãy mở site qua một trong hai cách này."
-                                    )
-                                    return
-                                }
-                                void acquireCurrentPosition()
-                                    .then((coords) => {
+                                void acquireBestEffortPosition()
+                                    .then(({ coords, source }) => {
                                         setManualUserLocation(coords)
                                         setLocateSignal((s) => s + 1)
+                                        if (source === "ip") {
+                                            toast.info(locateIpHint)
+                                        }
                                     })
                                     .catch(() => {
                                         toast.error(
-                                            "Không lấy được vị trí. Kiểm tra quyền định vị trong trình duyệt và thử lại."
+                                            "Không lấy được vị trí. Kiểm tra mạng hoặc quyền định vị (HTTPS)."
                                         )
                                     })
                             }}
@@ -251,26 +251,67 @@ export default function ExplorePage() {
                         </Button>
                     </div>
 
-                    {/* Map Legend */}
-                    <div className="absolute top-3 right-16 z-20 pointer-events-none">
-                        <Card className="px-4 py-3 bg-background/95 backdrop-blur-md border-border/70 shadow-lg rounded-2xl min-w-[150px]">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                    {/* Chú thích: mobile = nút Info mở menu (không che map); md+ = thẻ nhỏ góc phải */}
+                    <div className="pointer-events-none absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-3 z-[90] md:bottom-auto md:left-auto md:right-14 md:top-3 md:z-20">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    size="icon"
+                                    className="pointer-events-auto h-9 w-9 rounded-full border border-border/60 bg-background/90 shadow-md backdrop-blur-sm md:hidden"
+                                    aria-label={mapLegendTitleLabel}
+                                >
+                                    <Info className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                side="top"
+                                align="start"
+                                sideOffset={8}
+                                className="w-[min(100vw-2rem,17rem)] p-3 md:hidden"
+                            >
+                                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                    {mapLegendTitleLabel}
+                                </p>
+                                <div className="mt-2 space-y-2">
+                                    <div className="flex items-center gap-2 text-xs font-medium">
+                                        <span className="relative inline-flex h-3 w-3 shrink-0">
+                                            <span className="absolute inset-[-3px] rounded-full bg-emerald-500/25" />
+                                            <span className="relative h-3 w-3 rounded-full border-2 border-white bg-emerald-500 shadow-sm" />
+                                        </span>
+                                        <span className="leading-tight">{mapLegendSelectedLabel}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-xs font-medium">
+                                        <span className="h-3 w-3 shrink-0 rounded-full bg-emerald-500 shadow-sm" />
+                                        <span className="leading-tight">{majorLabel}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-xs font-medium">
+                                        <span className="h-3 w-3 shrink-0 rounded-full bg-slate-500 shadow-sm" />
+                                        <span className="leading-tight">{minorLabel}</span>
+                                    </div>
+                                </div>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <Card className="hidden max-w-[11.5rem] px-3 py-2 md:pointer-events-auto md:block bg-background/95 backdrop-blur-md border-border/70 shadow-md rounded-xl">
+                            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
                                 {mapLegendTitleLabel}
                             </p>
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2.5 text-sm font-medium">
-                                    <span className="relative inline-flex h-3.5 w-3.5">
-                                        <span className="absolute inset-[-4px] rounded-full bg-emerald-500/25" />
-                                        <span className="relative h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500 shadow-sm" />
+                            <div className="space-y-1.5">
+                                <div className="flex items-center gap-2 text-[11px] font-medium leading-tight">
+                                    <span className="relative inline-flex h-3 w-3 shrink-0">
+                                        <span className="absolute inset-[-3px] rounded-full bg-emerald-500/25" />
+                                        <span className="relative h-3 w-3 rounded-full border-2 border-white bg-emerald-500 shadow-sm" />
                                     </span>
                                     <span>{mapLegendSelectedLabel}</span>
                                 </div>
-                                <div className="flex items-center gap-2.5 text-sm font-medium">
-                                    <span className="h-3.5 w-3.5 rounded-full bg-emerald-500 shadow-sm" />
+                                <div className="flex items-center gap-2 text-[11px] font-medium leading-tight">
+                                    <span className="h-3 w-3 shrink-0 rounded-full bg-emerald-500 shadow-sm" />
                                     <span>{majorLabel}</span>
                                 </div>
-                                <div className="flex items-center gap-2.5 text-sm font-medium">
-                                    <span className="h-3.5 w-3.5 rounded-full bg-slate-500 shadow-sm" />
+                                <div className="flex items-center gap-2 text-[11px] font-medium leading-tight">
+                                    <span className="h-3 w-3 shrink-0 rounded-full bg-slate-500 shadow-sm" />
                                     <span>{minorLabel}</span>
                                 </div>
                             </div>

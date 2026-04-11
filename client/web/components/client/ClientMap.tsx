@@ -1,9 +1,26 @@
 "use client"
 
-import { useEffect, useRef, useId, useState } from "react"
+import { useCallback, useEffect, useId, useRef, useState } from "react"
 import type L from "leaflet"
 import type { ClientPOI, LanguageCode } from "@/lib/client-types"
 import { useTranslatedUiText } from "@/lib/translation-utils"
+
+/** OSM CDN một host (ổn định hơn subdomain trên một số mạng) + Carto dự phòng. */
+const TILE_SPECS: readonly {
+    url: string
+    attribution: string
+    subdomains?: string | string[]
+}[] = [
+    {
+        url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    },
+    {
+        url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+        attribution: '&copy; OSM &copy; <a href="https://carto.com/">CARTO</a>',
+        subdomains: "abcd",
+    },
+] as const
 
 interface ClientMapProps {
     pois: ClientPOI[]
@@ -29,6 +46,7 @@ export function ClientMap({
     const uniqueId = useId()
     const containerRef = useRef<HTMLDivElement>(null)
     const mapInstanceRef = useRef<L.Map | null>(null)
+    const tileLayerRef = useRef<L.TileLayer | null>(null)
     const markersRef = useRef<L.Marker[]>([])
     const userMarkerRef = useRef<L.Marker | null>(null)
     const [isReady, setIsReady] = useState(false)
@@ -36,12 +54,20 @@ export function ClientMap({
     const lastCenteredPoiIdRef = useRef<string | null>(null)
     const loadingMapText = useTranslatedUiText("Loading map...", language, "en")
 
-    // Initialize map
+    const invalidateMapSize = useCallback(() => {
+        const map = mapInstanceRef.current
+        if (!map) return
+        map.invalidateSize({ animate: false })
+    }, [])
+
+    // Initialize map + keep size in sync (mobile flex / URL bar / xoay màn hình).
     useEffect(() => {
-        if (initializedRef.current) return
         if (!containerRef.current) return
+        if (initializedRef.current) return
 
         let isMounted = true
+        const containerEl = containerRef.current
+        const kickTimeouts: number[] = []
 
         async function initMap() {
             const L = (await import("leaflet")).default
@@ -50,7 +76,6 @@ export function ClientMap({
             if (!isMounted || !containerRef.current) return
             if (mapInstanceRef.current) return
 
-            // Clean any existing map on this container
             const container = containerRef.current as HTMLElement & { _leaflet_id?: number }
             if (container._leaflet_id) {
                 delete container._leaflet_id
@@ -62,31 +87,90 @@ export function ClientMap({
                 zoomControl: false,
             })
 
-            // Put +/- away from the bottom fixed navbar.
             L.control.zoom({ position: "topright" }).addTo(map)
 
-            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                attribution: "&copy; OpenStreetMap",
-            }).addTo(map)
+            let tileErrorCount = 0
+            const addTiles = (index: number) => {
+                const spec = TILE_SPECS[index]
+                if (!spec) return
+                if (tileLayerRef.current) {
+                    map.removeLayer(tileLayerRef.current)
+                    tileLayerRef.current = null
+                }
+                const layer = L.tileLayer(spec.url, {
+                    attribution: spec.attribution,
+                    maxZoom: 19,
+                    ...(spec.subdomains ? { subdomains: spec.subdomains } : {}),
+                })
+                layer.on("tileerror", () => {
+                    if (!isMounted) return
+                    tileErrorCount += 1
+                    if (tileErrorCount < 8 || index >= TILE_SPECS.length - 1) return
+                    tileErrorCount = 0
+                    addTiles(index + 1)
+                    invalidateMapSize()
+                })
+                layer.addTo(map)
+                tileLayerRef.current = layer
+            }
+            addTiles(0)
+
+            if (!isMounted || !containerRef.current) {
+                map.remove()
+                return
+            }
 
             mapInstanceRef.current = map
             initializedRef.current = true
 
-            if (isMounted) {
-                setIsReady(true)
+            const kickLayout = () => {
+                if (!isMounted || !mapInstanceRef.current) return
+                invalidateMapSize()
             }
+            map.whenReady(() => requestAnimationFrame(kickLayout))
+            requestAnimationFrame(kickLayout)
+            kickTimeouts.push(
+                window.setTimeout(kickLayout, 120),
+                window.setTimeout(kickLayout, 450),
+                window.setTimeout(kickLayout, 1400)
+            )
+
+            setIsReady(true)
         }
 
-        initMap()
+        void initMap()
+
+        const ro = new ResizeObserver(() => {
+            requestAnimationFrame(invalidateMapSize)
+        })
+        ro.observe(containerEl)
+
+        const onWin = () => invalidateMapSize()
+        window.addEventListener("resize", onWin)
+        window.addEventListener("orientationchange", onWin)
+        const onVis = () => {
+            if (document.visibilityState === "visible") {
+                requestAnimationFrame(invalidateMapSize)
+            }
+        }
+        document.addEventListener("visibilitychange", onVis)
+        window.addEventListener("pageshow", onWin)
 
         return () => {
             isMounted = false
+            kickTimeouts.forEach((t) => window.clearTimeout(t))
+            ro.disconnect()
+            window.removeEventListener("resize", onWin)
+            window.removeEventListener("orientationchange", onWin)
+            document.removeEventListener("visibilitychange", onVis)
+            window.removeEventListener("pageshow", onWin)
         }
-    }, [])
+    }, [invalidateMapSize])
 
     // Cleanup on unmount
     useEffect(() => {
         return () => {
+            tileLayerRef.current = null
             if (mapInstanceRef.current) {
                 mapInstanceRef.current.remove()
                 mapInstanceRef.current = null
@@ -253,15 +337,17 @@ export function ClientMap({
     }, [isReady, focusFilterSignal, pois])
 
     return (
-        <div className={`relative w-full h-full ${className}`}>
+        <div
+            className={`relative flex h-full min-h-[36dvh] w-full min-w-0 flex-col md:min-h-0 ${className}`}
+        >
             <div
                 ref={containerRef}
                 id={`map-${uniqueId}`}
-                className="absolute inset-0"
+                className="min-h-0 flex-1 w-full"
             />
 
             {!isReady && (
-                <div className="absolute inset-0 flex h-full w-full items-center justify-center bg-muted">
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-muted/90">
                     <div className="text-sm text-muted-foreground">{loadingMapText}</div>
                 </div>
             )}

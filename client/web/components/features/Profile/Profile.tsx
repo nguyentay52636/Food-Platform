@@ -20,6 +20,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { safeRandomUuid } from "@/lib/safe-crypto"
 
 const CURRENCY = "vi-VN"
 const MIN_DEPOSIT = 10000
@@ -157,7 +158,7 @@ export default function Profile() {
         setError("")
         const now = new Date().toISOString()
         const newTransaction: Transaction = {
-            id: typeof crypto !== "undefined" ? crypto.randomUUID() : `txn-${now}`,
+            id: safeRandomUuid(),
             createdAt: now,
             updatedAt: now,
             userId: user.id,

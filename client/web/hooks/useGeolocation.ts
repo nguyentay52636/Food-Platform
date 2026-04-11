@@ -1,38 +1,44 @@
 import { useEffect, useState } from "react"
 import {
-  acquireCurrentPosition,
+  acquireBestEffortPosition,
   isGeolocationContextOk,
+  probeGeolocationPermission,
   watchPosition as subscribeGeolocation,
 } from "@/lib/browser-geolocation"
+import type { GeolocationSource } from "@/lib/browser-geolocation"
 
 export interface GeoPosition {
   lat: number
   lng: number
+  /** Ước lượng sai số (m), null khi nguồn IP hoặc không có. */
+  accuracyMeters?: number | null
 }
 
 export default function useGeolocation() {
   const [position, setPosition] = useState<GeoPosition | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [source, setSource] = useState<GeolocationSource | null>(null)
 
   useEffect(() => {
-    if (!navigator.geolocation) {
-      setError("Trình duyệt không hỗ trợ định vị")
-      return
-    }
-    if (!isGeolocationContextOk()) {
-      setError("Cần HTTPS hoặc localhost để dùng vị trí")
-      return
-    }
-
     let cancelled = false
     let watchId: number | undefined
 
+    if (isGeolocationContextOk()) {
+      probeGeolocationPermission()
+    }
+
     const startWatch = () => {
+      if (!navigator.geolocation || !isGeolocationContextOk()) return
       watchId = subscribeGeolocation(
         (c) => {
           if (cancelled) return
           setError(null)
-          setPosition(c)
+          setPosition({
+            lat: c.lat,
+            lng: c.lng,
+            accuracyMeters: c.accuracyMeters,
+          })
+          setSource("gps")
         },
         (msg) => {
           if (cancelled || !msg) return
@@ -41,16 +47,30 @@ export default function useGeolocation() {
       )
     }
 
-    void acquireCurrentPosition()
-      .then((coords) => {
+    if (isGeolocationContextOk() && navigator.geolocation) {
+      startWatch()
+    }
+
+    void acquireBestEffortPosition()
+      .then(({ coords, source: src, accuracyMeters }) => {
         if (cancelled) return
         setError(null)
-        setPosition(coords)
-        startWatch()
+        setPosition({
+          lat: coords.lat,
+          lng: coords.lng,
+          accuracyMeters: accuracyMeters ?? null,
+        })
+        setSource(src)
       })
       .catch(() => {
         if (cancelled) return
-        startWatch()
+        if (isGeolocationContextOk() && navigator.geolocation) {
+          setError(null)
+        } else {
+          setError(
+            "Không lấy được vị trí. Kiểm tra mạng; trên HTTPS bạn có thể bật quyền vị trí chính xác (GPS)."
+          )
+        }
       })
 
     return () => {
@@ -61,5 +81,5 @@ export default function useGeolocation() {
     }
   }, [])
 
-  return { position, error }
+  return { position, error, source }
 }

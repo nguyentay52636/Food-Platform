@@ -17,6 +17,8 @@ async function bootstrap() {
     customSiteTitle: 'Food Platform API ',
   });
 
-  await app.listen(process.env.PORT ?? 8000);
+  const port = Number(process.env.PORT ?? 8000);
+  const host = process.env.HOST ?? '0.0.0.0';
+  await app.listen(port, host);
 }
 bootstrap();

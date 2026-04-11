@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { safeRandomUuid } from "@/lib/safe-crypto"
 
 const DEVICE_ID_KEY = "food_platform_device_id"
 
@@ -47,12 +48,12 @@ function ensureDeviceId(): string {
   try {
     let id = localStorage.getItem(DEVICE_ID_KEY)
     if (!id) {
-      id = crypto.randomUUID()
+      id = safeRandomUuid()
       localStorage.setItem(DEVICE_ID_KEY, id)
     }
     return id
   } catch {
-    return crypto.randomUUID()
+    return safeRandomUuid()
   }
 }
 
