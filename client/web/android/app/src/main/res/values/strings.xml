@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Phố Ẩm Thực</string>
+    <string name="title_activity_main">Phố Ẩm Thực</string>
+    <string name="package_name">com.foodplatform.client</string>
+    <string name="custom_url_scheme">com.foodplatform.client</string>
+</resources>

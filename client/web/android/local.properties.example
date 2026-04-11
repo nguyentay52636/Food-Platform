@@ -1,0 +1,6 @@
+## Sao chép thành local.properties và sửa sdk.dir cho đúng máy bạn.
+## Windows (mặc định Android Studio):
+# sdk.dir=C:/Users/YOUR_USER/AppData/Local/Android/Sdk
+## Hoặc đặt biến môi trường ANDROID_HOME trỏ tới thư mục Sdk.
+
+sdk.dir=C:/Users/YOUR_USER/AppData/Local/Android/Sdk

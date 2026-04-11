@@ -3,14 +3,18 @@ import {
   acquireBestEffortPosition,
   isGeolocationContextOk,
   probeGeolocationPermission,
-  watchPosition as subscribeGeolocation,
+  watchPosition as subscribeWebGeolocation,
 } from "@/lib/browser-geolocation"
-import type { GeolocationSource } from "@/lib/browser-geolocation"
+import {
+  clearNativeWatch,
+  isCapacitorNative,
+  watchNativePosition,
+} from "@/lib/capacitor-location"
+import type { GeolocationSource } from "@/lib/geo-types"
 
 export interface GeoPosition {
   lat: number
   lng: number
-  /** Ước lượng sai số (m), null khi nguồn IP hoặc không có. */
   accuracyMeters?: number | null
 }
 
@@ -21,62 +25,81 @@ export default function useGeolocation() {
 
   useEffect(() => {
     let cancelled = false
-    let watchId: number | undefined
-
-    if (isGeolocationContextOk()) {
-      probeGeolocationPermission()
+    const watchState = {
+      webId: undefined as number | undefined,
+      capId: undefined as string | undefined,
     }
 
-    const startWatch = () => {
-      if (!navigator.geolocation || !isGeolocationContextOk()) return
-      watchId = subscribeGeolocation(
-        (c) => {
-          if (cancelled) return
-          setError(null)
-          setPosition({
-            lat: c.lat,
-            lng: c.lng,
-            accuracyMeters: c.accuracyMeters,
-          })
-          setSource("gps")
-        },
-        (msg) => {
-          if (cancelled || !msg) return
-          setError(msg)
-        }
-      )
+    const apply = (
+      lat: number,
+      lng: number,
+      accuracyMeters: number | null,
+      src: GeolocationSource
+    ) => {
+      if (cancelled) return
+      setError(null)
+      setPosition({ lat, lng, accuracyMeters })
+      setSource(src)
     }
 
-    if (isGeolocationContextOk() && navigator.geolocation) {
-      startWatch()
-    }
+    void (async () => {
+      const native = await isCapacitorNative()
+      if (cancelled) return
 
-    void acquireBestEffortPosition()
-      .then(({ coords, source: src, accuracyMeters }) => {
-        if (cancelled) return
-        setError(null)
-        setPosition({
-          lat: coords.lat,
-          lng: coords.lng,
-          accuracyMeters: accuracyMeters ?? null,
-        })
-        setSource(src)
-      })
-      .catch(() => {
-        if (cancelled) return
-        if (isGeolocationContextOk() && navigator.geolocation) {
-          setError(null)
-        } else {
-          setError(
-            "Không lấy được vị trí. Kiểm tra mạng; trên HTTPS bạn có thể bật quyền vị trí chính xác (GPS)."
+      if (isGeolocationContextOk()) {
+        probeGeolocationPermission()
+      }
+
+      if (native) {
+        try {
+          const id = await watchNativePosition(
+            (c) => apply(c.lat, c.lng, c.accuracyMeters, "gps"),
+            () => {}
           )
+          if (cancelled) {
+            void clearNativeWatch(id)
+          } else {
+            watchState.capId = id
+          }
+        } catch {
+          /* quyền native từ chối — thử web watch bên dưới */
         }
-      })
+      }
+
+      if (watchState.capId === undefined && isGeolocationContextOk() && navigator.geolocation) {
+        watchState.webId = subscribeWebGeolocation(
+          (c) => apply(c.lat, c.lng, c.accuracyMeters, "gps"),
+          (msg) => {
+            if (cancelled || !msg) return
+            setError(msg)
+          }
+        )
+      }
+
+      void acquireBestEffortPosition()
+        .then(({ coords, source: src, accuracyMeters }) => {
+          if (cancelled) return
+          apply(coords.lat, coords.lng, accuracyMeters ?? null, src)
+        })
+        .catch(() => {
+          if (cancelled) return
+          if (watchState.capId !== undefined || watchState.webId !== undefined) {
+            setError(null)
+          } else {
+            setError(
+              "Không lấy được vị trí. Trên app Android hãy cấp quyền vị trí chính xác; trên web cần HTTPS."
+            )
+          }
+        })
+    })()
 
     return () => {
       cancelled = true
-      if (watchId !== undefined) {
-        navigator.geolocation.clearWatch(watchId)
+      if (watchState.webId !== undefined) {
+        navigator.geolocation.clearWatch(watchState.webId)
+      }
+      if (watchState.capId !== undefined) {
+        void clearNativeWatch(watchState.capId)
       }
     }
   }, [])

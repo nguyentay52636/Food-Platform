@@ -1,17 +1,10 @@
 /**
- * Định vị trình duyệt: high accuracy + dữ liệu mới nhất (maximumAge: 0).
- * Trình duyệt chỉ báo độ tin cậy qua coords.accuracy (m); không thể “đảm bảo từng mét”
- * theo chuẩn web, nhưng có thể luôn xin GPS/Wi‑Fi fine và cập nhật liên tục.
+ * Định vị: ưu tiên Capacitor native (Android Fused) khi cài app; không thì Web Geolocation + IP.
  */
+export type { LatLng, LatLngWithAccuracy, GeolocationSource } from "@/lib/geo-types"
 
-export type LatLng = { lat: number; lng: number }
-
-export type LatLngWithAccuracy = LatLng & {
-  /** Ước lượng bởi trình duyệt (m); càng nhỏ càng tốt khi có GPS. */
-  accuracyMeters: number | null
-}
-
-export type GeolocationSource = "gps" | "ip"
+import type { LatLng, LatLngWithAccuracy, GeolocationSource } from "@/lib/geo-types"
+import { acquireNativePosition, isCapacitorNative } from "@/lib/capacitor-location"
 
 /** Một lần: chờ GPS/Wi‑Fi fine, không dùng cache cũ. */
 const OPT_PRECISE_ONCE: PositionOptions = {
@@ -100,6 +93,14 @@ export async function acquireApproximateLocationByIp(): Promise<LatLng | null> {
 }
 
 export async function acquirePreciseGpsPosition(): Promise<LatLngWithAccuracy> {
+  if (await isCapacitorNative()) {
+    try {
+      return await acquireNativePosition()
+    } catch {
+      /* native từ chối quyền — thử WebView / IP ở tầng trên */
+    }
+  }
+
   if (!navigator.geolocation) {
     throw new Error("NO_GEO")
   }
@@ -120,7 +121,7 @@ export async function acquirePreciseGpsPosition(): Promise<LatLngWithAccuracy> {
       let best: GeolocationPosition | null = null
       let bestAcc = Number.POSITIVE_INFINITY
       const started = Date.now()
-      let tick: ReturnType<typeof setInterval> | undefined
+      let tick: number | undefined
       let stableHits = 0
       let lastStableAcc = Number.POSITIVE_INFINITY
       const cleanup = () => {
@@ -207,7 +208,10 @@ export async function acquireBestEffortPosition(): Promise<{
   source: GeolocationSource
   accuracyMeters: number | null
 }> {
-  if (isGeolocationContextOk() && navigator.geolocation) {
+  const nativeApp = await isCapacitorNative()
+  const canTryGps =
+    nativeApp || (isGeolocationContextOk() && !!navigator.geolocation)
+  if (canTryGps) {
     try {
       const p = await acquirePreciseGpsPosition()
       return {
@@ -227,10 +231,10 @@ export async function acquireBestEffortPosition(): Promise<{
       accuracyMeters: null,
     }
   }
-  if (!navigator.geolocation) {
+  if (!navigator.geolocation && !nativeApp) {
     throw new Error("NO_GEO")
   }
-  if (!isGeolocationContextOk()) {
+  if (!isGeolocationContextOk() && !nativeApp) {
     throw new Error("INSECURE_NO_IP")
   }
   throw new Error("GEO_FAILED")
