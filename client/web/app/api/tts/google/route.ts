@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     }
 
     const text = typeof body.text === "string" ? body.text.trim() : ""
-    const tl = "vi"
+    const tl = typeof body.tl === "string" && body.tl.trim() !== "" ? body.tl.trim() : "vi"
 
     if (!text) {
         return NextResponse.json({ error: "missing_text" }, { status: 400 })

@@ -248,7 +248,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         })
     }, [getLangTag, playbackRate])
 
-    const tryPlayGoogleTranslateVi = useCallback(async (text: string): Promise<boolean> => {
+    const tryPlayGoogleTranslateTts = useCallback(async (text: string, lang: string): Promise<boolean> => {
         const audio = audioRef.current
         if (!audio || !text.trim()) return false
         window.speechSynthesis?.cancel()
@@ -258,7 +258,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             const res = await fetch("/api/tts/google", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text, tl: "vi" }),
+                body: JSON.stringify({ text, tl: lang }),
             })
             if (!res.ok) throw new Error("tts_http")
             const blob = await res.blob()
@@ -299,11 +299,11 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     }, [playbackRate])
 
     const speakText = useCallback(
-        (text: string, language: LanguageCode, opts?: { skipGoogleVi?: boolean }) => {
+        (text: string, language: LanguageCode, opts?: { skipGoogleTts?: boolean }) => {
             if (!text) return
-            if (language === "vi" && !opts?.skipGoogleVi) {
+            if (!opts?.skipGoogleTts) {
                 void (async () => {
-                    const ok = await tryPlayGoogleTranslateVi(text)
+                    const ok = await tryPlayGoogleTranslateTts(text, language)
                     if (!ok && typeof window !== "undefined" && "speechSynthesis" in window) {
                         speakWithBrowserSynth(text, language)
                     }
@@ -314,7 +314,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
                 speakWithBrowserSynth(text, language)
             }
         },
-        [tryPlayGoogleTranslateVi, speakWithBrowserSynth]
+        [tryPlayGoogleTranslateTts, speakWithBrowserSynth]
     )
 
     useEffect(() => {
@@ -392,26 +392,19 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         lastNarrationTextRef.current = ttsText || null
         setCurrentTime(0)
 
-        // TTS: Vietnamese uses Google Translate–style voice (female) via server proxy; others use browser synth.
+        // TTS: Use Google Translate–style voice via server proxy for all languages; fallback to browser synth.
         if (ttsText) {
             audioRef.current?.pause()
             window.speechSynthesis?.cancel()
             clearSynthTimer()
 
-            if (language === "vi") {
-                void (async () => {
-                    const ok = await tryPlayGoogleTranslateVi(ttsText)
-                    if (!ok && typeof window !== "undefined" && "speechSynthesis" in window) {
-                        speakWithBrowserSynth(ttsText, language)
-                    }
-                })()
-                return
-            }
-
-            if (typeof window !== "undefined" && "speechSynthesis" in window) {
-                speakWithBrowserSynth(ttsText, language)
-                return
-            }
+            void (async () => {
+                const ok = await tryPlayGoogleTranslateTts(ttsText, language)
+                if (!ok && typeof window !== "undefined" && "speechSynthesis" in window) {
+                    speakWithBrowserSynth(ttsText, language)
+                }
+            })()
+            return
         }
 
         const audio = audioRef.current
@@ -426,7 +419,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         audio.play().catch(() => {
             setIsPlaying(false)
         })
-    }, [getLangTag, playbackRate, speakWithBrowserSynth, tryPlayGoogleTranslateVi])
+    }, [getLangTag, playbackRate, speakWithBrowserSynth, tryPlayGoogleTranslateTts])
 
     const pause = useCallback(() => {
         if (typeof window !== "undefined" && window.speechSynthesis && window.speechSynthesis.speaking) {
