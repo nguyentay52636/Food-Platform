@@ -9,11 +9,12 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { BottomNav } from "@/components/client/ButtonNav"
 import { TourCard } from "@/components/client/Tours/components/TourCard"
+import { TourPaywallDialog } from "@/components/client/Tours/components/TourPaywallDialog"
 import { MiniPlayer } from "@/components/client/MiniPlayer"
 import { useLanguage } from "@/lib/context/language-context"
 import { useAudio } from "@/lib/context/audio-context"
 import { CLIENT_MOCK_TOURS } from "@/lib/client-mock-data"
-import { LanguageCode } from "@/lib/client-types"
+import { LanguageCode, ClientTour } from "@/lib/client-types"
 import { useVisitorSession } from "@/lib/context/visitor-session"
 import { formatClientTourDuration } from "@/lib/client-tour-duration"
 import { useTranslatedText, useTranslatedUiText } from "@/lib/translation-utils"
@@ -69,6 +70,8 @@ export default function Tours() {
     const { language } = useLanguage()
     const audio = useAudio()
     const [searchQuery, setSearchQuery] = useState("")
+    const [selectedTour, setSelectedTour] = useState<ClientTour | null>(null)
+    const [isPaywallOpen, setIsPaywallOpen] = useState(false)
     const labels = LABELS[language] || LABELS.en!
     const visitor = useVisitorSession()
 
@@ -85,6 +88,17 @@ export default function Tours() {
     const featuredName = useTranslatedText(featuredTour.name, language)
     const featuredDesc = useTranslatedText(featuredTour.description, language)
     const noToursText = useTranslatedUiText("No tours found", language, "en")
+
+    const handleSelectTour = (tour: ClientTour) => {
+        setSelectedTour(tour)
+        setIsPaywallOpen(true)
+    }
+
+    const handleConfirmPay = () => {
+        // Implement purchase sequence here if necessary. Currently, just closes the dialog.
+        setIsPaywallOpen(false)
+        alert("Chức năng Mua đang được phát triển.")
+    }
 
     return (
         <div className="min-h-screen bg-background pb-20">
@@ -121,7 +135,7 @@ export default function Tours() {
                 {!searchQuery && (
                     <section>
                         <h2 className="font-semibold text-lg mb-4 text-foreground/90">{labels.featured}</h2>
-                        <Link href={`/tours/${featuredTour.id}`} className="block group">
+                        <div onClick={() => handleSelectTour(featuredTour)} className="block group cursor-pointer">
                             <Card className="overflow-hidden border-0 shadow-xl ring-1 ring-black/5 rounded-2xl bg-card">
                                 <div className="relative h-72 sm:h-80 w-full overflow-hidden bg-muted">
                                     {featuredTour.coverImage ? (
@@ -174,7 +188,7 @@ export default function Tours() {
                                     </div>
                                 </div>
                             </Card>
-                        </Link>
+                        </div>
                     </section>
                 )}
 
@@ -183,7 +197,7 @@ export default function Tours() {
                     <h2 className="font-semibold text-lg mb-4 text-foreground/90">{labels.allTours}</h2>
                     <div className="space-y-3">
                         {filteredTours.map((tour) => (
-                            <TourCard key={tour.id} tour={tour} language={language} compact />
+                            <TourCard key={tour.id} tour={tour} language={language} compact onClick={() => handleSelectTour(tour)} />
                         ))}
                     </div>
 
@@ -203,6 +217,15 @@ export default function Tours() {
 
             {/* Mini Player */}
             {audio.currentPOI && <MiniPlayer className="bottom-14" />}
+
+            {/* Paywall Dialog */}
+            <TourPaywallDialog
+                open={isPaywallOpen}
+                onOpenChange={setIsPaywallOpen}
+                targetTour={selectedTour}
+                language={language}
+                onConfirmPay={handleConfirmPay}
+            />
         </div>
     )
 }

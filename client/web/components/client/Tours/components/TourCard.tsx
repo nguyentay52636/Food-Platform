@@ -13,17 +13,17 @@ interface TourCardProps {
     tour: ClientTour
     language: LanguageCode
     compact?: boolean
+    onClick?: () => void
 }
 
-export function TourCard({ tour, language, compact = false }: TourCardProps) {
+export function TourCard({ tour, language, compact = false, onClick }: TourCardProps) {
     const name = useTranslatedText(tour.name, language)
     const description = useTranslatedText(tour.description, language)
     const stopsLabel = useTranslatedUiText("stops", language, "en")
     const pointsLabel = useTranslatedUiText("điểm", language)
 
     if (compact) {
-        return (
-            <Link href={`/tours/${tour.id}`}>
+        const CardContent = (
                 <Card className="overflow-hidden hover:bg-accent/50 transition-colors">
                     <div className="flex gap-3 p-3">
                         <div className="relative h-20 w-20 shrink-0 rounded-lg overflow-hidden bg-muted">
@@ -62,12 +62,19 @@ export function TourCard({ tour, language, compact = false }: TourCardProps) {
                         <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0 self-center" />
                     </div>
                 </Card>
+        )
+        return onClick ? (
+            <div onClick={onClick} className="block cursor-pointer">
+                {CardContent}
+            </div>
+        ) : (
+            <Link href={`/tours/${tour.id}`} className="block">
+                {CardContent}
             </Link>
         )
     }
 
-    return (
-        <Link href={`/tours/${tour.id}`} className="block">
+    const MainContent = (
             <Card className="w-64 shrink-0 overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="relative h-36 bg-muted">
                     {tour.coverImage ? (
@@ -110,6 +117,15 @@ export function TourCard({ tour, language, compact = false }: TourCardProps) {
                     </div>
                 </div>
             </Card>
+        )
+
+    return onClick ? (
+        <div onClick={onClick} className="block cursor-pointer">
+            {MainContent}
+        </div>
+    ) : (
+        <Link href={`/tours/${tour.id}`} className="block">
+            {MainContent}
         </Link>
     )
 }
