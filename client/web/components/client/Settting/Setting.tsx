@@ -9,6 +9,7 @@ import { BottomNav } from "@/components/client/ButtonNav"
 import { useLanguage } from "@/lib/context/language-context"
 import { useTranslatedUiText } from "@/lib/translation-utils"
 import { useLanguages } from "./hooks/useLanguage"
+import { DeviceInfoSection } from "./DeviceInfoSection"
 
 export default function Setting() {
     const { language, setLanguage } = useLanguage()
@@ -85,6 +86,8 @@ export default function Setting() {
                             )}
                         </Card>
                     </section>
+
+                    <DeviceInfoSection language={language} />
 
                     {/* Audio Settings */}
                     <section>
