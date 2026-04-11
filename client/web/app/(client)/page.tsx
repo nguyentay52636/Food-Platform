@@ -22,6 +22,8 @@ import useGeolocation from "@/hooks/useGeolocation"
 import { usePoiFavoriteIds } from "@/lib/poi-favorites-session"
 import { cn } from "@/lib/utils"
 import { useTranslatedText, useTranslatedUiText } from "@/lib/translation-utils"
+import { toast } from "sonner"
+import { acquireCurrentPosition, isGeolocationContextOk } from "@/lib/browser-geolocation"
 
 export default function ExplorePage() {
     const { language } = useLanguage()
@@ -215,26 +217,32 @@ export default function ExplorePage() {
                             size="icon"
                             className={`rounded-full shadow-lg h-10 w-10 transition-colors ${effectiveUserLocation ? 'text-primary' : 'text-muted-foreground'}`}
                             onClick={() => {
-                                // If we already have a location, just ask the map to focus it.
                                 if (effectiveUserLocation) {
                                     setLocateSignal((s) => s + 1)
                                     return
                                 }
-                                // First-time click: request browser geolocation then focus map.
-                                if (!navigator.geolocation) return
-                                navigator.geolocation.getCurrentPosition(
-                                    (position) => {
-                                        setManualUserLocation({
-                                            lat: position.coords.latitude,
-                                            lng: position.coords.longitude,
-                                        })
+                                if (!navigator.geolocation) {
+                                    toast.error(
+                                        "Trình duyệt không hỗ trợ định vị. Hãy cập nhật hoặc đổi trình duyệt."
+                                    )
+                                    return
+                                }
+                                if (!isGeolocationContextOk()) {
+                                    toast.error(
+                                        "Định vị chỉ hoạt động trên HTTPS hoặc http://localhost. Hãy mở site qua một trong hai cách này."
+                                    )
+                                    return
+                                }
+                                void acquireCurrentPosition()
+                                    .then((coords) => {
+                                        setManualUserLocation(coords)
                                         setLocateSignal((s) => s + 1)
-                                    },
-                                    () => {
-                                        // keep silent for now; map button still usable on next attempts
-                                    },
-                                    { enableHighAccuracy: true, timeout: 10000 }
-                                )
+                                    })
+                                    .catch(() => {
+                                        toast.error(
+                                            "Không lấy được vị trí. Kiểm tra quyền định vị trong trình duyệt và thử lại."
+                                        )
+                                    })
                             }}
                         >
                             <Navigation className={`h-5 w-5 ${effectiveUserLocation ? 'fill-primary animate-pulse' : ''}`} />
