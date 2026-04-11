@@ -20,10 +20,105 @@ function estimateTtsDurationSeconds(text: string, language: LanguageCode): numbe
     return Math.max(12, Math.ceil(len / cps))
 }
 
-function voiceMatchesLangTag(voice: SpeechSynthesisVoice, langTag: string): boolean {
-    const v = voice.lang.toLowerCase().replace(/_/g, "-")
-    const u = langTag.toLowerCase().replace(/_/g, "-")
-    return v === u || v.startsWith(u.slice(0, 2)) || u.startsWith(v.slice(0, 2))
+function normVoiceLang(lang: string): string {
+    return lang.trim().toLowerCase().replace(/_/g, "-")
+}
+
+/** First subtag, normalized (vie → vi for Vietnamese ISO variants). */
+function primaryFromBcp47(lang: string): string {
+    const p = normVoiceLang(lang).split("-")[0] || ""
+    if (p === "vie") return "vi"
+    if (p === "zho") return "zh"
+    return p
+}
+
+/** Never match on empty `voice.lang` — `"".startsWith("")` would wrongly accept default English. */
+function voiceMatchesPrimaryTag(voice: SpeechSynthesisVoice, langTag: string): boolean {
+    const raw = voice.lang?.trim()
+    if (!raw) return false
+    return primaryFromBcp47(raw) === primaryFromBcp47(langTag)
+}
+
+function isProbablyEnglishVoice(v: SpeechSynthesisVoice): boolean {
+    const lang = normVoiceLang(v.lang || "")
+    if (/^en(-|$)/.test(lang)) return true
+    const n = (v.name || "").toLowerCase()
+    return /english|united states|british|australia|irish|scottish|\bzira\b|\bdavid\b|\bmark\b|\bjenny\b|\bsamantha\b|\balex\b|\bfred\b|\bvictoria\b|\bdaniel\b|\bkate\b|\bserena\b|\bgeorge\b|\bus english\b|\buk english\b/i.test(
+        n
+    )
+}
+
+/** Heuristic picker: some engines use non‑BCP47 `lang` or only the name exposes "Vietnamese". */
+function pickVietnameseVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
+    const candidates = voices.filter((v) => {
+        if (isProbablyEnglishVoice(v)) return false
+        const lang = normVoiceLang(v.lang || "")
+        const blob = `${v.name} ${v.lang}`.toLowerCase()
+        if (/^vi(-|$)|^vie(-|$)/.test(lang)) return true
+        if (/vietnamese|viet nam|vietnam|tiếng việt|tieng viet|\(vietnam\)|\(vi\)|\bvi\b.*\bviet/i.test(blob)) return true
+        if (/\bhoai\b|\bmai\b|\blan\b|\bminh\b|\buyen\b|\bquyen\b|\bnguyen\b/i.test(blob) && /microsoft|google|samsung|android/i.test(blob)) return true
+        return false
+    })
+    if (candidates.length === 0) return null
+    const score = (v: SpeechSynthesisVoice) => {
+        let s = 0
+        const lang = normVoiceLang(v.lang || "")
+        const n = `${v.name} ${lang}`.toLowerCase()
+        if (/^vi(-|$)|^vie(-|$)/.test(lang)) s += 12
+        if (/vietnamese|vietnam|tiếng|tieng/.test(n)) s += 6
+        if (/google|microsoft|premium|enhanced|natural/i.test(n)) s += 2
+        return s
+    }
+    return [...candidates].sort((a, b) => score(b) - score(a))[0]
+}
+
+function pickVoiceForLanguage(langTag: string): SpeechSynthesisVoice | null {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return null
+    const voices = window.speechSynthesis.getVoices()
+    if (!voices.length) return null
+
+    if (primaryFromBcp47(langTag) === "vi") {
+        const vi = pickVietnameseVoice(voices)
+        if (vi) return vi
+    }
+
+    const withLang = voices.filter((v) => v.lang?.trim())
+    if (!withLang.length) return null
+
+    const targetNorm = normVoiceLang(langTag)
+    const targetPrimary = primaryFromBcp47(langTag)
+
+    const exact = withLang.find((v) => normVoiceLang(v.lang) === targetNorm)
+    if (exact) return exact
+
+    const family = withLang.filter((v) => primaryFromBcp47(v.lang) === targetPrimary)
+    return family[0] || null
+}
+
+/** Chrome/Chromium often returns an empty voice list until `voiceschanged` or a short delay. */
+function whenVoicesReady(run: () => void): void {
+    const synth = window.speechSynthesis
+    if (synth.getVoices().length > 0) {
+        queueMicrotask(run)
+        return
+    }
+    let done = false
+    const finish = () => {
+        if (done) return
+        done = true
+        synth.removeEventListener("voiceschanged", onVoices)
+        run()
+    }
+    const onVoices = () => {
+        if (synth.getVoices().length > 0) finish()
+    }
+    synth.addEventListener("voiceschanged", onVoices)
+    try {
+        synth.getVoices()
+    } catch {
+        /* ignore */
+    }
+    window.setTimeout(finish, 650)
 }
 
 interface AudioContextValue {
@@ -59,9 +154,6 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     const currentPOIRef = useRef<ClientPOI | null>(null)
     const currentLanguageRef = useRef<LanguageCode>("vi")
 
-    // Handle simulated time for SpeechSynthesis
-    const synthTimerRef = useRef<NodeJS.Timeout | null>(null)
-
     const getLangTag = useCallback((lang: LanguageCode): string => {
         const langMap: Partial<Record<LanguageCode, string>> = {
             vi: "vi-VN",
@@ -88,22 +180,142 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         return langMap[lang] || "en-US"
     }, [])
 
-    const pickVoiceForLanguage = useCallback((langTag: string): SpeechSynthesisVoice | null => {
-        if (typeof window === "undefined" || !("speechSynthesis" in window)) return null
-        const voices = window.speechSynthesis.getVoices()
-        if (!voices.length) return null
+    const synthTimerRef = useRef<NodeJS.Timeout | null>(null)
+    const googleViBlobUrlRef = useRef<string | null>(null)
 
-        const normalizedLangTag = langTag.toLowerCase()
-        const langPrefix = normalizedLangTag.slice(0, 2)
+    const clearSynthTimer = () => {
+        if (synthTimerRef.current) {
+            clearInterval(synthTimerRef.current)
+            synthTimerRef.current = null
+        }
+    }
 
-        // Prefer exact locale first, then same language family.
-        // Do NOT fallback to default voice from another language (causes wrong pronunciation).
-        return (
-            voices.find((v) => v.lang.toLowerCase() === normalizedLangTag)
-            || voices.find((v) => v.lang.toLowerCase().startsWith(langPrefix))
-            || null
-        )
-    }, [])
+    const startSynthTimer = (totalDuration: number) => {
+        clearSynthTimer()
+        synthTimerRef.current = setInterval(() => {
+            setCurrentTime((prev) => {
+                const next = Math.min(prev + 1, totalDuration)
+                if (next >= totalDuration) {
+                    clearSynthTimer()
+                }
+                return next
+            })
+        }, 1000)
+    }
+
+    const speakWithBrowserSynth = useCallback((text: string, language: LanguageCode) => {
+        if (typeof window === "undefined" || !("speechSynthesis" in window) || !text) return
+        window.speechSynthesis.cancel()
+        clearSynthTimer()
+
+        const langTag = getLangTag(language)
+        const estDuration = estimateTtsDurationSeconds(text, language)
+        setDuration(estDuration)
+        setCurrentTime(0)
+
+        const bindUtterance = (u: SpeechSynthesisUtterance) => {
+            u.rate = playbackRate
+            u.onstart = () => {
+                setIsPlaying(true)
+                startSynthTimer(estDuration)
+            }
+            u.onend = () => {
+                setIsPlaying(false)
+                setCurrentTime(0)
+                clearSynthTimer()
+            }
+            u.onerror = (ev) => {
+                const code = (ev as SpeechSynthesisErrorEvent).error
+                if (code === "interrupted" || code === "canceled") return
+                setIsPlaying(false)
+                clearSynthTimer()
+            }
+        }
+
+        whenVoicesReady(() => {
+            const utterance = new SpeechSynthesisUtterance(text)
+            const preferredVoice = pickVoiceForLanguage(langTag)
+            if (preferredVoice && voiceMatchesPrimaryTag(preferredVoice, langTag)) {
+                utterance.voice = preferredVoice
+                utterance.lang = normVoiceLang(preferredVoice.lang)
+            } else if (primaryFromBcp47(langTag) === "vi") {
+                utterance.lang = "vi"
+            } else {
+                utterance.lang = langTag
+            }
+            bindUtterance(utterance)
+            window.speechSynthesis.speak(utterance)
+        })
+    }, [getLangTag, playbackRate])
+
+    const tryPlayGoogleTranslateVi = useCallback(async (text: string): Promise<boolean> => {
+        const audio = audioRef.current
+        if (!audio || !text.trim()) return false
+        window.speechSynthesis?.cancel()
+        clearSynthTimer()
+        try {
+            setIsLoading(true)
+            const res = await fetch("/api/tts/google", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text, tl: "vi" }),
+            })
+            if (!res.ok) throw new Error("tts_http")
+            const blob = await res.blob()
+            if (blob.size < 64) throw new Error("tts_empty")
+            if (googleViBlobUrlRef.current) {
+                URL.revokeObjectURL(googleViBlobUrlRef.current)
+                googleViBlobUrlRef.current = null
+            }
+            const url = URL.createObjectURL(blob)
+            googleViBlobUrlRef.current = url
+            audio.pause()
+            audio.src = url
+            audio.playbackRate = playbackRate
+            await new Promise<void>((resolve, reject) => {
+                const ok = () => {
+                    audio.removeEventListener("canplay", ok)
+                    audio.removeEventListener("error", bad)
+                    resolve()
+                }
+                const bad = () => {
+                    audio.removeEventListener("canplay", ok)
+                    audio.removeEventListener("error", bad)
+                    reject(new Error("audio_load"))
+                }
+                audio.addEventListener("canplay", ok, { once: true })
+                audio.addEventListener("error", bad, { once: true })
+            })
+            const d = audio.duration
+            setDuration(Number.isFinite(d) && d > 0 ? d : 0)
+            setCurrentTime(0)
+            setIsLoading(false)
+            await audio.play()
+            return true
+        } catch {
+            setIsLoading(false)
+            return false
+        }
+    }, [playbackRate])
+
+    const speakText = useCallback(
+        (text: string, language: LanguageCode, opts?: { skipGoogleVi?: boolean }) => {
+            if (!text) return
+            if (language === "vi" && !opts?.skipGoogleVi) {
+                void (async () => {
+                    const ok = await tryPlayGoogleTranslateVi(text)
+                    if (!ok && typeof window !== "undefined" && "speechSynthesis" in window) {
+                        speakWithBrowserSynth(text, language)
+                    }
+                })()
+                return
+            }
+            if (typeof window !== "undefined" && "speechSynthesis" in window) {
+                speakWithBrowserSynth(text, language)
+            }
+        },
+        [tryPlayGoogleTranslateVi, speakWithBrowserSynth]
+    )
 
     useEffect(() => {
         if (typeof window === "undefined" || !("speechSynthesis" in window)) return
@@ -115,43 +327,6 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         synth.addEventListener("voiceschanged", primeVoices)
         return () => synth.removeEventListener("voiceschanged", primeVoices)
     }, [])
-
-    const speakText = useCallback((text: string, language: LanguageCode) => {
-        if (typeof window === "undefined" || !("speechSynthesis" in window) || !text) return
-        window.speechSynthesis.cancel()
-        clearSynthTimer()
-
-        const utterance = new SpeechSynthesisUtterance(text)
-        const langTag = getLangTag(language)
-        utterance.lang = langTag
-        const preferredVoice = pickVoiceForLanguage(langTag)
-        if (preferredVoice && voiceMatchesLangTag(preferredVoice, langTag)) {
-            utterance.voice = preferredVoice
-        }
-        utterance.rate = playbackRate
-
-        const estDuration = estimateTtsDurationSeconds(text, language)
-        setDuration(estDuration)
-        setCurrentTime(0)
-
-        utterance.onstart = () => {
-            setIsPlaying(true)
-            startSynthTimer(estDuration)
-        }
-        utterance.onend = () => {
-            setIsPlaying(false)
-            setCurrentTime(0)
-            clearSynthTimer()
-        }
-        utterance.onerror = (ev) => {
-            const code = (ev as SpeechSynthesisErrorEvent).error
-            if (code === "interrupted" || code === "canceled") return
-            setIsPlaying(false)
-            clearSynthTimer()
-        }
-
-        window.speechSynthesis.speak(utterance)
-    }, [getLangTag, pickVoiceForLanguage, playbackRate])
 
     useEffect(() => {
         currentPOIRef.current = currentPOI
@@ -200,28 +375,12 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             if (typeof window !== "undefined" && window.speechSynthesis) {
                 window.speechSynthesis.cancel()
             }
+            if (googleViBlobUrlRef.current) {
+                URL.revokeObjectURL(googleViBlobUrlRef.current)
+                googleViBlobUrlRef.current = null
+            }
         }
     }, [speakText])
-
-    const clearSynthTimer = () => {
-        if (synthTimerRef.current) {
-            clearInterval(synthTimerRef.current)
-            synthTimerRef.current = null
-        }
-    }
-
-    const startSynthTimer = (totalDuration: number) => {
-        clearSynthTimer()
-        synthTimerRef.current = setInterval(() => {
-            setCurrentTime((prev) => {
-                const next = Math.min(prev + 1, totalDuration)
-                if (next >= totalDuration) {
-                    clearSynthTimer()
-                }
-                return next
-            })
-        }, 1000)
-    }
 
     const play = useCallback((poi: ClientPOI, language: LanguageCode, fallbackText?: string) => {
         const audioContent = poi.audio[language]
@@ -233,43 +392,26 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         lastNarrationTextRef.current = ttsText || null
         setCurrentTime(0)
 
-        // Native Browser Text-to-Speech (Perfect for Food narration in multiple languages)
-        if (typeof window !== "undefined" && "speechSynthesis" in window && ttsText) {
-            // Stop any existing audio or speech
+        // TTS: Vietnamese uses Google Translate–style voice (female) via server proxy; others use browser synth.
+        if (ttsText) {
             audioRef.current?.pause()
-            window.speechSynthesis.cancel()
+            window.speechSynthesis?.cancel()
             clearSynthTimer()
 
-            const utterance = new SpeechSynthesisUtterance(ttsText)
-            const langTag = getLangTag(language)
-            utterance.lang = langTag
-            const preferredVoice = pickVoiceForLanguage(langTag)
-            if (preferredVoice && voiceMatchesLangTag(preferredVoice, langTag)) {
-                utterance.voice = preferredVoice
-            }
-            utterance.rate = playbackRate
-
-            const estDuration = estimateTtsDurationSeconds(ttsText, language)
-            setDuration(estDuration)
-
-            utterance.onstart = () => {
-                setIsPlaying(true)
-                startSynthTimer(estDuration)
-            }
-            utterance.onend = () => {
-                setIsPlaying(false)
-                setCurrentTime(0)
-                clearSynthTimer()
-            }
-            utterance.onerror = (ev) => {
-                const code = (ev as SpeechSynthesisErrorEvent).error
-                if (code === "interrupted" || code === "canceled") return
-                setIsPlaying(false)
-                clearSynthTimer()
+            if (language === "vi") {
+                void (async () => {
+                    const ok = await tryPlayGoogleTranslateVi(ttsText)
+                    if (!ok && typeof window !== "undefined" && "speechSynthesis" in window) {
+                        speakWithBrowserSynth(ttsText, language)
+                    }
+                })()
+                return
             }
 
-            window.speechSynthesis.speak(utterance)
-            return
+            if (typeof window !== "undefined" && "speechSynthesis" in window) {
+                speakWithBrowserSynth(ttsText, language)
+                return
+            }
         }
 
         const audio = audioRef.current
@@ -284,7 +426,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         audio.play().catch(() => {
             setIsPlaying(false)
         })
-    }, [getLangTag, pickVoiceForLanguage, playbackRate])
+    }, [getLangTag, playbackRate, speakWithBrowserSynth, tryPlayGoogleTranslateVi])
 
     const pause = useCallback(() => {
         if (typeof window !== "undefined" && window.speechSynthesis && window.speechSynthesis.speaking) {
@@ -318,6 +460,10 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             audio.pause()
             audio.currentTime = 0
             if (isFinite(audio.currentTime)) audio.currentTime = 0;
+        }
+        if (googleViBlobUrlRef.current) {
+            URL.revokeObjectURL(googleViBlobUrlRef.current)
+            googleViBlobUrlRef.current = null
         }
         setIsPlaying(false)
         setCurrentPOI(null)
