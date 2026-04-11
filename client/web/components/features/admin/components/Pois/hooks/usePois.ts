@@ -24,7 +24,7 @@ export interface POIPickerState {
 const mapApiPoiToUiPoi = (apiPoi: any): POI => ({
   id: apiPoi._id || apiPoi.id,
   name: apiPoi.tenPOI || apiPoi.name,
-  description: apiPoi.moTa || apiPoi.description,
+  description: apiPoi.poiNgonNgu?.moTa || apiPoi.moTa || apiPoi.description,
   category: (apiPoi.loaiPOI || apiPoi.category) as POICategory,
   latitude: apiPoi.latitude,
   longitude: apiPoi.longitude,
@@ -33,6 +33,7 @@ const mapApiPoiToUiPoi = (apiPoi: any): POI => ({
   address: apiPoi.address,
   createdAt: apiPoi.ngayTao || apiPoi.createdAt,
   updatedAt: apiPoi.updatedAt || apiPoi.ngayTao,
+  poiNgonNgu: apiPoi.poiNgonNgu,
 })
 
 export function usePOIs() {

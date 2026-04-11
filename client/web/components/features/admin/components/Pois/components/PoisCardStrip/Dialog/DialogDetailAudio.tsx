@@ -20,6 +20,9 @@ import type { POI } from "@/lib/types"
 import type { AdminPoisUi } from "@/lib/admin-pois-i18n"
 import { Badge } from "@/components/ui/badge"
 
+import { useLanguages } from "@/hooks/useLanguages"
+import type { ILanguage } from "@/apis/languageApi"
+
 interface DialogDetailAudioProps {
     open: boolean
     onOpenChange: (open: boolean) => void
@@ -27,22 +30,9 @@ interface DialogDetailAudioProps {
     adminUi: AdminPoisUi
 }
 
-type NarrationLanguage = "vi-VN" | "en-US" | "zh-CN"
-
-interface LanguageOption {
-    code: NarrationLanguage
-    label: string
-    icon: string
-}
-
-const LANGUAGES: LanguageOption[] = [
-    { code: "vi-VN", label: "Tiếng Việt", icon: "🇻🇳" },
-    { code: "en-US", label: "English", icon: "🇺🇸" },
-    { code: "zh-CN", label: "中国人", icon: "🇨🇳" },
-]
-
 export default function DialogDetailAudio({ open, onOpenChange, poi, adminUi }: DialogDetailAudioProps) {
-    const [playingLang, setPlayingLang] = useState<NarrationLanguage | null>(null)
+    const { languages } = useLanguages()
+    const [playingLang, setPlayingLang] = useState<string | null>(null)
     const [synth, setSynth] = useState<SpeechSynthesis | null>(null)
 
     useEffect(() => {
@@ -51,21 +41,23 @@ export default function DialogDetailAudio({ open, onOpenChange, poi, adminUi }: 
         }
     }, [])
 
-    const getNarrationText = (lang: NarrationLanguage) => {
+    const getNarrationText = (lang: string) => {
+        // If the current language matches the one provided in poiNgonNgu, use its specific moTa
+        // mapping logic in usePOIs already prioritizes moTa to description, but we can be explicit here
+        const currentContent = (lang.startsWith("vi") && poi.poiNgonNgu) ? poi.poiNgonNgu.moTa : poi.description
+
         const labels = adminUi.panel
         const addressText = poi.address ? `${labels.addressLabel}: ${poi.address}.` : ""
 
-        switch (lang) {
-            case "en-US":
-                return `${poi.name}. ${poi.description}. ${labels.categoryLabel}: ${poi.category}. ${poi.address ? `${labels.addressLabel}: ${poi.address}.` : ""}`
-            case "zh-CN":
-                return `${poi.name}。${poi.description}。${labels.categoryLabel}：${poi.category}。${poi.address ? `${labels.addressLabel}：${poi.address}。` : ""}`
-            default:
-                return `${poi.name}. ${poi.description}. ${labels.categoryLabel}: ${poi.category}. ${addressText}`
+        // Use Chinese punctuation for ZH codes, standard otherwise
+        if (lang.startsWith("zh")) {
+            return `${poi.name}。${currentContent}。${labels.categoryLabel}：${poi.category}。${poi.address ? `${labels.addressLabel}：${poi.address}。` : ""}`
         }
+
+        return `${poi.name}. ${currentContent}. ${labels.categoryLabel}: ${poi.category}. ${addressText}`
     }
 
-    const handleToggleSpeech = (lang: NarrationLanguage) => {
+    const handleToggleSpeech = (lang: string) => {
         if (!synth) return
 
         if (playingLang === lang) {
@@ -101,16 +93,23 @@ export default function DialogDetailAudio({ open, onOpenChange, poi, adminUi }: 
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-6xl! max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <div className="flex items-center gap-3 mb-2">
                         <div className="p-2 rounded-full bg-primary/10 text-primary">
                             <Headphones className="h-5 w-5" />
                         </div>
                         <div>
-                            <DialogTitle className="text-xl">{poi.name}</DialogTitle>
+                            <div className="flex items-center gap-2">
+                                <DialogTitle className="text-xl">{poi.poiNgonNgu?.tieuDe || poi.name}</DialogTitle>
+                                {poi.poiNgonNgu?.usedFallback && (
+                                    <Badge variant="outline" className="text-[10px] py-0 h-4 bg-amber-50 text-amber-600 border-amber-200">
+                                        Fallback Used
+                                    </Badge>
+                                )}
+                            </div>
                             <DialogDescription>
-                                {adminUi.audioDetail.title}
+                                {adminUi.audioDetail.title} {poi.poiNgonNgu ? `(${poi.poiNgonNgu._id})` : ""}
                             </DialogDescription>
                         </div>
                     </div>
@@ -144,10 +143,10 @@ export default function DialogDetailAudio({ open, onOpenChange, poi, adminUi }: 
                                     <Music className="h-4 w-4 text-primary" />
                                     {adminUi.audioDetail.masterAudio}
                                 </h4>
-                                {poi.audioUrl ? (
+                                {(poi.audioUrl || poi.poiNgonNgu?.audio) ? (
                                     <div className="space-y-3">
                                         <audio controls className="w-full h-10">
-                                            <source src={poi.audioUrl} type="audio/mpeg" />
+                                            <source src={poi.audioUrl || poi.poiNgonNgu?.audio?.url} type="audio/mpeg" />
                                             Your browser does not support the audio element.
                                         </audio>
                                         <p className="text-[10px] text-muted-foreground italic">
@@ -166,12 +165,19 @@ export default function DialogDetailAudio({ open, onOpenChange, poi, adminUi }: 
 
                     {/* Description Section */}
                     <div className="p-4 rounded-xl border bg-muted/30 space-y-2">
-                        <h4 className="text-sm font-semibold flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-primary" />
-                            {adminUi.form.description}
-                        </h4>
+                        <div className="flex items-center justify-between">
+                            <h4 className="text-sm font-semibold flex items-center gap-2">
+                                <FileText className="h-4 w-4 text-primary" />
+                                {adminUi.form.description}
+                            </h4>
+                            {poi.poiNgonNgu?.tieuDe && (
+                                <span className="text-[10px] font-medium text-muted-foreground">
+                                    Official Title: {poi.poiNgonNgu.tieuDe}
+                                </span>
+                            )}
+                        </div>
                         <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                            {poi.description || "Chưa có mô tả cho địa điểm này."}
+                            {poi.poiNgonNgu?.moTa || poi.description || "Chưa có mô tả cho địa điểm này."}
                         </p>
                     </div>
 
@@ -191,12 +197,12 @@ export default function DialogDetailAudio({ open, onOpenChange, poi, adminUi }: 
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {LANGUAGES.map((lang) => (
-                                        <TableRow key={lang.code}>
+                                    {languages.map((lang) => (
+                                        <TableRow key={lang._id}>
                                             <TableCell className="font-medium">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-lg">{lang.icon}</span>
-                                                    <span>{lang.label}</span>
+                                                    <span className="text-lg">{lang.flag}</span>
+                                                    <span>{lang.nativeName}</span>
                                                 </div>
                                             </TableCell>
                                             <TableCell>

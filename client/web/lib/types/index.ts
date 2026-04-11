@@ -21,6 +21,16 @@ export interface POI {
   reviewCount?: number
   createdAt: string
   updatedAt: string
+  poiNgonNgu?: {
+    _id: string
+    moTa: string
+    tieuDe: string
+    usedFallback: boolean
+    audio?: {
+      _id: string
+      url?: string
+    }
+  }
 }
 
 export interface CreatePOIPayload {

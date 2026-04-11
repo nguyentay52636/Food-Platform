@@ -5,16 +5,33 @@ import * as path from 'path';
 
 @Injectable()
 export class TtsService {
-  private client: textToSpeech.TextToSpeechClient;
+  private client: any;
 
   constructor() {
-    this.client = new textToSpeech.TextToSpeechClient();
+    // Chỉ khởi tạo nếu có biến môi trường credentials để tránh crash ứng dụng khi thiếu cấu hình
+    if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      try {
+        this.client = new textToSpeech.TextToSpeechClient();
+        console.log('Google TTS Client initialized successfully.');
+      } catch (error) {
+        console.warn('Google TTS Client could not be initialized:', error.message);
+        this.client = null;
+      }
+    } else {
+      console.warn('GOOGLE_APPLICATION_CREDENTIALS not found. TTS generation is disabled.');
+      this.client = null;
+    }
   }
 
   async generateSpeech(text: string, langCode: string, filename: string): Promise<string | null> {
+    if (!this.client) {
+      console.warn('Skipping TTS generation: Client not initialized (check Google Credentials).');
+      return null;
+    }
+
     try {
       const languageCode = this.mapLangCode(langCode);
-      
+
       const request: any = {
         input: { text },
         voice: { languageCode, ssmlGender: 'FEMALE' },
@@ -22,7 +39,7 @@ export class TtsService {
       };
 
       const [response] = await this.client.synthesizeSpeech(request);
-      
+
       const publicPath = path.join(process.cwd(), 'public', 'audio');
       if (!fs.existsSync(publicPath)) {
         fs.mkdirSync(publicPath, { recursive: true });
@@ -33,7 +50,7 @@ export class TtsService {
 
       return `/audio/${filename}`;
     } catch (error) {
-      console.error('TTS Generation Error:', error);
+      console.error('TTS Generation Error:', error.message);
       return null;
     }
   }

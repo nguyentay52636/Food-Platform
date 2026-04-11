@@ -260,7 +260,7 @@ export class PoiService {
       // Automatically create translations for all system languages
       for (const lang of languages) {
         const currentLangId = lang._id.toString();
-        const textToSpeak = tieuDe || (poiData as any).tenPOI;
+        const textToSpeak = moTa || tieuDe || (poiData as any).tenPOI;
         const audioFilename = `${createdPoi._id}_${lang.code}.mp3`;
 
         const audioUrl = await this.ttsService.generateSpeech(
@@ -272,7 +272,7 @@ export class PoiService {
         await this.poiTranslationService.create({
           maPOI: String(createdPoi._id),
           maNgonNgu: currentLangId,
-          tieuDe: textToSpeak,
+          tieuDe: tieuDe || (poiData as any).tenPOI,
           moTa: moTa,
           audioUrl: audioUrl || undefined,
         });
